@@ -1,13 +1,23 @@
 export class WidgetComponent {
-  constructor(id, onDelete, onSave, width = 2, height = 2) {
+  constructor(
+    id,
+    onDelete,
+    onSave,
+    width = 2,
+    height = 2,
+    currentDatabase = null,
+  ) {
     this.id = id;
     this.onDelete = onDelete;
     this.onSave = onSave;
+    this.currentDatabase = currentDatabase;
     this.isFlipped = false;
     this.query = "SELECT * FROM table_name LIMIT 10;";
     this.results = null;
     this.width = width; // 1 unit = half container width
     this.height = height; // 1 unit = half row height
+    this.currentPage = 1;
+    this.pageSize = 50;
 
     this.createElement();
   }
@@ -161,42 +171,53 @@ export class WidgetComponent {
       return;
     }
 
+    if (!this.currentDatabase) {
+      this.showError("No database loaded");
+      return;
+    }
+
     this.showLoading();
 
     try {
-      // TODO: Implement query execution API call
-      console.log("Running query:", query);
+      // Call the query API
+      const response = await fetch("/api/query", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          filename: this.currentDatabase,
+          query: query,
+          page: this.currentPage,
+          pageSize: this.pageSize,
+        }),
+      });
 
-      // Simulate query execution for now
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const result = await response.json();
 
-      // Mock results
-      const mockResults = {
-        columns: ["id", "name", "email"],
-        rows: [
-          [1, "John Doe", "john@example.com"],
-          [2, "Jane Smith", "jane@example.com"],
-          [3, "Bob Johnson", "bob@example.com"],
-        ],
-        totalRows: 3,
-      };
+      if (response.ok && result.success) {
+        this.displayResults(result);
 
-      this.displayResults(mockResults);
+        // Store results for persistence
+        this.results = result;
 
-      // Store results for persistence
-      this.results = mockResults;
+        // Flip to front to show results
+        if (this.isFlipped) {
+          this.flip();
+        }
 
-      // Flip to front to show results
-      if (this.isFlipped) {
-        this.flip();
-      }
-
-      // Save widget state after successful query
-      if (this.onSave) {
-        this.onSave();
+        // Save widget state after successful query
+        if (this.onSave) {
+          this.onSave();
+        }
+      } else {
+        // Handle error responses (4xx, 5xx status codes or success: false)
+        const errorMessage = result.error || "Query execution failed";
+        this.showError(errorMessage);
       }
     } catch (error) {
-      this.showError(error.message);
+      console.error("Query execution error:", error);
+      this.showError("Failed to execute query. Please check your connection.");
     }
   }
 
@@ -211,12 +232,29 @@ export class WidgetComponent {
   }
 
   showError(message) {
-    const resultsContainer = this.element.querySelector(".results-container");
-    resultsContainer.innerHTML = `
-      <div class="error-state">
-        <p>Error: ${message}</p>
-      </div>
-    `;
+    // Show error on the current visible side
+    if (this.isFlipped) {
+      // We're on the editor side (back), show error in the editor area
+      const editorContainer = this.element.querySelector(".card-back .widget-content");
+      const textarea = editorContainer.querySelector(".query-editor");
+      
+      // Add error message above the textarea
+      const existingError = editorContainer.querySelector(".error-message");
+      if (existingError) existingError.remove();
+      
+      const errorDiv = document.createElement("div");
+      errorDiv.className = "error-message";
+      errorDiv.innerHTML = `<p style="color: red; margin: 10px 0; padding: 10px; background: #fee; border: 1px solid #fcc; border-radius: 4px;">Error: ${message}</p>`;
+      editorContainer.insertBefore(errorDiv, textarea);
+    } else {
+      // We're on the results side (front), show error in results container
+      const resultsContainer = this.element.querySelector(".results-container");
+      resultsContainer.innerHTML = `
+        <div class="error-state">
+          <p>Error: ${message}</p>
+        </div>
+      `;
+    }
   }
 
   displayResults(results) {
@@ -248,12 +286,49 @@ export class WidgetComponent {
           </tbody>
         </table>
         <div class="results-info">
-          <p>Showing ${results.rows.length} of ${results.totalRows} rows</p>
+          <p>Showing ${results.rows.length} of ${results.totalRows} rows (Page ${results.page} of ${results.totalPages})</p>
+          ${results.totalPages > 1 ? this.createPaginationControls(results) : ""}
         </div>
       </div>
     `;
 
     resultsContainer.innerHTML = tableHtml;
+
+    // Set up pagination event listeners
+    this.setupPaginationListeners();
+  }
+
+  createPaginationControls(results) {
+    const { page, totalPages } = results;
+    const prevDisabled = page <= 1 ? "disabled" : "";
+    const nextDisabled = page >= totalPages ? "disabled" : "";
+
+    return `
+      <div class="pagination-controls">
+        <button class="pagination-btn prev-btn" ${prevDisabled}>← Previous</button>
+        <span class="page-info">Page ${page} of ${totalPages}</span>
+        <button class="pagination-btn next-btn" ${nextDisabled}>Next →</button>
+      </div>
+    `;
+  }
+
+  setupPaginationListeners() {
+    const prevBtn = this.element.querySelector(".prev-btn");
+    const nextBtn = this.element.querySelector(".next-btn");
+
+    if (prevBtn && !prevBtn.disabled) {
+      prevBtn.addEventListener("click", () => {
+        this.currentPage--;
+        this.runQuery();
+      });
+    }
+
+    if (nextBtn && !nextBtn.disabled) {
+      nextBtn.addEventListener("click", () => {
+        this.currentPage++;
+        this.runQuery();
+      });
+    }
   }
 
   delete() {
@@ -307,19 +382,24 @@ export class WidgetComponent {
       results: this.results,
       width: this.width,
       height: this.height,
+      currentPage: this.currentPage,
+      pageSize: this.pageSize,
     };
   }
 
-  static deserialize(data, onDelete, onSave) {
+  static deserialize(data, onDelete, onSave, currentDatabase = null) {
     const widget = new WidgetComponent(
       data.id,
       onDelete,
       onSave,
       data.width || 2,
       data.height || 2,
+      currentDatabase,
     );
     widget.query = data.query || "SELECT * FROM table_name LIMIT 10;";
     widget.results = data.results || null;
+    widget.currentPage = data.currentPage || 1;
+    widget.pageSize = data.pageSize || 50;
 
     // Update the textarea with saved query
     const textarea = widget.element.querySelector(".query-editor");

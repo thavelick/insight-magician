@@ -1,4 +1,5 @@
 import indexHtml from "./index.html";
+import { handleQuery } from "./routes/query.js";
 import { handleSchema } from "./routes/schema.js";
 import { handleUpload } from "./routes/upload.js";
 
@@ -17,6 +18,13 @@ Bun.serve({
   },
   routes: {
     "/": indexHtml,
+    "/status": {
+      GET: (req) => {
+        return new Response(JSON.stringify({ status: "ok", message: "Server is running" }), {
+          headers: { "Content-Type": "application/json" }
+        });
+      },
+    },
     "/api/upload": {
       POST: handleUpload,
     },
@@ -24,10 +32,7 @@ Bun.serve({
       GET: handleSchema,
     },
     "/api/query": {
-      POST: (req) => {
-        // TODO: Implement query execution
-        return new Response("Query endpoint", { status: 501 });
-      },
+      POST: handleQuery,
     },
   },
   development: {

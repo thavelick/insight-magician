@@ -108,3 +108,9 @@ bun --hot ./index.js
 ```
 
 For more information, read the Bun API docs in `node_modules/bun-types/docs/**.md`.
+
+## Development Guidelines
+
+- DO NOT modify default sample queries, placeholder text, or example code to match specific test databases
+- Keep sample code generic and database-agnostic  
+- User will handle customizing queries for their specific data

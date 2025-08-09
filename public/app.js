@@ -15,6 +15,7 @@ class App {
   async init() {
     this.uploadComponent = new UploadComponent(
       this.onDatabaseUploaded.bind(this),
+      this.hideUploadArea.bind(this),
     );
     this.schemaComponent = new SchemaComponent();
 
@@ -24,6 +25,7 @@ class App {
     // Set up action buttons
     this.setupAddWidgetButton();
     this.setupViewSchemaButton();
+    this.setupToggleUploadButton();
 
     // Check for existing database in sessionStorage
     await this.checkExistingDatabase();
@@ -49,6 +51,15 @@ class App {
         if (this.schema) {
           this.schemaComponent.show();
         }
+      });
+    }
+  }
+
+  setupToggleUploadButton() {
+    const toggleUploadBtn = document.getElementById("toggle-upload");
+    if (toggleUploadBtn) {
+      toggleUploadBtn.addEventListener("click", () => {
+        this.toggleUploadArea();
       });
     }
   }
@@ -113,6 +124,9 @@ class App {
       widgetId,
       (id) => this.removeWidget(id),
       () => this.saveWidgets(),
+      2, // width
+      2, // height
+      this.currentDatabase,
     );
 
     this.widgets.set(widgetId, widget);
@@ -120,6 +134,11 @@ class App {
     const container = document.getElementById("widgets-container");
     if (container) {
       container.appendChild(widget.getElement());
+    }
+
+    // Hide upload area after adding first widget
+    if (this.widgets.size === 1) {
+      this.hideUploadArea();
     }
 
     // Start the widget in edit mode (flipped)
@@ -133,6 +152,52 @@ class App {
   removeWidget(id) {
     this.widgets.delete(id);
     this.saveWidgets();
+    
+    // Show upload area again if no widgets remain
+    if (this.widgets.size === 0) {
+      this.showUploadArea();
+    }
+  }
+
+  hideUploadArea() {
+    const uploadArea = document.querySelector(".upload-area");
+    if (uploadArea) {
+      uploadArea.style.display = "none";
+    }
+    this.showToggleUploadButton();
+  }
+
+  showUploadArea() {
+    const uploadArea = document.querySelector(".upload-area");
+    if (uploadArea) {
+      uploadArea.style.display = "block";
+    }
+    this.hideToggleUploadButton();
+  }
+
+  showToggleUploadButton() {
+    const toggleBtn = document.getElementById("toggle-upload");
+    if (toggleBtn) {
+      toggleBtn.style.display = "block";
+    }
+  }
+
+  hideToggleUploadButton() {
+    const toggleBtn = document.getElementById("toggle-upload");
+    if (toggleBtn) {
+      toggleBtn.style.display = "none";
+    }
+  }
+
+  toggleUploadArea() {
+    const uploadArea = document.querySelector(".upload-area");
+    const isHidden = uploadArea.style.display === "none";
+    
+    if (isHidden) {
+      this.showUploadArea();
+    } else {
+      this.hideUploadArea();
+    }
   }
 
   showViewSchemaButton() {
@@ -177,9 +242,15 @@ class App {
               data,
               (id) => this.removeWidget(id),
               () => this.saveWidgets(),
+              this.currentDatabase,
             );
             this.widgets.set(data.id, widget);
             container.appendChild(widget.getElement());
+          }
+          
+          // Hide upload area if widgets were loaded
+          if (this.widgets.size > 0) {
+            this.hideUploadArea();
           }
         }
       } catch (error) {

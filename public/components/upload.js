@@ -1,6 +1,7 @@
 export class UploadComponent {
-  constructor(onUploadCallback) {
+  constructor(onUploadCallback, onCloseCallback) {
     this.onUpload = onUploadCallback;
+    this.onClose = onCloseCallback;
     this.uploadArea = document.querySelector(".upload-area");
     this.init();
   }
@@ -16,7 +17,15 @@ export class UploadComponent {
     document.body.appendChild(this.fileInput);
 
     // Add event listeners
-    this.uploadArea.addEventListener("click", () => this.fileInput.click());
+    this.uploadArea.addEventListener("click", (e) => {
+      // Don't trigger file selection if clicking the close button
+      if (e.target.classList.contains("close-upload")) {
+        e.stopPropagation();
+        if (this.onClose) this.onClose();
+        return;
+      }
+      this.fileInput.click();
+    });
     this.uploadArea.addEventListener(
       "dragover",
       this.handleDragOver.bind(this),
@@ -83,6 +92,7 @@ export class UploadComponent {
   showSuccess(message) {
     this.uploadArea.innerHTML = `
       <div class="upload-status success">
+        <button class="close-upload" title="Close">✕</button>
         <div class="success-icon">✓</div>
         <p>${message}</p>
         <button class="upload-another">Upload Another Database</button>
@@ -95,11 +105,20 @@ export class UploadComponent {
       .addEventListener("click", () => {
         this.reset();
       });
+    
+    // Add click handler for close
+    this.uploadArea
+      .querySelector(".close-upload")
+      .addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent triggering file selection
+        if (this.onClose) this.onClose();
+      });
   }
 
   showError(message) {
     this.uploadArea.innerHTML = `
       <div class="upload-status error">
+        <button class="close-upload" title="Close">✕</button>
         <div class="error-icon">✕</div>
         <p>${message}</p>
         <button class="try-again">Try Again</button>
@@ -112,12 +131,29 @@ export class UploadComponent {
       .addEventListener("click", () => {
         this.reset();
       });
+    
+    // Add click handler for close
+    this.uploadArea
+      .querySelector(".close-upload")
+      .addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent triggering file selection
+        if (this.onClose) this.onClose();
+      });
   }
 
   reset() {
     this.uploadArea.innerHTML = `
+      <button class="close-upload" title="Close">✕</button>
       <p>Drop your SQLite database file here</p>
       <p><small>Or click to select a file</small></p>
     `;
+    
+    // Add click handler for close
+    this.uploadArea
+      .querySelector(".close-upload")
+      .addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent triggering file selection
+        if (this.onClose) this.onClose();
+      });
   }
 }
