@@ -1,5 +1,13 @@
 ---
 
+## Server Management
+
+- DO NOT run `make dev` or start development servers
+- DO NOT kill running servers
+- User will handle all server management
+
+## Bun Usage
+
 Default to using Bun instead of Node.js.
 
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`

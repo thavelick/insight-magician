@@ -167,18 +167,18 @@ class DatabaseManager {
 
 ## Development Phases
 
-### Phase 1: Development Environment (Week 1)
-- [ ] Set up Biome for formatting and linting
-- [ ] Create Makefile with dev, format, lint, test commands
-- [ ] Add GitHub Actions workflow for code quality checks  
-- [ ] Set up basic project structure with test directories
-- [ ] **Milestone**: Complete dev environment with formatting, linting, and CI/CD
+### Phase 1: Development Environment (Week 1) ✅
+- [x] Set up Biome for formatting and linting
+- [x] Create Makefile with dev, format, lint, test commands
+- [x] Add GitHub Actions workflow for code quality checks  
+- [x] Set up basic project structure with test directories
+- [x] **Milestone**: Complete dev environment with formatting, linting, and CI/CD
 
-### Phase 2: Foundation (Week 2)
-- [ ] Set up Bun server with file upload endpoint
-- [ ] Implement SQLite file handling and schema introspection  
-- [ ] Create upload interface and schema sidebar
-- [ ] **Milestone**: Upload SQLite file and view database structure
+### Phase 2: Foundation (Week 2) ✅
+- [x] Set up Bun server with file upload endpoint
+- [x] Implement SQLite file handling and schema introspection  
+- [x] Create upload interface and schema sidebar
+- [x] **Milestone**: Upload SQLite file and view database structure
 
 ### Phase 3: Basic Widget System (Week 2-3)  
 - [ ] Create flip card widget component with CSS animations
@@ -232,9 +232,13 @@ insight-magician/
 │   └── query.js           # POST /api/query endpoint
 ├── uploads/                # Temporary database file storage
 └── tests/                  # Test files
-    ├── database.test.js
-    ├── query.test.js
-    └── widget.test.js
+    ├── unit/               # Unit tests
+    │   ├── database.spec.js
+    │   ├── query.spec.js
+    │   └── widget.spec.js
+    └── integration/        # Integration tests
+        ├── upload.spec.js
+        └── widget.spec.js
 ```
 
 ## Key Design Decisions

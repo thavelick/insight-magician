@@ -1,20 +1,27 @@
 import indexHtml from "./index.html";
+import { handleSchema } from "./routes/schema.js";
+import { handleUpload } from "./routes/upload.js";
 
 Bun.serve({
   port: process.env.PORT || 3000,
+  fetch(req) {
+    const url = new URL(req.url);
+
+    // Serve static files from public directory
+    if (url.pathname.startsWith("/public/")) {
+      const filePath = `.${url.pathname}`;
+      return new Response(Bun.file(filePath));
+    }
+
+    return null; // Let routes handle other requests
+  },
   routes: {
     "/": indexHtml,
     "/api/upload": {
-      POST: (req) => {
-        // TODO: Implement file upload
-        return new Response("Upload endpoint", { status: 501 });
-      },
+      POST: handleUpload,
     },
     "/api/schema": {
-      GET: (req) => {
-        // TODO: Implement schema introspection
-        return new Response("Schema endpoint", { status: 501 });
-      },
+      GET: handleSchema,
     },
     "/api/query": {
       POST: (req) => {
