@@ -68,9 +68,11 @@ export class SchemaComponent {
 
   show() {
     this.sidebar.classList.add("visible");
+    document.body.classList.add("schema-open");
   }
 
   hide() {
     this.sidebar.classList.remove("visible");
+    document.body.classList.remove("schema-open");
   }
 }
