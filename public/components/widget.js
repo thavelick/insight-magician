@@ -38,9 +38,7 @@ export class WidgetComponent {
               </div>
             </div>
             <div class="widget-content">
-              <div class="results-container">
-                <p class="no-results">Click "Edit" to write your SQL query, then "Run & View" to see results</p>
-              </div>
+              <p class="no-results">Click "Edit" to write your SQL query, then "Run & View" to see results</p>
             </div>
           </div>
           
@@ -222,8 +220,8 @@ export class WidgetComponent {
   }
 
   showLoading() {
-    const resultsContainer = this.element.querySelector(".results-container");
-    resultsContainer.innerHTML = `
+    const widgetContent = this.element.querySelector(".card-front .widget-content");
+    widgetContent.innerHTML = `
       <div class="loading-state">
         <div class="spinner"></div>
         <p>Running query...</p>
@@ -247,9 +245,9 @@ export class WidgetComponent {
       errorDiv.innerHTML = `<p style="color: red; margin: 10px 0; padding: 10px; background: #fee; border: 1px solid #fcc; border-radius: 4px;">Error: ${message}</p>`;
       editorContainer.insertBefore(errorDiv, textarea);
     } else {
-      // We're on the results side (front), show error in results container
-      const resultsContainer = this.element.querySelector(".results-container");
-      resultsContainer.innerHTML = `
+      // We're on the results side (front), show error in widget content
+      const widgetContent = this.element.querySelector(".card-front .widget-content");
+      widgetContent.innerHTML = `
         <div class="error-state">
           <p>Error: ${message}</p>
         </div>
@@ -258,41 +256,39 @@ export class WidgetComponent {
   }
 
   displayResults(results) {
-    const resultsContainer = this.element.querySelector(".results-container");
+    const widgetContent = this.element.querySelector(".card-front .widget-content");
 
     if (!results || !results.rows || results.rows.length === 0) {
-      resultsContainer.innerHTML = '<p class="no-results">No results found</p>';
+      widgetContent.innerHTML = '<p class="no-results">No results found</p>';
       return;
     }
 
     const tableHtml = `
-      <div class="results-table-container">
-        <table class="results-table">
-          <thead>
+      <table class="results-table">
+        <thead>
+          <tr>
+            ${results.columns.map((col) => `<th>${col}</th>`).join("")}
+          </tr>
+        </thead>
+        <tbody>
+          ${results.rows
+            .map(
+              (row) => `
             <tr>
-              ${results.columns.map((col) => `<th>${col}</th>`).join("")}
+              ${row.map((cell) => `<td>${cell || ""}</td>`).join("")}
             </tr>
-          </thead>
-          <tbody>
-            ${results.rows
-              .map(
-                (row) => `
-              <tr>
-                ${row.map((cell) => `<td>${cell || ""}</td>`).join("")}
-              </tr>
-            `,
-              )
-              .join("")}
-          </tbody>
-        </table>
-        <div class="results-info">
-          <p>Showing ${results.rows.length} of ${results.totalRows} rows (Page ${results.page} of ${results.totalPages})</p>
-          ${results.totalPages > 1 ? this.createPaginationControls(results) : ""}
-        </div>
+          `,
+            )
+            .join("")}
+        </tbody>
+      </table>
+      <div class="results-info">
+        <p>Showing ${results.rows.length} of ${results.totalRows} rows (Page ${results.page} of ${results.totalPages})</p>
+        ${results.totalPages > 1 ? this.createPaginationControls(results) : ""}
       </div>
     `;
 
-    resultsContainer.innerHTML = tableHtml;
+    widgetContent.innerHTML = tableHtml;
 
     // Set up pagination event listeners
     this.setupPaginationListeners();

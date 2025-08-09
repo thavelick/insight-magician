@@ -499,7 +499,6 @@ button:hover {
 
 /* Widget Content */
 .widget-content {
-  flex: 1;
   padding: 20px;
   overflow: auto;
 }
@@ -555,8 +554,6 @@ button:hover {
   background: #f8f9fa;
   font-weight: 600;
   color: #333;
-  position: sticky;
-  top: 0;
 }
 
 .results-table tr:hover {
