@@ -1,0 +1,24 @@
+{
+  "name": "insight-magician",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Simple database query dashboard with flip card widgets",
+  "scripts": {
+    "dev": "bun --hot index.js",
+    "format": "biome format --write .",
+    "lint": "biome check .",
+    "check": "biome check .",
+    "test": "bun test tests/unit",
+    "test:unit": "bun test tests/unit",
+    "test:coverage": "bun test tests/unit --coverage",
+    "test:integration": "playwright test tests/integration",
+    "test:all": "bun run test && bun run test:integration"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@playwright/test": "^1.54.2"
+  },
+  "trustedDependencies": [
+    "@biomejs/biome"
+  ]
+}

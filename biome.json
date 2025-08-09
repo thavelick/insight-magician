@@ -1,0 +1,30 @@
+{
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "include": [
+      "public/**",
+      "lib/**",
+      "routes/**",
+      "tests/**",
+      "*.js",
+      "*.json",
+      "!node_modules/**",
+      "!uploads/**",
+      "!test-results/**"
+    ]
+  },
+  "linter": {
+    "include": [
+      "public/**",
+      "lib/**",
+      "routes/**",
+      "tests/**",
+      "*.js",
+      "*.json",
+      "!node_modules/**",
+      "!uploads/**",
+      "!test-results/**"
+    ]
+  }
+}
