@@ -113,6 +113,7 @@ export class WidgetComponent {
         if (this.width > 1) {
           this.width--;
           this.applySize();
+          this.showSizeFeedback(`${this.width}×${this.height}`);
           if (this.onSave) this.onSave();
         }
       });
@@ -123,6 +124,7 @@ export class WidgetComponent {
         if (this.width < 4) {
           this.width++;
           this.applySize();
+          this.showSizeFeedback(`${this.width}×${this.height}`);
           if (this.onSave) this.onSave();
         }
       });
@@ -133,6 +135,7 @@ export class WidgetComponent {
         if (this.height > 1) {
           this.height--;
           this.applySize();
+          this.showSizeFeedback(`${this.width}×${this.height}`);
           if (this.onSave) this.onSave();
         }
       });
@@ -143,6 +146,7 @@ export class WidgetComponent {
         if (this.height < 4) {
           this.height++;
           this.applySize();
+          this.showSizeFeedback(`${this.width}×${this.height}`);
           if (this.onSave) this.onSave();
         }
       });
@@ -516,5 +520,38 @@ export class WidgetComponent {
 
     // Note: Front side errors are automatically cleared when displayResults()
     // or showLoading() updates the content, so no explicit clearing needed there
+  }
+
+  /**
+   * Show animated size feedback when size changes
+   * @param {string} sizeText - The size text to display (e.g., "2×1")
+   */
+  showSizeFeedback(sizeText) {
+    // Remove any existing feedback
+    const existingFeedback = this.element.querySelector('.size-feedback');
+    if (existingFeedback) {
+      existingFeedback.remove();
+    }
+
+    // Create new feedback element
+    const feedback = document.createElement('div');
+    feedback.className = 'size-feedback';
+    feedback.textContent = sizeText;
+    
+    // Add to the widget (positioned relative to widget center)
+    this.element.style.position = 'relative';
+    this.element.appendChild(feedback);
+    
+    // Trigger animation by adding the animate class
+    requestAnimationFrame(() => {
+      feedback.classList.add('animate');
+      
+      // Clean up after animation completes
+      setTimeout(() => {
+        if (feedback.parentNode) {
+          feedback.remove();
+        }
+      }, 1200);
+    });
   }
 }
