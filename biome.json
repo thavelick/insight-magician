@@ -1,4 +1,7 @@
 {
+  "files": {
+    "ignore": ["node_modules/**", "uploads/**", "test-results/**"]
+  },
   "formatter": {
     "indentStyle": "space",
     "indentWidth": 2,
@@ -8,10 +11,7 @@
       "routes/**",
       "tests/**",
       "*.js",
-      "*.json",
-      "!node_modules/**",
-      "!uploads/**",
-      "!test-results/**"
+      "*.json"
     ]
   },
   "linter": {
@@ -21,10 +21,7 @@
       "routes/**",
       "tests/**",
       "*.js",
-      "*.json",
-      "!node_modules/**",
-      "!uploads/**",
-      "!test-results/**"
+      "*.json"
     ]
   }
 }
