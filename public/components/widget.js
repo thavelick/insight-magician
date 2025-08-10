@@ -74,6 +74,18 @@ export class WidgetComponent {
                 <label for="query-editor-${this.id}">SQL Query:</label>
                 <textarea id="query-editor-${this.id}" class="query-editor" placeholder="SELECT * FROM table_name WHERE condition = 'value';">${this.query}</textarea>
               </div>
+              <div class="form-group chart-function-group" style="display: none;">
+                <label for="chart-function-${this.id}">JavaScript Chart Function:</label>
+                <textarea id="chart-function-${this.id}" class="chart-function-editor" placeholder="function createChart(data) {
+  const svg = d3.select(document.createElement('svg'))
+    .attr('viewBox', '0 0 400 300');
+  
+  // Your D3.js code here
+  // data is an array of objects from your SQL query
+  
+  return svg.node();
+}">${this.chartFunction}</textarea>
+              </div>
             </div>
           </div>
         </div>
@@ -97,6 +109,7 @@ export class WidgetComponent {
     this.setupEventListeners();
     this.applySize();
     this.updateWidgetHeader();
+    this.updateChartFunctionVisibility();
   }
 
   setupEventListeners() {
@@ -138,7 +151,47 @@ export class WidgetComponent {
     const typeSelect = this.element.querySelector(".widget-type-select");
     if (typeSelect) {
       typeSelect.addEventListener("change", (e) => {
-        this.widgetType = e.target.value;
+        const newType = e.target.value;
+        const oldType = this.widgetType;
+
+        // Check if switching from graph to table with existing chart function
+        if (
+          oldType === "graph" &&
+          newType === "data-table" &&
+          this.chartFunction.trim()
+        ) {
+          const confirmSwitch = confirm(
+            "Switching to Data Table will remove your chart function code. Are you sure?",
+          );
+
+          if (!confirmSwitch) {
+            // Revert the selection
+            e.target.value = oldType;
+            return;
+          }
+          // Clear chart function if user confirms
+          this.chartFunction = "";
+          const chartFunctionTextarea = this.element.querySelector(
+            ".chart-function-editor",
+          );
+          if (chartFunctionTextarea) {
+            chartFunctionTextarea.value = "";
+          }
+        }
+
+        this.widgetType = newType;
+        this.updateChartFunctionVisibility();
+        if (this.onSave) this.onSave();
+      });
+    }
+
+    // Chart function textarea change handler
+    const chartFunctionTextarea = this.element.querySelector(
+      ".chart-function-editor",
+    );
+    if (chartFunctionTextarea) {
+      chartFunctionTextarea.addEventListener("input", (e) => {
+        this.chartFunction = e.target.value;
         if (this.onSave) this.onSave();
       });
     }
@@ -231,6 +284,16 @@ export class WidgetComponent {
     }
   }
 
+  updateChartFunctionVisibility() {
+    const chartFunctionGroup = this.element.querySelector(
+      ".chart-function-group",
+    );
+    if (chartFunctionGroup) {
+      chartFunctionGroup.style.display =
+        this.widgetType === "graph" ? "block" : "none";
+    }
+  }
+
   async runQuery() {
     const textarea = this.element.querySelector(".query-editor");
     const query = textarea.value.trim();
@@ -245,6 +308,20 @@ export class WidgetComponent {
     if (!validation.isValid) {
       this.showError(validation.error);
       return;
+    }
+
+    // Validate chart function if widget type is graph
+    if (this.widgetType === "graph") {
+      if (!this.chartFunction.trim()) {
+        this.showError("Chart function is required for graph widgets");
+        return;
+      }
+
+      const chartValidation = this.validateChartFunction(this.chartFunction);
+      if (!chartValidation.isValid) {
+        this.showError(chartValidation.error);
+        return;
+      }
     }
 
     if (!this.currentDatabase) {
@@ -506,6 +583,17 @@ export class WidgetComponent {
       textarea.value = widget.query;
     }
 
+    // Update the chart function textarea with saved function
+    const chartFunctionTextarea = widget.element.querySelector(
+      ".chart-function-editor",
+    );
+    if (chartFunctionTextarea) {
+      chartFunctionTextarea.value = widget.chartFunction;
+    }
+
+    // Update chart function visibility after setting widget type
+    widget.updateChartFunctionVisibility();
+
     // Restore results if available
     if (widget.results) {
       widget.displayResults(widget.results);
@@ -582,6 +670,45 @@ export class WidgetComponent {
     }
 
     return { isValid: true };
+  }
+
+  /**
+   * Validate JavaScript chart function syntax
+   * @param {string} functionCode - The JavaScript function code to validate
+   * @returns {object} - { isValid: boolean, error?: string }
+   */
+  validateChartFunction(functionCode) {
+    if (!functionCode || typeof functionCode !== "string") {
+      return {
+        isValid: false,
+        error: "Chart function must be a non-empty string",
+      };
+    }
+
+    const trimmedCode = functionCode.trim();
+    if (!trimmedCode) {
+      return { isValid: false, error: "Chart function cannot be empty" };
+    }
+
+    try {
+      // Basic syntax validation using Function constructor
+      new Function(trimmedCode);
+      return { isValid: true };
+    } catch (error) {
+      let errorMessage = error.message;
+
+      // Add line and column info if available
+      if (error.lineNumber && error.columnNumber) {
+        errorMessage = `Line ${error.lineNumber}, Column ${error.columnNumber}: ${errorMessage}`;
+      } else if (error.lineNumber) {
+        errorMessage = `Line ${error.lineNumber}: ${errorMessage}`;
+      }
+
+      return {
+        isValid: false,
+        error: `JavaScript syntax error: ${errorMessage}`,
+      };
+    }
   }
 
   /**

@@ -659,6 +659,32 @@ button:hover {
   background: #f8f9fa;
 }
 
+/* Chart Function Editor */
+.chart-function-editor {
+  width: 100%;
+  min-height: 150px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: "Courier New", monospace;
+  background: #f8f9fa;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.chart-function-editor:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.chart-function-editor::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
 /* Results */
 .results-container {
   height: 100%;

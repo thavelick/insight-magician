@@ -70,18 +70,18 @@ function createChart(data) {
 ## Implementation Phases
 
 ### Phase 1: Foundation Setup
-- [ ] Add D3.js dependency to project using `bun add d3`
-- [ ] Extend widget data structure with `chartFunction` field
-- [ ] Add "Graph" option to widget type dropdown
-- [ ] Update serialization/deserialization for new field
+- [x] Add D3.js dependency to project using `bun add d3`
+- [x] Extend widget data structure with `chartFunction` field
+- [x] Add "Graph" option to widget type dropdown
+- [x] Update serialization/deserialization for new field
 
 ### Phase 2: UI Implementation  
-- [ ] Add JavaScript function textarea (hidden by default)
-- [ ] Show/hide graph code textarea dynamically based on widget type selection
-- [ ] Add confirmation dialog when switching from graph to table (warns about code loss)
-- [ ] Add basic JavaScript syntax validation (fires on save, not onChange)
-- [ ] Wire up change handlers and save functionality
-- [ ] Add CSS styling for code textarea (monospace, proper sizing)
+- [x] Add JavaScript function textarea (hidden by default)
+- [x] Show/hide graph code textarea dynamically based on widget type selection
+- [x] Add confirmation dialog when switching from graph to table (warns about code loss)
+- [x] Add basic JavaScript syntax validation (fires on save, not onChange)
+- [x] Wire up change handlers and save functionality
+- [x] Add CSS styling for code textarea (monospace, proper sizing)
 
 ### Phase 3: Execution Pipeline
 - [ ] Transform SQL result data from columns/rows format to array of objects
@@ -223,3 +223,79 @@ function simplePie(data) {
 - **UX**: Syntax highlighting, autocomplete, function templates
 - **Performance**: Function caching, lazy D3 loading
 - **Features**: Chart export, responsive sizing, themes
+
+## Appendix: Working Example
+
+### Test Query (Northwind Database)
+```sql
+SELECT 
+    cu.Country as country,
+    COUNT(o.OrderID) as order_count
+FROM Customers cu
+JOIN Orders o ON cu.CustomerID = o.CustomerID
+WHERE cu.Country IS NOT NULL AND cu.Country != ''
+GROUP BY cu.Country
+ORDER BY order_count DESC
+```
+
+### Test Chart Function (Pie Chart)
+```javascript
+function createChart(data) {
+  const svg = d3.select(document.createElement('svg'))
+    .attr('viewBox', '0 0 400 300');
+  
+  // Set up dimensions and radius
+  const width = 400;
+  const height = 300;
+  const radius = Math.min(width, height) / 2 - 20;
+  
+  // Create a color scale
+  const color = d3.scaleOrdinal(d3.schemeCategory10);
+  
+  // Create pie layout
+  const pie = d3.pie()
+    .value(d => d.order_count)
+    .sort(null);
+  
+  // Create arc generator
+  const arc = d3.arc()
+    .innerRadius(0)
+    .outerRadius(radius);
+  
+  // Create arc generator for labels
+  const labelArc = d3.arc()
+    .outerRadius(radius - 40)
+    .innerRadius(radius - 40);
+  
+  // Create main group and center it
+  const g = svg.append('g')
+    .attr('transform', `translate(${width/2}, ${height/2})`);
+  
+  // Create pie slices
+  const arcs = g.selectAll('.arc')
+    .data(pie(data))
+    .enter().append('g')
+    .attr('class', 'arc');
+  
+  // Add the paths (pie slices)
+  arcs.append('path')
+    .attr('d', arc)
+    .attr('fill', (d, i) => color(i))
+    .attr('stroke', 'white')
+    .attr('stroke-width', 2);
+  
+  // Add country labels for larger slices
+  arcs.filter(d => d.endAngle - d.startAngle > 0.2)
+    .append('text')
+    .attr('transform', d => `translate(${labelArc.centroid(d)})`)
+    .attr('text-anchor', 'middle')
+    .style('font-size', '12px')
+    .style('font-weight', 'bold')
+    .style('fill', 'white')
+    .text(d => d.data.country);
+  
+  return svg.node();
+}
+```
+
+This example creates a pie chart showing order counts by country from the Northwind sample database. The chart includes colored segments with country labels on larger slices.
