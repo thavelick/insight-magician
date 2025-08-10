@@ -1,5 +1,5 @@
-import { humanizeField } from "../../lib/humanizer.js";
 import * as d3 from "d3";
+import { humanizeField } from "../../lib/humanizer.js";
 
 export class WidgetComponent {
   constructor(
@@ -506,9 +506,9 @@ export class WidgetComponent {
       const chartElement = this.executeChartFunction(transformedData);
 
       // Debug: log what we got back from the chart function
-      console.log('Chart element:', chartElement);
-      console.log('Element type:', chartElement.constructor.name);
-      console.log('Element HTML:', chartElement.outerHTML);
+      console.log("Chart element:", chartElement);
+      console.log("Element type:", chartElement.constructor.name);
+      console.log("Element HTML:", chartElement.outerHTML);
 
       // Clear existing content and add the chart
       widgetContent.innerHTML = '<div class="chart-container"></div>';
@@ -525,14 +525,14 @@ export class WidgetComponent {
       console.error("Error details:", {
         message: error.message,
         stack: error.stack,
-        name: error.name
+        name: error.name,
       });
       widgetContent.innerHTML = `
         <div class="error-state">
           <p><strong>Chart Error:</strong> ${error.message}</p>
           <details style="margin-top: 10px;">
             <summary>Error Details</summary>
-            <pre style="font-size: 11px; margin-top: 5px; white-space: pre-wrap;">${error.stack || 'No stack trace available'}</pre>
+            <pre style="font-size: 11px; margin-top: 5px; white-space: pre-wrap;">${error.stack || "No stack trace available"}</pre>
           </details>
         </div>
       `;
@@ -570,16 +570,17 @@ export class WidgetComponent {
     // Set up chart dimensions and create pre-configured SVG
     const width = 400;
     const height = 300;
-    
+
     // Create properly namespaced SVG with D3 (responsive sizing via CSS)
-    const svg = d3.select(document.createElementNS("http://www.w3.org/2000/svg", "svg"))
-      .attr('viewBox', `0 0 ${width} ${height}`);
+    const svg = d3
+      .select(document.createElementNS("http://www.w3.org/2000/svg", "svg"))
+      .attr("viewBox", `0 0 ${width} ${height}`);
 
     // Create the function from the user's code
     let userFunction;
     try {
       userFunction = new Function(
-        "data", 
+        "data",
         "svg",
         "d3",
         "width",
