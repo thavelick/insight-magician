@@ -16,7 +16,7 @@ export class WidgetComponent {
     this.onSave = onSave;
     this.currentDatabase = currentDatabase;
     this.isFlipped = false;
-    this.query = "SELECT * FROM table_name LIMIT 10;";
+    this.query = "";
     this.results = null;
     this.width = width; // 1 unit = half container width
     this.height = height; // 1 unit = half row height
@@ -44,7 +44,7 @@ export class WidgetComponent {
               </div>
             </div>
             <div class="widget-content">
-              <p class="no-results">Click "Edit" to write your SQL query, then "Run & View" to see results</p>
+              <p class="no-results">Click "Edit" to add your SQL query, then "Run & View" to see results</p>
             </div>
           </div>
           
@@ -70,7 +70,7 @@ export class WidgetComponent {
               </div>
               <div class="form-group">
                 <label for="query-editor-${this.id}">SQL Query:</label>
-                <textarea id="query-editor-${this.id}" class="query-editor" placeholder="Enter your SQL query here...">${this.query}</textarea>
+                <textarea id="query-editor-${this.id}" class="query-editor" placeholder="SELECT * FROM table_name WHERE condition = 'value';">${this.query}</textarea>
               </div>
             </div>
           </div>
@@ -483,7 +483,7 @@ export class WidgetComponent {
       data.title || "",
       data.widgetType || "data-table",
     );
-    widget.query = data.query || "SELECT * FROM table_name LIMIT 10;";
+    widget.query = data.query || "";
     widget.results = data.results || null;
     widget.currentPage = data.currentPage || 1;
     widget.pageSize = data.pageSize || 50;
