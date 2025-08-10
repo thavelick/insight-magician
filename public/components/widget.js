@@ -203,7 +203,7 @@ export class WidgetComponent {
       if (response.ok && result.success) {
         // Clear any previous errors
         this.clearError();
-        
+
         this.displayResults(result);
 
         // Store results for persistence
@@ -230,7 +230,9 @@ export class WidgetComponent {
   }
 
   showLoading() {
-    const widgetContent = this.element.querySelector(".card-front .widget-content");
+    const widgetContent = this.element.querySelector(
+      ".card-front .widget-content",
+    );
     widgetContent.innerHTML = `
       <div class="loading-state">
         <div class="spinner"></div>
@@ -243,20 +245,24 @@ export class WidgetComponent {
     // Show error on the current visible side
     if (this.isFlipped) {
       // We're on the editor side (back), show error in the editor area
-      const editorContainer = this.element.querySelector(".card-back .widget-content");
+      const editorContainer = this.element.querySelector(
+        ".card-back .widget-content",
+      );
       const textarea = editorContainer.querySelector(".query-editor");
-      
+
       // Add error message above the textarea
       const existingError = editorContainer.querySelector(".error-message");
       if (existingError) existingError.remove();
-      
+
       const errorDiv = document.createElement("div");
       errorDiv.className = "error-message";
       errorDiv.innerHTML = `<p style="color: red; margin: 10px 0; padding: 10px; background: #fee; border: 1px solid #fcc; border-radius: 4px;">Error: ${message}</p>`;
       editorContainer.insertBefore(errorDiv, textarea);
     } else {
       // We're on the results side (front), show error in widget content
-      const widgetContent = this.element.querySelector(".card-front .widget-content");
+      const widgetContent = this.element.querySelector(
+        ".card-front .widget-content",
+      );
       widgetContent.innerHTML = `
         <div class="error-state">
           <p>Error: ${message}</p>
@@ -266,7 +272,9 @@ export class WidgetComponent {
   }
 
   displayResults(results) {
-    const widgetContent = this.element.querySelector(".card-front .widget-content");
+    const widgetContent = this.element.querySelector(
+      ".card-front .widget-content",
+    );
 
     if (!results || !results.rows || results.rows.length === 0) {
       widgetContent.innerHTML = '<p class="no-results">No results found</p>';
@@ -432,7 +440,7 @@ export class WidgetComponent {
    * @returns {object} - { isValid: boolean, error?: string }
    */
   validateSql(query) {
-    if (!query || typeof query !== 'string') {
+    if (!query || typeof query !== "string") {
       return { isValid: false, error: "Query must be a non-empty string" };
     }
 
@@ -444,24 +452,32 @@ export class WidgetComponent {
     const queryLower = trimmedQuery.toLowerCase();
 
     // Check for semicolons (prevent multiple statements)
-    if (query.includes(';')) {
+    if (query.includes(";")) {
       return {
         isValid: false,
-        error: "Semicolons are not allowed. Please write a single SQL statement."
+        error:
+          "Semicolons are not allowed. Please write a single SQL statement.",
       };
     }
 
     // Check for dangerous operations
     const dangerousKeywords = [
-      "drop", "delete", "update", "insert", "alter", 
-      "create", "truncate", "replace", "pragma"
+      "drop",
+      "delete",
+      "update",
+      "insert",
+      "alter",
+      "create",
+      "truncate",
+      "replace",
+      "pragma",
     ];
 
     for (const keyword of dangerousKeywords) {
       if (queryLower.startsWith(keyword)) {
         return {
           isValid: false,
-          error: `${keyword.toUpperCase()} operations are not allowed. Only SELECT queries permitted.`
+          error: `${keyword.toUpperCase()} operations are not allowed. Only SELECT queries permitted.`,
         };
       }
     }
@@ -469,10 +485,13 @@ export class WidgetComponent {
     // Check for forbidden keywords that interfere with pagination
     const forbiddenKeywords = ["limit", "offset"];
     for (const keyword of forbiddenKeywords) {
-      if (queryLower.includes(` ${keyword} `) || queryLower.includes(` ${keyword}(`)) {
+      if (
+        queryLower.includes(` ${keyword} `) ||
+        queryLower.includes(` ${keyword}(`)
+      ) {
         return {
           isValid: false,
-          error: `${keyword.toUpperCase()} clauses are not allowed. We handle pagination automatically.`
+          error: `${keyword.toUpperCase()} clauses are not allowed. We handle pagination automatically.`,
         };
       }
     }
@@ -485,7 +504,9 @@ export class WidgetComponent {
    */
   clearError() {
     // Clear error from editor side (back of card)
-    const editorContainer = this.element.querySelector(".card-back .widget-content");
+    const editorContainer = this.element.querySelector(
+      ".card-back .widget-content",
+    );
     if (editorContainer) {
       const existingError = editorContainer.querySelector(".error-message");
       if (existingError) {
@@ -493,8 +514,7 @@ export class WidgetComponent {
       }
     }
 
-    // Note: Front side errors are automatically cleared when displayResults() 
+    // Note: Front side errors are automatically cleared when displayResults()
     // or showLoading() updates the content, so no explicit clearing needed there
   }
-
 }

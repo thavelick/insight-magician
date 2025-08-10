@@ -105,7 +105,7 @@ export class UploadComponent {
       .addEventListener("click", () => {
         this.reset();
       });
-    
+
     // Add click handler for close
     this.uploadArea
       .querySelector(".close-upload")
@@ -131,7 +131,7 @@ export class UploadComponent {
       .addEventListener("click", () => {
         this.reset();
       });
-    
+
     // Add click handler for close
     this.uploadArea
       .querySelector(".close-upload")
@@ -147,7 +147,7 @@ export class UploadComponent {
       <p>Drop your SQLite database file here</p>
       <p><small>Or click to select a file</small></p>
     `;
-    
+
     // Add click handler for close
     this.uploadArea
       .querySelector(".close-upload")

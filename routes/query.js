@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { DatabaseManager } from "../lib/database.js";
-import { SqlValidator } from "../lib/sqlValidator.js";
+import { validateSql } from "../lib/sqlValidator.js";
 
 const UPLOADS_DIR = "./uploads";
 const DEFAULT_PAGE_SIZE = 50;
@@ -63,15 +63,12 @@ export async function handleQuery(request) {
 
     try {
       // Validate SQL query using centralized validator
-      const validation = SqlValidator.validate(query);
+      const validation = validateSql(query);
       if (!validation.isValid) {
-        return new Response(
-          JSON.stringify({ error: validation.error }),
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          },
-        );
+        return new Response(JSON.stringify({ error: validation.error }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
       // Execute the query with pagination
@@ -138,13 +135,13 @@ async function executeQueryWithPagination(
     totalRows = allResults.length;
   }
 
-  // Execute the paginated query  
+  // Execute the paginated query
   const paginatedQuery = `${query} LIMIT ${pageSize} OFFSET ${offset}`;
   console.log("=== Query Debug ===");
   console.log("Original query:", query);
   console.log("Paginated query:", paginatedQuery);
   console.log("Page:", page, "PageSize:", pageSize, "Offset:", offset);
-  
+
   const rows = dbManager.db.prepare(paginatedQuery).all();
   console.log("Returned rows:", rows.length);
   console.log("Total rows from count:", totalRows);

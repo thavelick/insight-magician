@@ -152,7 +152,7 @@ class App {
   removeWidget(id) {
     this.widgets.delete(id);
     this.saveWidgets();
-    
+
     // Show upload area again if no widgets remain
     if (this.widgets.size === 0) {
       this.showUploadArea();
@@ -192,7 +192,7 @@ class App {
   toggleUploadArea() {
     const uploadArea = document.querySelector(".upload-area");
     const isHidden = uploadArea.style.display === "none";
-    
+
     if (isHidden) {
       this.showUploadArea();
     } else {
@@ -247,7 +247,7 @@ class App {
             this.widgets.set(data.id, widget);
             container.appendChild(widget.getElement());
           }
-          
+
           // Hide upload area if widgets were loaded
           if (this.widgets.size > 0) {
             this.hideUploadArea();
