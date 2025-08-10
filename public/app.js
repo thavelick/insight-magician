@@ -127,6 +127,8 @@ class App {
       2, // width
       2, // height
       this.currentDatabase,
+      "", // title
+      "data-table", // widgetType
     );
 
     this.widgets.set(widgetId, widget);

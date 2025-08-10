@@ -39,14 +39,14 @@ Add dropdown for widget display type:
 - [x] Write unit tests for humanizer function
 
 ### Phase 2: Data Structure Updates
-- [ ] Add `title` field to widget constructor (string, defaults to empty)
-- [ ] Add `widgetType` field to widget constructor (string, defaults to 'data-table')
-- [ ] Update widget's `getData()` method to include title and widgetType in serialization
-- [ ] Update widget's `loadData()` method to restore title and widgetType from saved data
-- [ ] Update WidgetComponent constructor to accept title and widgetType parameters
-- [ ] Modify app.js `loadWidgets()` to pass title and widgetType when creating widgets
-- [ ] Update app.js `saveWidgets()` to persist the new fields
-- [ ] Ensure backward compatibility - handle widgets without these fields gracefully
+- [x] Add `title` field to widget constructor (string, defaults to empty)
+- [x] Add `widgetType` field to widget constructor (string, defaults to 'data-table')
+- [x] Update widget's `getData()` method to include title and widgetType in serialization
+- [x] Update widget's `loadData()` method to restore title and widgetType from saved data
+- [x] Update WidgetComponent constructor to accept title and widgetType parameters
+- [x] Modify app.js `loadWidgets()` to pass title and widgetType when creating widgets
+- [x] Update app.js `saveWidgets()` to persist the new fields
+- [x] Ensure backward compatibility - handle widgets without these fields gracefully
 
 ### Phase 3: UI Enhancements
 - [ ] Add title input field to widget back panel HTML template

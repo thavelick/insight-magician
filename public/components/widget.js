@@ -8,6 +8,8 @@ export class WidgetComponent {
     width = 2,
     height = 2,
     currentDatabase = null,
+    title = "",
+    widgetType = "data-table",
   ) {
     this.id = id;
     this.onDelete = onDelete;
@@ -20,6 +22,8 @@ export class WidgetComponent {
     this.height = height; // 1 unit = half row height
     this.currentPage = 1;
     this.pageSize = 50;
+    this.title = title;
+    this.widgetType = widgetType;
 
     this.createElement();
   }
@@ -404,6 +408,8 @@ export class WidgetComponent {
       height: this.height,
       currentPage: this.currentPage,
       pageSize: this.pageSize,
+      title: this.title,
+      widgetType: this.widgetType,
     };
   }
 
@@ -415,6 +421,8 @@ export class WidgetComponent {
       data.width || 2,
       data.height || 2,
       currentDatabase,
+      data.title || "",
+      data.widgetType || "data-table",
     );
     widget.query = data.query || "SELECT * FROM table_name LIMIT 10;";
     widget.results = data.results || null;
