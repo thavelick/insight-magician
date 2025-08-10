@@ -317,16 +317,24 @@ export class WidgetComponent {
       const editorContainer = this.element.querySelector(
         ".card-back .widget-content",
       );
-      const textarea = editorContainer.querySelector(".query-editor");
+      const queryFormGroup = editorContainer.querySelector(
+        ".form-group:last-child",
+      ); // The SQL query form group
 
-      // Add error message above the textarea
+      // Add error message above the query form group
       const existingError = editorContainer.querySelector(".error-message");
       if (existingError) existingError.remove();
 
       const errorDiv = document.createElement("div");
       errorDiv.className = "error-message";
       errorDiv.innerHTML = `<p style="color: red; margin: 10px 0; padding: 10px; background: #fee; border: 1px solid #fcc; border-radius: 4px;">Error: ${message}</p>`;
-      editorContainer.insertBefore(errorDiv, textarea);
+
+      if (queryFormGroup) {
+        editorContainer.insertBefore(errorDiv, queryFormGroup);
+      } else {
+        // Fallback: just append to the container
+        editorContainer.appendChild(errorDiv);
+      }
     } else {
       // We're on the results side (front), show error in widget content
       const widgetContent = this.element.querySelector(
