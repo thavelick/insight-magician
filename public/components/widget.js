@@ -96,7 +96,7 @@ export class WidgetComponent {
       runViewBtn.addEventListener("click", () => this.runQuery());
     }
 
-    // Save query on textarea change (but don't persist yet)
+    // Save query on textarea change (but don't validate while typing)
     const textarea = this.element.querySelector(".query-editor");
     textarea.addEventListener("input", (e) => {
       this.query = e.target.value;
@@ -169,6 +169,13 @@ export class WidgetComponent {
       return;
     }
 
+    // Validate query before execution
+    const validation = this.validateSql(query);
+    if (!validation.isValid) {
+      this.showError(validation.error);
+      return;
+    }
+
     if (!this.currentDatabase) {
       this.showError("No database loaded");
       return;
@@ -194,6 +201,9 @@ export class WidgetComponent {
       const result = await response.json();
 
       if (response.ok && result.success) {
+        // Clear any previous errors
+        this.clearError();
+        
         this.displayResults(result);
 
         // Store results for persistence
@@ -415,4 +425,76 @@ export class WidgetComponent {
 
     return widget;
   }
+
+  /**
+   * Client-side SQL validation (mirrors server-side validation)
+   * @param {string} query - The SQL query to validate
+   * @returns {object} - { isValid: boolean, error?: string }
+   */
+  validateSql(query) {
+    if (!query || typeof query !== 'string') {
+      return { isValid: false, error: "Query must be a non-empty string" };
+    }
+
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) {
+      return { isValid: false, error: "Query cannot be empty" };
+    }
+
+    const queryLower = trimmedQuery.toLowerCase();
+
+    // Check for semicolons (prevent multiple statements)
+    if (query.includes(';')) {
+      return {
+        isValid: false,
+        error: "Semicolons are not allowed. Please write a single SQL statement."
+      };
+    }
+
+    // Check for dangerous operations
+    const dangerousKeywords = [
+      "drop", "delete", "update", "insert", "alter", 
+      "create", "truncate", "replace", "pragma"
+    ];
+
+    for (const keyword of dangerousKeywords) {
+      if (queryLower.startsWith(keyword)) {
+        return {
+          isValid: false,
+          error: `${keyword.toUpperCase()} operations are not allowed. Only SELECT queries permitted.`
+        };
+      }
+    }
+
+    // Check for forbidden keywords that interfere with pagination
+    const forbiddenKeywords = ["limit", "offset"];
+    for (const keyword of forbiddenKeywords) {
+      if (queryLower.includes(` ${keyword} `) || queryLower.includes(` ${keyword}(`)) {
+        return {
+          isValid: false,
+          error: `${keyword.toUpperCase()} clauses are not allowed. We handle pagination automatically.`
+        };
+      }
+    }
+
+    return { isValid: true };
+  }
+
+  /**
+   * Clear any error messages from both sides of the widget
+   */
+  clearError() {
+    // Clear error from editor side (back of card)
+    const editorContainer = this.element.querySelector(".card-back .widget-content");
+    if (editorContainer) {
+      const existingError = editorContainer.querySelector(".error-message");
+      if (existingError) {
+        existingError.remove();
+      }
+    }
+
+    // Note: Front side errors are automatically cleared when displayResults() 
+    // or showLoading() updates the content, so no explicit clearing needed there
+  }
+
 }

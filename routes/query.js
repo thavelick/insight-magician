@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { DatabaseManager } from "../lib/database.js";
+import { SqlValidator } from "../lib/sqlValidator.js";
 
 const UPLOADS_DIR = "./uploads";
 const DEFAULT_PAGE_SIZE = 50;
@@ -61,32 +62,16 @@ export async function handleQuery(request) {
     await dbManager.connect();
 
     try {
-      // Security: Basic query validation (prevent dangerous operations)
-      const queryLower = query.toLowerCase().trim();
-      const dangerousKeywords = [
-        "drop",
-        "delete",
-        "update",
-        "insert",
-        "alter",
-        "create",
-        "truncate",
-        "replace",
-        "pragma",
-      ];
-
-      for (const keyword of dangerousKeywords) {
-        if (queryLower.startsWith(keyword)) {
-          return new Response(
-            JSON.stringify({
-              error: `${keyword.toUpperCase()} operations are not allowed. Only SELECT queries permitted.`,
-            }),
-            {
-              status: 400,
-              headers: { "Content-Type": "application/json" },
-            },
-          );
-        }
+      // Validate SQL query using centralized validator
+      const validation = SqlValidator.validate(query);
+      if (!validation.isValid) {
+        return new Response(
+          JSON.stringify({ error: validation.error }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
       }
 
       // Execute the query with pagination
@@ -153,9 +138,16 @@ async function executeQueryWithPagination(
     totalRows = allResults.length;
   }
 
-  // Execute the paginated query
+  // Execute the paginated query  
   const paginatedQuery = `${query} LIMIT ${pageSize} OFFSET ${offset}`;
+  console.log("=== Query Debug ===");
+  console.log("Original query:", query);
+  console.log("Paginated query:", paginatedQuery);
+  console.log("Page:", page, "PageSize:", pageSize, "Offset:", offset);
+  
   const rows = dbManager.db.prepare(paginatedQuery).all();
+  console.log("Returned rows:", rows.length);
+  console.log("Total rows from count:", totalRows);
 
   // Extract column names from the first row (if any)
   const columns = rows.length > 0 ? Object.keys(rows[0]) : [];
