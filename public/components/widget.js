@@ -24,6 +24,7 @@ export class WidgetComponent {
     this.pageSize = 50;
     this.title = title;
     this.widgetType = widgetType;
+    this.chartFunction = "";
 
     this.createElement();
   }
@@ -66,6 +67,7 @@ export class WidgetComponent {
                 <label for="widget-type-${this.id}">Widget Type:</label>
                 <select id="widget-type-${this.id}" class="widget-type-select">
                   <option value="data-table" ${this.widgetType === "data-table" ? "selected" : ""}>Data Table</option>
+                  <option value="graph" ${this.widgetType === "graph" ? "selected" : ""}>Graph</option>
                 </select>
               </div>
               <div class="form-group">
@@ -477,6 +479,7 @@ export class WidgetComponent {
       pageSize: this.pageSize,
       title: this.title,
       widgetType: this.widgetType,
+      chartFunction: this.chartFunction,
     };
   }
 
@@ -495,6 +498,7 @@ export class WidgetComponent {
     widget.results = data.results || null;
     widget.currentPage = data.currentPage || 1;
     widget.pageSize = data.pageSize || 50;
+    widget.chartFunction = data.chartFunction || "";
 
     // Update the textarea with saved query
     const textarea = widget.element.querySelector(".query-editor");

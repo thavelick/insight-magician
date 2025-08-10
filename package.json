@@ -18,5 +18,8 @@
     "@biomejs/biome": "^1.9.4",
     "@playwright/test": "^1.54.2"
   },
-  "trustedDependencies": ["@biomejs/biome"]
+  "trustedDependencies": ["@biomejs/biome"],
+  "dependencies": {
+    "d3": "^7.9.0"
+  }
 }
