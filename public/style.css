@@ -54,11 +54,11 @@ body.schema-open {
     justify-content: space-between;
     align-items: center;
   }
-  
+
   .app-header h1 {
     text-align: left;
   }
-  
+
   .main-buttons {
     justify-content: flex-end;
   }
@@ -188,7 +188,7 @@ button:hover {
   .main-buttons {
     width: 100%;
   }
-  
+
   .main-buttons button {
     flex: 1;
     min-width: auto;
@@ -766,7 +766,6 @@ button:hover {
     grid-auto-rows: 180px; /* Smaller height on mobile */
   }
 }
-
 
 /* Close Upload Button */
 .close-upload {

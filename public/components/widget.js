@@ -528,24 +528,24 @@ export class WidgetComponent {
    */
   showSizeFeedback(sizeText) {
     // Remove any existing feedback
-    const existingFeedback = this.element.querySelector('.size-feedback');
+    const existingFeedback = this.element.querySelector(".size-feedback");
     if (existingFeedback) {
       existingFeedback.remove();
     }
 
     // Create new feedback element
-    const feedback = document.createElement('div');
-    feedback.className = 'size-feedback';
+    const feedback = document.createElement("div");
+    feedback.className = "size-feedback";
     feedback.textContent = sizeText;
-    
+
     // Add to the widget (positioned relative to widget center)
-    this.element.style.position = 'relative';
+    this.element.style.position = "relative";
     this.element.appendChild(feedback);
-    
+
     // Trigger animation by adding the animate class
     requestAnimationFrame(() => {
-      feedback.classList.add('animate');
-      
+      feedback.classList.add("animate");
+
       // Clean up after animation completes
       setTimeout(() => {
         if (feedback.parentNode) {

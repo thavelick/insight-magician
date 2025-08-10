@@ -8,7 +8,15 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔍 Insight Magician</h1>
+        <header class="app-header">
+            <h1>🔍 Insight Magician</h1>
+            <div class="main-buttons">
+                <button class="view-schema-btn" id="view-schema" style="display: none;">📐 View Schema</button>
+                <button class="toggle-upload-btn" id="toggle-upload" style="display: none;">📁 Change Database</button>
+                <button class="add-widget-btn" id="add-widget">+ Add Widget</button>
+            </div>
+        </header>
+        
         <div class="upload-area">
             <button class="close-upload" title="Close">✕</button>
             <p>Drop your SQLite database file here</p>
@@ -18,10 +26,6 @@
             <!-- Widgets will be added here -->
         </div>
     </div>
-    
-    <button class="view-schema-btn" id="view-schema" style="display: none;">📐 View Schema</button>
-    <button class="toggle-upload-btn" id="toggle-upload" style="display: none;">📁 Change Database</button>
-    <button class="add-widget-btn" id="add-widget">+ Add Widget</button>
 
     <script type="module" src="/public/app.js"></script>
 </body>
