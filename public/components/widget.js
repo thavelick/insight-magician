@@ -401,6 +401,91 @@ export class WidgetComponent {
     `;
   }
 
+  showGraphLoading() {
+    const widgetContent = this.element.querySelector(
+      ".card-front .widget-content",
+    );
+    widgetContent.innerHTML = `
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Executing chart function...</p>
+      </div>
+    `;
+  }
+
+  showGraphError(error, results) {
+    const widgetContent = this.element.querySelector(
+      ".card-front .widget-content",
+    );
+    
+    const fallbackDisplay = this.createFallbackDisplay(results);
+    
+    widgetContent.innerHTML = `
+      <div class="error-state">
+        <div class="error-header">
+          <h5>⚠️ Chart Error</h5>
+          <p class="error-message">${error.message}</p>
+        </div>
+        
+        <details class="error-details">
+          <summary>Show Technical Details</summary>
+          <div class="error-details-content">
+            <p><strong>Error Type:</strong> ${error.name || 'Error'}</p>
+            ${error.stack ? `<pre>${error.stack}</pre>` : ''}
+          </div>
+        </details>
+        
+        <div class="data-preview-section">
+          <h6>📊 Data Preview</h6>
+          ${fallbackDisplay}
+        </div>
+        
+        <div class="help-section">
+          <p>💡 Tips:</p>
+          <ul>
+            <li>Make sure your function returns an SVG or DOM element</li>
+            <li>Use <code>svg.node()</code> to return from D3 selections</li>
+            <li>Check the browser console for additional details</li>
+            <li>Verify your data has the expected column names</li>
+          </ul>
+        </div>
+      </div>
+    `;
+  }
+
+  
+  createFallbackDisplay(results) {
+    if (!results || !results.rows || results.rows.length === 0) {
+      return '<p class="no-data">No data to display</p>';
+    }
+    
+    // Show a simple preview table with limited rows
+    const maxRows = Math.min(5, results.rows.length);
+    const previewRows = results.rows.slice(0, maxRows);
+    
+    const tableHtml = `
+      <div class="data-preview-container">
+        <table class="data-preview-table">
+          <thead>
+            <tr>
+              ${results.columns.map(col => `<th>${col}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${previewRows.map(row => `
+              <tr>
+                ${row.map(cell => `<td>${cell || ''}</td>`).join('')}
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      ${results.rows.length > maxRows ? `<p class="data-preview-row-count">Showing ${maxRows} of ${results.rows.length} rows</p>` : ''}
+    `;
+    
+    return tableHtml;
+  }
+
   showError(message) {
     // Show error on the current visible side
     if (this.isFlipped) {
@@ -498,45 +583,33 @@ export class WidgetComponent {
       ".card-front .widget-content",
     );
 
-    try {
-      // Transform data from columns/rows format to array of objects
-      const transformedData = this.transformDataForGraph(results);
+    // Show loading state for graph execution
+    this.showGraphLoading();
 
-      // Execute the user's chart function safely
-      const chartElement = this.executeChartFunction(transformedData);
+    // Use setTimeout to yield to browser and show loading state
+    setTimeout(() => {
+      try {
+        // Transform data from columns/rows format to array of objects
+        const transformedData = this.transformDataForGraph(results);
 
-      // Debug: log what we got back from the chart function
-      console.log("Chart element:", chartElement);
-      console.log("Element type:", chartElement.constructor.name);
-      console.log("Element HTML:", chartElement.outerHTML);
+        // Execute the user's chart function safely
+        const chartElement = this.executeChartFunction(transformedData);
 
-      // Clear existing content and add the chart
-      widgetContent.innerHTML = '<div class="chart-container"></div>';
-      const chartContainer = widgetContent.querySelector(".chart-container");
-      chartContainer.appendChild(chartElement);
+        // Clear existing content and add the chart
+        widgetContent.innerHTML = '<div class="chart-container"></div>';
+        const chartContainer = widgetContent.querySelector(".chart-container");
+        chartContainer.appendChild(chartElement);
 
-      // Add results info for graphs too
-      const resultsInfo = document.createElement("div");
-      resultsInfo.className = "results-info";
-      resultsInfo.innerHTML = `<p>Chart showing ${results.rows.length} data points</p>`;
-      widgetContent.appendChild(resultsInfo);
-    } catch (error) {
-      console.error("Chart rendering error:", error);
-      console.error("Error details:", {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-      });
-      widgetContent.innerHTML = `
-        <div class="error-state">
-          <p><strong>Chart Error:</strong> ${error.message}</p>
-          <details style="margin-top: 10px;">
-            <summary>Error Details</summary>
-            <pre style="font-size: 11px; margin-top: 5px; white-space: pre-wrap;">${error.stack || "No stack trace available"}</pre>
-          </details>
-        </div>
-      `;
-    }
+        // Add results info for graphs too
+        const resultsInfo = document.createElement("div");
+        resultsInfo.className = "results-info";
+        resultsInfo.innerHTML = `<p>Chart showing ${results.rows.length} data points</p>`;
+        widgetContent.appendChild(resultsInfo);
+      } catch (error) {
+        console.error("Chart rendering error:", error);
+        this.showGraphError(error, results);
+      }
+    }, 100);
   }
 
   /**
@@ -856,6 +929,22 @@ export class WidgetComponent {
     const trimmedCode = functionCode.trim();
     if (!trimmedCode) {
       return { isValid: false, error: "Chart function cannot be empty" };
+    }
+
+    // Check for dangerous loop constructs that could cause infinite loops
+    const dangerousPatterns = [
+      { pattern: /while\s*\(/, message: "while loops are not allowed due to infinite loop risk" },
+      { pattern: /for\s*\(.*;;.*\)/, message: "infinite for loops (for(;;)) are not allowed" },
+      { pattern: /do\s*\{[\s\S]*\}\s*while\s*\(/, message: "do-while loops are not allowed due to infinite loop risk" }
+    ];
+
+    for (const { pattern, message } of dangerousPatterns) {
+      if (pattern.test(trimmedCode)) {
+        return {
+          isValid: false,
+          error: `Dangerous code detected: ${message}`,
+        };
+      }
     }
 
     try {

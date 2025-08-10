@@ -527,7 +527,6 @@ button:hover {
   font-weight: bold;
   font-family: monospace; /* Ensures consistent character width */
   cursor: pointer;
-  pointer-events: auto; /* Re-enable pointer events for buttons */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -536,6 +535,12 @@ button:hover {
   line-height: 1; /* Prevent text from affecting shape */
   padding: 0; /* Remove any default padding */
   box-sizing: border-box; /* Include border in size calculation */
+}
+
+/* Only enable size button clicks when controls are visible */
+.widget:has(.card-inner.flipped) .size-btn,
+.card-inner.flipped + .visual-size-controls .size-btn {
+  pointer-events: auto;
 }
 
 .size-btn:hover {
@@ -801,7 +806,6 @@ button:hover {
 
 /* States */
 .loading-state,
-.error-state,
 .no-results {
   display: flex;
   flex-direction: column;
@@ -812,13 +816,140 @@ button:hover {
   text-align: center;
 }
 
+.error-state {
+  height: 100%;
+  color: #333;
+  text-align: center;
+  padding: 20px;
+}
+
+.error-state .error-header h5 {
+  margin: 0 0 10px 0;
+  color: #dc3545;
+  font-size: 16px;
+}
+
+.error-state .error-message {
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.error-state .error-details {
+  margin: 15px 0;
+  text-align: left;
+}
+
+.error-state .error-details summary {
+  cursor: pointer;
+  font-weight: bold;
+  color: #333;
+}
+
+.error-details-content {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #333;
+}
+
+.error-details-content p {
+  margin: 0 0 5px 0;
+}
+
+.error-details-content pre {
+  font-size: 11px;
+  margin-top: 5px;
+  white-space: pre-wrap;
+  overflow-x: auto;
+  color: #333;
+}
+
+.data-preview-section {
+  margin: 15px 0;
+  text-align: left;
+}
+
+.data-preview-section h6 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 14px;
+}
+
+.data-preview-container {
+  overflow-x: auto;
+  margin: 10px 0;
+}
+
+.data-preview-table {
+  max-width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 0 auto;
+}
+
+.data-preview-table th {
+  padding: 5px;
+  border: 1px solid #ddd;
+  text-align: left;
+  white-space: nowrap;
+  background: #f0f0f0;
+  color: #333;
+}
+
+.data-preview-table td {
+  padding: 5px;
+  border: 1px solid #ddd;
+  text-align: left;
+  white-space: nowrap;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #333;
+}
+
+.data-preview-row-count {
+  font-size: 11px;
+  margin-top: 5px;
+  color: #666;
+}
+
+.help-section {
+  margin-top: 15px;
+  text-align: left;
+}
+
+.help-section p {
+  margin: 0 0 10px 0;
+  font-weight: bold;
+  color: #333;
+}
+
+.help-section ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.help-section li {
+  margin-bottom: 5px;
+  font-size: 13px;
+  color: #333;
+}
+
+.help-section code {
+  background: #f8f9fa;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #333;
+}
+
 .loading-state {
   gap: 15px;
 }
 
-.error-state {
-  color: #dc3545;
-}
 
 .no-results {
   font-style: italic;
