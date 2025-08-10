@@ -6,12 +6,23 @@
 - DO NOT kill running servers
 - User will handle all server management
 
+## Make Commands
+
+Prefer using make commands when available:
+
+- Use `make format` instead of `bun run format`
+- Use `make lint` instead of `bun run lint` 
+- Use `make check` instead of `bun run check`
+- Use `make test-unit` instead of `bun run test:unit`
+- Use `make test-integration` instead of `bun run test:integration`
+- Use `make test-all` instead of `bun run test:all`
+- Use `make install` instead of `bun install`
+
 ## Bun Usage
 
 Default to using Bun instead of Node.js.
 
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`
-- Use `bun test` instead of `jest` or `vitest`
 - Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
 - Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
 - Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`

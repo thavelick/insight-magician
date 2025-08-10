@@ -1,3 +1,5 @@
+import { humanizeField } from "../../lib/humanizer.js";
+
 export class WidgetComponent {
   constructor(
     id,
@@ -289,7 +291,7 @@ export class WidgetComponent {
       <table class="results-table">
         <thead>
           <tr>
-            ${results.columns.map((col) => `<th>${col}</th>`).join("")}
+            ${results.columns.map((col) => `<th>${humanizeField(col)}</th>`).join("")}
           </tr>
         </thead>
         <tbody>

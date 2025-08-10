@@ -137,14 +137,7 @@ async function executeQueryWithPagination(
 
   // Execute the paginated query
   const paginatedQuery = `${query} LIMIT ${pageSize} OFFSET ${offset}`;
-  console.log("=== Query Debug ===");
-  console.log("Original query:", query);
-  console.log("Paginated query:", paginatedQuery);
-  console.log("Page:", page, "PageSize:", pageSize, "Offset:", offset);
-
   const rows = dbManager.db.prepare(paginatedQuery).all();
-  console.log("Returned rows:", rows.length);
-  console.log("Total rows from count:", totalRows);
 
   // Extract column names from the first row (if any)
   const columns = rows.length > 0 ? Object.keys(rows[0]) : [];
