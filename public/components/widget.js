@@ -417,9 +417,9 @@ export class WidgetComponent {
     const widgetContent = this.element.querySelector(
       ".card-front .widget-content",
     );
-    
+
     const fallbackDisplay = this.createFallbackDisplay(results);
-    
+
     widgetContent.innerHTML = `
       <div class="error-state">
         <div class="error-header">
@@ -430,8 +430,8 @@ export class WidgetComponent {
         <details class="error-details">
           <summary>Show Technical Details</summary>
           <div class="error-details-content">
-            <p><strong>Error Type:</strong> ${error.name || 'Error'}</p>
-            ${error.stack ? `<pre>${error.stack}</pre>` : ''}
+            <p><strong>Error Type:</strong> ${error.name || "Error"}</p>
+            ${error.stack ? `<pre>${error.stack}</pre>` : ""}
           </div>
         </details>
         
@@ -453,36 +453,39 @@ export class WidgetComponent {
     `;
   }
 
-  
   createFallbackDisplay(results) {
     if (!results || !results.rows || results.rows.length === 0) {
       return '<p class="no-data">No data to display</p>';
     }
-    
+
     // Show a simple preview table with limited rows
     const maxRows = Math.min(5, results.rows.length);
     const previewRows = results.rows.slice(0, maxRows);
-    
+
     const tableHtml = `
       <div class="data-preview-container">
         <table class="data-preview-table">
           <thead>
             <tr>
-              ${results.columns.map(col => `<th>${col}</th>`).join('')}
+              ${results.columns.map((col) => `<th>${col}</th>`).join("")}
             </tr>
           </thead>
           <tbody>
-            ${previewRows.map(row => `
+            ${previewRows
+              .map(
+                (row) => `
               <tr>
-                ${row.map(cell => `<td>${cell || ''}</td>`).join('')}
+                ${row.map((cell) => `<td>${cell || ""}</td>`).join("")}
               </tr>
-            `).join('')}
+            `,
+              )
+              .join("")}
           </tbody>
         </table>
       </div>
-      ${results.rows.length > maxRows ? `<p class="data-preview-row-count">Showing ${maxRows} of ${results.rows.length} rows</p>` : ''}
+      ${results.rows.length > maxRows ? `<p class="data-preview-row-count">Showing ${maxRows} of ${results.rows.length} rows</p>` : ""}
     `;
-    
+
     return tableHtml;
   }
 
@@ -933,9 +936,18 @@ export class WidgetComponent {
 
     // Check for dangerous loop constructs that could cause infinite loops
     const dangerousPatterns = [
-      { pattern: /while\s*\(/, message: "while loops are not allowed due to infinite loop risk" },
-      { pattern: /for\s*\(.*;;.*\)/, message: "infinite for loops (for(;;)) are not allowed" },
-      { pattern: /do\s*\{[\s\S]*\}\s*while\s*\(/, message: "do-while loops are not allowed due to infinite loop risk" }
+      {
+        pattern: /while\s*\(/,
+        message: "while loops are not allowed due to infinite loop risk",
+      },
+      {
+        pattern: /for\s*\(.*;;.*\)/,
+        message: "infinite for loops (for(;;)) are not allowed",
+      },
+      {
+        pattern: /do\s*\{[\s\S]*\}\s*while\s*\(/,
+        message: "do-while loops are not allowed due to infinite loop risk",
+      },
     ];
 
     for (const { pattern, message } of dangerousPatterns) {

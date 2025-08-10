@@ -7,9 +7,69 @@ A simple database query dashboard that allows you to upload SQLite databases and
 - **SQLite File Upload**: Drag & drop database file upload with validation
 - **Schema Browser**: View available tables and columns for reference  
 - **Flip Card Widgets**: Each widget has two sides - query editor (back) and results table (front)
+- **Graph Widgets**: Create D3.js visualizations with custom JavaScript functions
 - **Widget Management**: Add new widgets via button in top-right corner
 - **Pagination**: Automatic LIMIT/OFFSET handling with page navigation
 - **Query Persistence**: Remembers pagination state unless query changes
+
+## Graph Widget Examples
+
+Create visualizations by selecting "Graph" widget type and writing JavaScript functions that use D3.js:
+
+### Simple Bar Chart
+
+**SQL Query:**
+```sql
+SELECT category, count FROM sales
+```
+
+**JavaScript Function:**
+```javascript
+function createChart(data, svg, d3, width, height) {
+  svg.selectAll('rect')
+    .data(data)
+    .enter().append('rect')
+    .attr('x', (d, i) => i * 50)
+    .attr('y', d => height - d.count * 5)
+    .attr('width', 40)
+    .attr('height', d => d.count * 5)
+    .attr('fill', 'steelblue');
+    
+  return svg;
+}
+```
+📖 [See detailed bar chart example →](examples/simple-bar-chart.md)
+
+### Simple Pie Chart
+
+**SQL Query:**
+```sql
+SELECT name, value FROM products
+```
+
+**JavaScript Function:**
+```javascript
+function createChart(data, svg, d3, width, height) {
+  const radius = Math.min(width, height) / 2 - 20;
+  const pie = d3.pie().value(d => d.value);
+  const arc = d3.arc().innerRadius(0).outerRadius(radius);
+  
+  svg.append('g')
+    .attr('transform', `translate(${width/2}, ${height/2})`)
+    .selectAll('path')
+    .data(pie(data))
+    .enter().append('path')
+    .attr('d', arc)
+    .attr('fill', (d, i) => d3.schemeCategory10[i]);
+    
+  return svg;
+}
+```
+📖 [See detailed pie chart example →](examples/simple-pie-chart.md)
+
+> **Note**: Your function receives `(data, svg, d3, width, height)` parameters. Data is an array of objects from your SQL query. 
+> 
+> 🗂️ **[Browse all examples →](examples/)** including interactive charts, line charts, and sample database
 
 ## Development Status
 
