@@ -49,21 +49,21 @@ Add dropdown for widget display type:
 - [x] Ensure backward compatibility - handle widgets without these fields gracefully
 
 ### Phase 3: UI Enhancements
-- [ ] Add title input field to widget back panel HTML template
-- [ ] Add widget type dropdown to widget back panel HTML template
-- [ ] Populate widget type dropdown with 'Data Table' option (and setup for future types)
-- [ ] Wire up title input change handler to update widget.title property
-- [ ] Wire up widget type dropdown change handler to update widget.widgetType property
-- [ ] Update back panel to show current title and widgetType values when flipped
-- [ ] Add CSS styling for new form elements (consistent with existing back panel style)
-- [ ] Ensure form elements are accessible (labels, proper focus handling)
+- [x] Add title input field to widget back panel HTML template
+- [x] Add widget type dropdown to widget back panel HTML template
+- [x] Populate widget type dropdown with 'Data Table' option (and setup for future types)
+- [x] Wire up title input change handler to update widget.title property
+- [x] Wire up widget type dropdown change handler to update widget.widgetType property
+- [x] Update back panel to show current title and widgetType values when flipped
+- [x] Add CSS styling for new form elements (consistent with existing back panel style)
+- [x] Ensure form elements are accessible (labels, proper focus handling)
 
 ### Phase 4: Integration & Testing
-- [ ] Apply humanization and custom titles
+- [x] Apply humanization and custom titles
 - [x] Import and use humanizer for table column headers
-- [ ] Display custom widget title in header instead of 'Widget'
-- [ ] Add fallback to humanized query/table name if no custom title
-- [ ] Test with various field naming conventions
+- [x] Display custom widget title in header instead of 'Widget'
+- [x] Add fallback to humanized query/table name if no custom title
+- [x] Test with various field naming conventions
 
 ## Technical Notes
 - Keep humanizer function pure and testable

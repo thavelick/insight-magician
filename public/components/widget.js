@@ -58,6 +58,18 @@ export class WidgetComponent {
               </div>
             </div>
             <div class="widget-content">
+              <div class="widget-settings">
+                <div class="form-group">
+                  <label for="widget-title-${this.id}">Widget Title:</label>
+                  <input type="text" id="widget-title-${this.id}" class="widget-title-input" value="${this.title}" placeholder="Enter widget title (optional)">
+                </div>
+                <div class="form-group">
+                  <label for="widget-type-${this.id}">Widget Type:</label>
+                  <select id="widget-type-${this.id}" class="widget-type-select">
+                    <option value="data-table" ${this.widgetType === "data-table" ? "selected" : ""}>Data Table</option>
+                  </select>
+                </div>
+              </div>
               <textarea class="query-editor" placeholder="Enter your SQL query here...">${this.query}</textarea>
             </div>
           </div>
@@ -81,6 +93,7 @@ export class WidgetComponent {
 
     this.setupEventListeners();
     this.applySize();
+    this.updateWidgetHeader();
   }
 
   setupEventListeners() {
@@ -107,6 +120,25 @@ export class WidgetComponent {
     textarea.addEventListener("input", (e) => {
       this.query = e.target.value;
     });
+
+    // Widget title input change handler
+    const titleInput = this.element.querySelector(".widget-title-input");
+    if (titleInput) {
+      titleInput.addEventListener("input", (e) => {
+        this.title = e.target.value;
+        this.updateWidgetHeader();
+        if (this.onSave) this.onSave();
+      });
+    }
+
+    // Widget type select change handler
+    const typeSelect = this.element.querySelector(".widget-type-select");
+    if (typeSelect) {
+      typeSelect.addEventListener("change", (e) => {
+        this.widgetType = e.target.value;
+        if (this.onSave) this.onSave();
+      });
+    }
 
     // Visual size control listeners
     const widthMinus = this.element.querySelector(".width-minus");
@@ -167,6 +199,19 @@ export class WidgetComponent {
       cardInner.classList.add("flipped");
     } else {
       cardInner.classList.remove("flipped");
+    }
+  }
+
+  updateWidgetHeader() {
+    const frontHeader = this.element.querySelector(
+      ".card-front .widget-header h4",
+    );
+    if (frontHeader) {
+      if (this.title.trim()) {
+        frontHeader.textContent = this.title;
+      } else {
+        frontHeader.textContent = "Query Results";
+      }
     }
   }
 
