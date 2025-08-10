@@ -84,11 +84,11 @@ function createChart(data) {
 - [x] Add CSS styling for code textarea (monospace, proper sizing)
 
 ### Phase 3: Execution Pipeline
-- [ ] Transform SQL result data from columns/rows format to array of objects
-- [ ] Implement safe function execution with timeout
-- [ ] Validate function return value (DOM element or D3 selection)
-- [ ] Add error handling and user feedback
-- [ ] Implement graph rendering in widget front panel
+- [x] Transform SQL result data from columns/rows format to array of objects
+- [x] Implement safe function execution with timeout
+- [x] Validate function return value (DOM element or D3 selection)
+- [x] Add error handling and user feedback
+- [x] Implement graph rendering in widget front panel
 
 ### Phase 4: User Experience
 - [ ] Add helpful error messages for common issues
@@ -238,64 +238,142 @@ GROUP BY cu.Country
 ORDER BY order_count DESC
 ```
 
-### Test Chart Function (Pie Chart)
+### Test Chart Function (Interactive Pie Chart)
 ```javascript
-function createChart(data) {
-  const svg = d3.select(document.createElement('svg'))
-    .attr('viewBox', '0 0 400 300');
-  
-  // Set up dimensions and radius
-  const width = 400;
-  const height = 300;
-  const radius = Math.min(width, height) / 2 - 20;
-  
-  // Create a color scale
-  const color = d3.scaleOrdinal(d3.schemeCategory10);
-  
-  // Create pie layout
+function createChart(data, svg, d3, width, height) {
+  // Take top 6 countries and group the rest as "Others"
+  const topCountries = data.slice(0, 6);
+  const otherCountries = data.slice(6);
+
+  let chartData = [...topCountries];
+
+  if (otherCountries.length > 0) {
+    const othersTotal = otherCountries.reduce((sum, d) => sum + d.order_count, 0);
+    chartData.push({
+      country: 'Others',
+      order_count: othersTotal
+    });
+  }
+
+  const radius = Math.min(width, height) / 2 - 40;
+
+  // Colors with "Others" as gray
+  const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#95A5A6'];
+  const color = d3.scaleOrdinal().range(colors);
+
   const pie = d3.pie()
     .value(d => d.order_count)
-    .sort(null);
-  
-  // Create arc generator
+    .sort(null)
+    .padAngle(0.02);
+
   const arc = d3.arc()
-    .innerRadius(0)
-    .outerRadius(radius);
-  
-  // Create arc generator for labels
-  const labelArc = d3.arc()
-    .outerRadius(radius - 40)
-    .innerRadius(radius - 40);
-  
-  // Create main group and center it
+    .innerRadius(radius * 0.5)
+    .outerRadius(radius)
+    .cornerRadius(2);
+
+  const arcHover = d3.arc()
+    .innerRadius(radius * 0.5)
+    .outerRadius(radius + 6)
+    .cornerRadius(2);
+
+  // Create gradients
+  const defs = svg.append('defs');
+  chartData.forEach((d, i) => {
+    const gradient = defs.append('radialGradient')
+      .attr('id', `gradient-${i}`)
+      .attr('cx', '30%')
+      .attr('cy', '30%');
+    
+    gradient.append('stop')
+      .attr('offset', '0%')
+      .attr('stop-color', d3.color(color(i)).brighter(0.3));
+    
+    gradient.append('stop')
+      .attr('offset', '100%')
+      .attr('stop-color', color(i));
+  });
+
   const g = svg.append('g')
     .attr('transform', `translate(${width/2}, ${height/2})`);
-  
-  // Create pie slices
+
   const arcs = g.selectAll('.arc')
-    .data(pie(data))
+    .data(pie(chartData))
     .enter().append('g')
     .attr('class', 'arc');
-  
-  // Add the paths (pie slices)
+
+  // Pie slices with hover effects
   arcs.append('path')
     .attr('d', arc)
-    .attr('fill', (d, i) => color(i))
+    .attr('fill', (d, i) => `url(#gradient-${i})`)
     .attr('stroke', 'white')
-    .attr('stroke-width', 2);
-  
-  // Add country labels for larger slices
-  arcs.filter(d => d.endAngle - d.startAngle > 0.2)
-    .append('text')
-    .attr('transform', d => `translate(${labelArc.centroid(d)})`)
-    .attr('text-anchor', 'middle')
+    .attr('stroke-width', 2)
+    .style('cursor', 'pointer')
+    .on('mouseover', function(event, d) {
+      d3.select(this)
+        .transition()
+        .duration(150)
+        .attr('d', arcHover);
+        
+      centerText.text(`${d.data.country}: ${d.data.order_count}`);
+    })
+    .on('mouseout', function(event, d) {
+      d3.select(this)
+        .transition()
+        .duration(150)
+        .attr('d', arc);
+        
+      centerText.text('Orders by Country');
+    })
+    .transition()
+    .duration(800)
+    .delay((d, i) => i * 100)
+    .attrTween('d', function(d) {
+      const interpolate = d3.interpolate({startAngle: 0, endAngle: 0}, d);
+      return function(t) { return arc(interpolate(t)); };
+    });
+
+  // Labels for all slices
+  arcs.append('text')
+    .attr('transform', d => {
+      const pos = arc.centroid(d);
+      pos[0] *= 1.8;
+      pos[1] *= 1.8;
+      return `translate(${pos})`;
+    })
+    .attr('text-anchor', d => {
+      const pos = arc.centroid(d);
+      return pos[0] > 0 ? 'start' : 'end';
+    })
     .style('font-size', '12px')
     .style('font-weight', 'bold')
-    .style('fill', 'white')
-    .text(d => d.data.country);
-  
-  return svg.node();
+    .style('fill', '#333')
+    .style('opacity', 0)
+    .text(d => d.data.country)
+    .transition()
+    .duration(500)
+    .delay(1000)
+    .style('opacity', 1);
+
+  // Center text
+  const centerText = g.append('text')
+    .attr('text-anchor', 'middle')
+    .attr('dy', '0.35em')
+    .style('font-size', '14px')
+    .style('font-weight', 'bold')
+    .style('fill', '#333')
+    .text('Orders by Country');
+
+  return svg;
 }
 ```
 
-This example creates a pie chart showing order counts by country from the Northwind sample database. The chart includes colored segments with country labels on larger slices.
+This example creates an interactive donut chart showing order counts by country from the Northwind sample database. Features include:
+
+- **Data grouping**: Shows top 6 countries plus "Others" for better readability
+- **Interactive hover effects**: Slices expand and show details on hover
+- **Gradient fills**: Beautiful radial gradients for each slice
+- **Smooth animations**: Slices animate in sequentially
+- **Responsive design**: Scales with widget size using viewBox
+- **Modern API**: Clean function signature with explicit parameters
+
+The chart function receives `data` (array of objects), `svg` (pre-configured D3 selection), `d3` (D3.js library), `width` and `height` (chart dimensions), and returns the modified svg element.

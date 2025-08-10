@@ -1,4 +1,5 @@
 import { humanizeField } from "../../lib/humanizer.js";
+import * as d3 from "d3";
 
 export class WidgetComponent {
   constructor(
@@ -76,14 +77,25 @@ export class WidgetComponent {
               </div>
               <div class="form-group chart-function-group" style="display: none;">
                 <label for="chart-function-${this.id}">JavaScript Chart Function:</label>
-                <textarea id="chart-function-${this.id}" class="chart-function-editor" placeholder="function createChart(data) {
-  const svg = d3.select(document.createElement('svg'))
-    .attr('viewBox', '0 0 400 300');
-  
-  // Your D3.js code here
-  // data is an array of objects from your SQL query
-  
-  return svg.node();
+                <textarea id="chart-function-${this.id}" class="chart-function-editor" placeholder="function createChart(data, svg, d3, width, height) {
+  // Your function receives:
+  // - data: array of objects from your SQL query
+  // - svg: pre-configured D3 selection with viewBox set
+  // - d3: D3.js library
+  // - width: 400 (chart width in pixels)
+  // - height: 300 (chart height in pixels)
+
+  // Example:
+  const radius = Math.min(width, height) / 2 - 20;
+  const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+  svg.append('circle')
+    .attr('cx', width / 2)
+    .attr('cy', height / 2)
+    .attr('r', radius)
+    .attr('fill', color(0));
+    
+  return svg;
 }">${this.chartFunction}</textarea>
               </div>
             </div>
@@ -437,6 +449,19 @@ export class WidgetComponent {
       return;
     }
 
+    // Handle graph widgets differently
+    if (this.widgetType === "graph") {
+      this.displayGraph(results);
+    } else {
+      this.displayDataTable(results);
+    }
+  }
+
+  displayDataTable(results) {
+    const widgetContent = this.element.querySelector(
+      ".card-front .widget-content",
+    );
+
     const tableHtml = `
       <table class="results-table">
         <thead>
@@ -466,6 +491,148 @@ export class WidgetComponent {
 
     // Set up pagination event listeners
     this.setupPaginationListeners();
+  }
+
+  displayGraph(results) {
+    const widgetContent = this.element.querySelector(
+      ".card-front .widget-content",
+    );
+
+    try {
+      // Transform data from columns/rows format to array of objects
+      const transformedData = this.transformDataForGraph(results);
+
+      // Execute the user's chart function safely
+      const chartElement = this.executeChartFunction(transformedData);
+
+      // Debug: log what we got back from the chart function
+      console.log('Chart element:', chartElement);
+      console.log('Element type:', chartElement.constructor.name);
+      console.log('Element HTML:', chartElement.outerHTML);
+
+      // Clear existing content and add the chart
+      widgetContent.innerHTML = '<div class="chart-container"></div>';
+      const chartContainer = widgetContent.querySelector(".chart-container");
+      chartContainer.appendChild(chartElement);
+
+      // Add results info for graphs too
+      const resultsInfo = document.createElement("div");
+      resultsInfo.className = "results-info";
+      resultsInfo.innerHTML = `<p>Chart showing ${results.rows.length} data points</p>`;
+      widgetContent.appendChild(resultsInfo);
+    } catch (error) {
+      console.error("Chart rendering error:", error);
+      console.error("Error details:", {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      widgetContent.innerHTML = `
+        <div class="error-state">
+          <p><strong>Chart Error:</strong> ${error.message}</p>
+          <details style="margin-top: 10px;">
+            <summary>Error Details</summary>
+            <pre style="font-size: 11px; margin-top: 5px; white-space: pre-wrap;">${error.stack || 'No stack trace available'}</pre>
+          </details>
+        </div>
+      `;
+    }
+  }
+
+  /**
+   * Transform SQL results from columns/rows format to array of objects
+   * @param {object} results - SQL results with columns and rows arrays
+   * @returns {array} Array of objects suitable for D3.js
+   */
+  transformDataForGraph(results) {
+    const { columns, rows } = results;
+
+    return rows.map((row) => {
+      const obj = {};
+      columns.forEach((column, index) => {
+        obj[column] = row[index];
+      });
+      return obj;
+    });
+  }
+
+  /**
+   * Execute the user's chart function safely
+   * @param {array} data - Transformed data array
+   * @returns {HTMLElement} DOM element returned by chart function
+   */
+  executeChartFunction(data) {
+    // Validate that we have a chart function
+    if (!this.chartFunction || !this.chartFunction.trim()) {
+      throw new Error("No chart function defined");
+    }
+
+    // Set up chart dimensions and create pre-configured SVG
+    const width = 400;
+    const height = 300;
+    
+    // Create properly namespaced SVG with D3 (responsive sizing via CSS)
+    const svg = d3.select(document.createElementNS("http://www.w3.org/2000/svg", "svg"))
+      .attr('viewBox', `0 0 ${width} ${height}`);
+
+    // Create the function from the user's code
+    let userFunction;
+    try {
+      userFunction = new Function(
+        "data", 
+        "svg",
+        "d3",
+        "width",
+        "height",
+        `
+        // Execute user code - user should define complete function
+        return (${this.chartFunction})(data, svg, d3, width, height);
+      `,
+      );
+    } catch (error) {
+      throw new Error(`Chart function compilation error: ${error.message}`);
+    }
+
+    // Execute the function with basic error handling
+    let result;
+    try {
+      result = userFunction(data, svg, d3, width, height);
+    } catch (error) {
+      throw new Error(`Chart function execution error: ${error.message}`);
+    }
+
+    // Validate the return value
+    if (!this.isValidChartElement(result)) {
+      throw new Error(
+        "Chart function must return a DOM element or D3 selection",
+      );
+    }
+
+    // Handle D3 selection vs DOM element
+    if (result && typeof result.node === "function") {
+      return result.node(); // D3 selection
+    }
+    return result; // DOM element
+  }
+
+  /**
+   * Validate that the chart function returned a valid DOM element
+   * @param {any} element - Return value from chart function
+   * @returns {boolean} True if valid DOM element or D3 selection
+   */
+  isValidChartElement(element) {
+    // Check if it's a DOM element
+    if (element instanceof HTMLElement || element instanceof SVGElement) {
+      return true;
+    }
+
+    // Check if it's a D3 selection with a node() method
+    if (element && typeof element.node === "function") {
+      const node = element.node();
+      return node instanceof HTMLElement || node instanceof SVGElement;
+    }
+
+    return false;
   }
 
   createPaginationControls(results) {
