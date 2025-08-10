@@ -499,7 +499,6 @@ button:hover {
 
 /* Widget Content */
 .widget-content {
-  padding: 20px;
   overflow: auto;
 }
 
@@ -541,6 +540,7 @@ button:hover {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
+  margin: 20px;
 }
 
 .results-table th,
@@ -554,6 +554,13 @@ button:hover {
   background: #f8f9fa;
   font-weight: 600;
   color: #333;
+}
+
+/* Only apply sticky positioning when card is NOT flipped */
+.card-inner:not(.flipped) .results-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .results-table tr:hover {
