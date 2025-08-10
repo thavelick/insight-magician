@@ -605,9 +605,8 @@ button:hover {
 }
 
 /* Widget Settings */
-.widget-settings {
+.card-back .widget-content {
   padding: 15px;
-  border-bottom: 1px solid #eee;
   background: #f8f9fa;
 }
 
@@ -628,7 +627,8 @@ button:hover {
 }
 
 .widget-title-input,
-.widget-type-select {
+.widget-type-select,
+.query-editor {
   width: 100%;
   padding: 8px 12px;
   border: 1px solid #ddd;
@@ -636,10 +636,12 @@ button:hover {
   font-size: 14px;
   background: white;
   transition: border-color 0.2s;
+  box-sizing: border-box;
 }
 
 .widget-title-input:focus,
-.widget-type-select:focus {
+.widget-type-select:focus,
+.query-editor:focus {
   outline: none;
   border-color: #007bff;
 }
@@ -650,22 +652,11 @@ button:hover {
 
 /* Query Editor */
 .query-editor {
-  width: 100%;
-  height: calc(100% - 100px); /* Adjust height to account for settings panel */
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 15px 40px 40px 15px; /* Extra padding: right 40px, bottom 40px */
+  min-height: 200px;
+  padding: 12px;
   font-family: "Courier New", monospace;
-  font-size: 14px;
-  resize: none;
-  outline: none;
+  resize: vertical;
   background: #f8f9fa;
-  box-sizing: border-box;
-}
-
-.query-editor:focus {
-  border-color: #007bff;
-  background: white;
 }
 
 /* Results */

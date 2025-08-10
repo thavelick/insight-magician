@@ -51,26 +51,27 @@ export class WidgetComponent {
           <!-- Back of card (query editor) -->
           <div class="card-back">
             <div class="widget-header">
-              <h4>SQL Query Editor</h4>
+              <h4 class="back-panel-title">Widget Settings</h4>
               <div class="widget-controls">
                 <button class="run-view-btn" title="Run Query & View Results">▶️ Run & View</button>
                 <button class="delete-btn" title="Delete Widget">🗑️</button>
               </div>
             </div>
             <div class="widget-content">
-              <div class="widget-settings">
-                <div class="form-group">
-                  <label for="widget-title-${this.id}">Widget Title:</label>
-                  <input type="text" id="widget-title-${this.id}" class="widget-title-input" value="${this.title}" placeholder="Enter widget title (optional)">
-                </div>
-                <div class="form-group">
-                  <label for="widget-type-${this.id}">Widget Type:</label>
-                  <select id="widget-type-${this.id}" class="widget-type-select">
-                    <option value="data-table" ${this.widgetType === "data-table" ? "selected" : ""}>Data Table</option>
-                  </select>
-                </div>
+              <div class="form-group">
+                <label for="widget-title-${this.id}">Widget Title:</label>
+                <input type="text" id="widget-title-${this.id}" class="widget-title-input" value="${this.title}" placeholder="Enter widget title (optional)">
               </div>
-              <textarea class="query-editor" placeholder="Enter your SQL query here...">${this.query}</textarea>
+              <div class="form-group">
+                <label for="widget-type-${this.id}">Widget Type:</label>
+                <select id="widget-type-${this.id}" class="widget-type-select">
+                  <option value="data-table" ${this.widgetType === "data-table" ? "selected" : ""}>Data Table</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="query-editor-${this.id}">SQL Query:</label>
+                <textarea id="query-editor-${this.id}" class="query-editor" placeholder="Enter your SQL query here...">${this.query}</textarea>
+              </div>
             </div>
           </div>
         </div>
@@ -203,6 +204,7 @@ export class WidgetComponent {
   }
 
   updateWidgetHeader() {
+    // Update front panel header
     const frontHeader = this.element.querySelector(
       ".card-front .widget-header h4",
     );
@@ -211,6 +213,18 @@ export class WidgetComponent {
         frontHeader.textContent = this.title;
       } else {
         frontHeader.textContent = "Query Results";
+      }
+    }
+
+    // Update back panel header
+    const backHeader = this.element.querySelector(
+      ".card-back .back-panel-title",
+    );
+    if (backHeader) {
+      if (this.title.trim()) {
+        backHeader.textContent = `${this.title} Widget Settings`;
+      } else {
+        backHeader.textContent = "Widget Settings";
       }
     }
   }
