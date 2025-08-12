@@ -2,7 +2,6 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/integration",
-  workers: 1, // Run tests sequentially to avoid database locking issues
   use: {
     baseURL: "http://localhost:3001",
   },

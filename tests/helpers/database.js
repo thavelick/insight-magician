@@ -19,7 +19,7 @@ export async function createDatabaseFromFixture(fixtureName, outputPath) {
 
   // Remove existing database file if it exists
   await cleanupDatabase(outputPath);
-  
+
   await new Promise((resolve, reject) => {
     const sqlite3 = spawn("sqlite3", [outputPath, `.read ${sqlFixturePath}`]);
     sqlite3.on("close", (code) => {
@@ -30,12 +30,19 @@ export async function createDatabaseFromFixture(fixtureName, outputPath) {
 }
 
 /**
- * Helper to create a temporary database path for tests
+ * Helper to create a temporary database path for tests with unique naming
  * @param {string} fixtureName - Name of the fixture (e.g., "basic", "empty")
- * @returns {string} Full path to temporary database file
+ * @returns {string} Full path to temporary database file with unique name
  */
 export function getTempDatabasePath(fixtureName) {
-  return join(process.cwd(), "tests", "fixtures", `test-${fixtureName}.db`);
+  const timestamp = Date.now();
+  const random = Math.floor(Math.random() * 10000);
+  return join(
+    process.cwd(),
+    "tests",
+    "fixtures",
+    `test-${fixtureName}_${timestamp}_${random}.db`,
+  );
 }
 
 /**

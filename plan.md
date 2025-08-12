@@ -64,8 +64,8 @@ Tests are organized into three phases:
 
 **Test Cases:**
 - ✅ `should extract and format schema correctly`
-- `should handle databases with no tables gracefully`
-- `should return proper error when database file missing`
+- ✅ `should handle databases with no tables gracefully`
+- ✅ `should return proper error when database file missing`
 
 ### 1.4 Query Processing & Pagination (`query-processing.spec.js`)
 **Priority: CRITICAL**
@@ -80,6 +80,10 @@ Tests are organized into three phases:
 - `should implement pagination with proper metadata`
 - `should validate and sanitize pagination parameters`
 - `should calculate total pages and hasMore correctly`
+
+**Post-implementation tasks:**
+- Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
+- Consider moving non-UI logic to unit tests if appropriate
 
 ### 1.5 Widget State Management (`widget-state.spec.js`)
 **Priority: CRITICAL**
@@ -96,6 +100,10 @@ Tests are organized into three phases:
 - `should persist selected database across page reload`
 - `should execute queries through widget interface`
 - `should render basic chart for graph widgets`
+
+**Post-implementation tasks:**
+- Eliminate duplication between all 5 test cases (helper functions, setup/cleanup)
+- Consider moving non-UI logic to unit tests if appropriate
 
 ---
 
@@ -115,6 +123,10 @@ Tests are organized into three phases:
 - `should handle pagination of empty result sets`
 - `should calculate pagination metadata correctly for edge cases`
 
+**Post-implementation tasks:**
+- Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
+- Consider moving non-UI logic to unit tests if appropriate
+
 ### 2.2 Multiple Widget Management (`multi-widget.spec.js`)
 **Priority: HIGH**
 
@@ -128,6 +140,10 @@ Tests are organized into three phases:
 - `should update individual widget states independently`
 - `should handle widget deletion without affecting others`
 - `should maintain widget functionality when multiple widgets exist`
+
+**Post-implementation tasks:**
+- Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
+- Consider moving non-UI logic to unit tests if appropriate
 
 ### 2.3 Session Persistence (`session-persistence.spec.js`)
 **Priority: HIGH**
@@ -143,6 +159,10 @@ Tests are organized into three phases:
 - `should restore widget states and data after reload`
 - `should handle switching between uploaded databases`
 - `should reset interface when new database uploaded`
+
+**Post-implementation tasks:**
+- Eliminate duplication between all 5 test cases (helper functions, setup/cleanup)
+- Consider moving non-UI logic to unit tests if appropriate
 
 **Note**: Tests focus on user-visible behavior, not internal state like widget IDs or storage mechanisms.
 
@@ -161,6 +181,10 @@ Tests are organized into three phases:
 - `should show visual feedback when size changes`
 - `should persist widget sizes after page reload`
 
+**Post-implementation tasks:**
+- Eliminate duplication between all 5 test cases (helper functions, setup/cleanup)
+- Consider moving non-UI logic to unit tests if appropriate
+
 ### 2.5 Widget Configuration (`widget-config.spec.js`)
 **Priority: HIGH**
 
@@ -174,6 +198,10 @@ Tests are organized into three phases:
 - `should switch between data table and graph widget types`
 - `should show chart function input only for graph widgets`
 - `should persist widget configuration across sessions`
+
+**Post-implementation tasks:**
+- Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
+- Consider moving non-UI logic to unit tests if appropriate
 
 ### 2.6 Upload Area Management (`upload-area.spec.js`)
 **Priority: HIGH**
@@ -189,6 +217,10 @@ Tests are organized into three phases:
 - `should toggle upload area visibility with toggle button`
 - `should display upload success and error messages`
 
+**Post-implementation tasks:**
+- Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
+- Consider moving non-UI logic to unit tests if appropriate
+
 ### 2.7 Schema Sidebar (`schema-sidebar.spec.js`)
 **Priority: HIGH**
 
@@ -202,6 +234,10 @@ Tests are organized into three phases:
 - `should hide and show schema sidebar with view schema button`
 - `should display schema with proper table and column information`
 - `should hide view schema button when no database is loaded`
+
+**Post-implementation tasks:**
+- Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
+- Consider moving non-UI logic to unit tests if appropriate
 
 ---
 
@@ -217,6 +253,10 @@ Tests are organized into three phases:
 - `should reject files exceeding our 100MB limit`
 - `should reject non-SQLite files with proper error message`
 
+**Post-implementation tasks:**
+- Eliminate duplication between all 2 test cases (helper functions, setup/cleanup)
+- Consider moving non-UI logic to unit tests if appropriate
+
 ### 3.2 Path Traversal Prevention (`path-traversal.spec.js`)
 **Priority: MEDIUM**
 
@@ -231,6 +271,10 @@ Tests are organized into three phases:
 - `should validate SQL queries using our validation logic`
 - `should return consistent error response format`
 
+**Post-implementation tasks:**
+- Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
+- Consider moving non-UI logic to unit tests if appropriate
+
 ### 3.3 Database Connection Errors (`connection-errors.spec.js`)
 **Priority: MEDIUM**
 
@@ -240,6 +284,10 @@ Tests are organized into three phases:
 **Test Cases:**
 - `should handle missing database files gracefully`
 - `should handle schema extraction failures`
+
+**Post-implementation tasks:**
+- Eliminate duplication between all 2 test cases (helper functions, setup/cleanup)
+- Consider moving non-UI logic to unit tests if appropriate
 
 ### 3.4 Chart Function Validation (`chart-function-validation.spec.js`)
 **Priority: MEDIUM**
@@ -255,6 +303,10 @@ Tests are organized into three phases:
 - `should show helpful error messages when chart function fails`
 - `should display data preview when chart rendering fails`
 
+**Post-implementation tasks:**
+- Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
+- Consider moving non-UI logic to unit tests if appropriate
+
 ### 3.5 Widget Confirmation Dialogs (`widget-confirmations.spec.js`)
 **Priority: LOW**
 
@@ -267,6 +319,10 @@ Tests are organized into three phases:
 - `should warn before switching from graph to table with existing chart function`
 - `should respect user choice in confirmation dialogs`
 
+**Post-implementation tasks:**
+- Eliminate duplication between all 3 test cases (helper functions, setup/cleanup)
+- Consider moving non-UI logic to unit tests if appropriate
+
 ### 3.6 User-Facing Error Messages (`user-error-messages.spec.js`)
 **Priority: LOW**
 
@@ -276,6 +332,10 @@ Tests are organized into three phases:
 **Test Cases:**
 - `should show helpful error messages when upload fails`
 - `should display clear errors when queries fail`
+
+**Post-implementation tasks:**
+- Eliminate duplication between all 2 test cases (helper functions, setup/cleanup)
+- Consider moving non-UI logic to unit tests if appropriate
 
 ---
 

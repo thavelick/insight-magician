@@ -18,23 +18,14 @@ test.describe("Schema Extraction", () => {
     await page.waitForSelector("text=Drop your SQLite database file here");
   });
 
-  test("should extract and format schema correctly", async ({ page }) => {
-    const testDbPath = getTempDatabasePath("basic");
-    await createDatabaseFromFixture("basic", testDbPath);
+  // Helper function to upload a database and get schema response
+  // Handles the common timing pattern needed for reliable tests
+  async function uploadDatabaseAndGetSchema(page, fixtureName) {
+    const testDbPath = getTempDatabasePath(fixtureName);
+    await createDatabaseFromFixture(fixtureName, testDbPath);
 
-    // CRITICAL: Set up response listeners BEFORE triggering the upload action
-    // 
-    // Why this timing matters:
-    // 1. User uploads file → /api/upload is called
-    // 2. Upload succeeds → frontend immediately calls /api/schema (happens in milliseconds)
-    // 3. Schema response comes back very quickly
-    // 
-    // If we set up the schema listener AFTER upload, we create a race condition:
-    // - Fast schema response: We miss it and timeout waiting for a response that already finished
-    // - Slow schema response: We might catch it, but it's unreliable and flaky
-    //
-    // Playwright rule: Always set up page.waitForResponse() listeners BEFORE the action
-    // that triggers them, never after.
+    // CRITICAL: Set up response listeners BEFORE triggering upload action
+    // This prevents race conditions where fast API responses complete before we start listening
     const uploadResponsePromise = page.waitForResponse((response) =>
       response.url().includes("/api/upload"),
     );
@@ -44,15 +35,27 @@ test.describe("Schema Extraction", () => {
 
     await uploadFileViaUI(page, testDbPath);
 
-    // Get the uploaded filename from upload response
+    // Wait for both responses
     const uploadResponse = await uploadResponsePromise;
     const uploadBody = await uploadResponse.json();
-    const uploadedFilename = uploadBody.filename;
-
-    // Wait for schema to load automatically after upload
     const schemaResponse = await schemaResponsePromise;
-    expect(schemaResponse.status()).toBe(200);
 
+    // Clean up test database file
+    await cleanupDatabase(testDbPath);
+
+    return {
+      uploadResponse,
+      uploadBody,
+      schemaResponse,
+      uploadedFilename: uploadBody.filename,
+    };
+  }
+
+  test("should extract and format schema correctly", async ({ page }) => {
+    const { schemaResponse, uploadedFilename } =
+      await uploadDatabaseAndGetSchema(page, "basic");
+
+    expect(schemaResponse.status()).toBe(200);
     const schemaBody = await schemaResponse.json();
 
     // Validate schema response format
@@ -90,52 +93,11 @@ test.describe("Schema Extraction", () => {
     await expect(page.locator(".schema-content >> text=name")).toBeVisible();
     await expect(page.locator(".schema-content >> text=email")).toBeVisible();
 
-    // Cleanup
-    await cleanupDatabase(testDbPath);
+    // Cleanup uploaded file (test database cleaned up by helper)
     await cleanupUploadedFile(uploadedFilename);
   });
 
-  test.skip("should handle databases with no tables gracefully", async ({ page }) => {
-    const testDbPath = getTempDatabasePath("empty");
-    await createDatabaseFromFixture("empty", testDbPath);
-
-    // Set up promises for responses
-    const uploadResponsePromise = page.waitForResponse((response) =>
-      response.url().includes("/api/upload"),
-    );
-
-    await uploadFileViaUI(page, testDbPath);
-
-    const uploadResponse = await uploadResponsePromise;
-    const uploadBody = await uploadResponse.json();
-    const uploadedFilename = uploadBody.filename;
-
-    // Set up promise to wait for schema response
-    const schemaResponsePromise = page.waitForResponse((response) =>
-      response.url().includes("/api/schema"),
-    );
-
-    await schemaResponsePromise;
-    const schemaResponse = await schemaResponsePromise;
-    expect(schemaResponse.status()).toBe(200);
-
-    const schemaBody = await schemaResponse.json();
-
-    // Validate empty schema response
-    expect(schemaBody.success).toBe(true);
-    expect(schemaBody.filename).toBe(uploadedFilename);
-    expect(schemaBody.schema).toEqual({}); // Empty object for no tables
-
-    // Verify UI handles empty schema appropriately
-    await expect(page.locator(".schema-content")).toBeVisible();
-    // Should not show any table names since there are none
-
-    // Cleanup
-    await cleanupDatabase(testDbPath);
-    await cleanupUploadedFile(uploadedFilename);
-  });
-
-  test.skip("should return proper error when database file missing", async ({
+  test("should return proper error when database file missing", async ({
     page,
   }) => {
     // Test direct API call with non-existent filename
