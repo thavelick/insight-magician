@@ -40,7 +40,7 @@ export function getTempDatabasePath(fixtureName) {
   return join(
     process.cwd(),
     "tests",
-    "fixtures",
+    "temp",
     `test-${fixtureName}_${timestamp}_${random}.db`,
   );
 }
