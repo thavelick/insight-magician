@@ -139,3 +139,8 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 - **Database cleanup**: Tests create temporary databases in `tests/fixtures/test-*.db` - cleanup happens automatically between tests
 
 - never run `npx playwright`. Either run `make test-integration` or `playwright test`
+- **Focusing on specific tests**: Use `test.only()` or `test.skip()` to focus on individual tests rather than CLI grep options
+- **AVOID `page.waitForTimeout()`**: This is an antipattern that creates flaky, slow tests
+  - ❌ Wrong: `await page.waitForTimeout(500)` - arbitrary delays
+  - ✅ Correct: `await expect(page.locator('.element')).toBeVisible()` - wait for actual conditions
+  - If you must use waitForTimeout to get a test passing, immediately ask for help to find the proper solution
