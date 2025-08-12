@@ -1,0 +1,1 @@
+-- Empty SQL file for creating SQLite database with no tables

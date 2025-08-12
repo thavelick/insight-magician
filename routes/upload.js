@@ -1,9 +1,9 @@
 import { unlink } from "node:fs/promises";
 import { join } from "node:path";
+import { MAX_FILE_SIZE } from "../lib/constants.js";
 import { validateSqliteFile } from "../lib/database.js";
 
 const UPLOADS_DIR = "./uploads";
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
 export async function handleUpload(request) {
   try {
@@ -17,7 +17,7 @@ export async function handleUpload(request) {
       });
     }
 
-    // Check file size
+    // Check file size BEFORE reading the file
     if (file.size > MAX_FILE_SIZE) {
       return new Response(
         JSON.stringify({ error: "File too large. Maximum size is 100MB" }),
@@ -25,7 +25,7 @@ export async function handleUpload(request) {
       );
     }
 
-    // Read file buffer
+    // Read file buffer only after size check passes
     const buffer = Buffer.from(await file.arrayBuffer());
 
     // Validate SQLite format

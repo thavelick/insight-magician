@@ -1,3 +1,5 @@
+import { MAX_FILE_SIZE } from "../../lib/constants.js";
+
 export class UploadComponent {
   constructor(onUploadCallback, onCloseCallback) {
     this.onUpload = onUploadCallback;
@@ -56,6 +58,12 @@ export class UploadComponent {
   }
 
   async uploadFile(file) {
+    // Check file size before uploading
+    if (file.size > MAX_FILE_SIZE) {
+      this.showError("File too large. Maximum size is 100MB");
+      return;
+    }
+
     this.showLoading();
 
     const formData = new FormData();
