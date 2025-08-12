@@ -41,7 +41,7 @@ test.describe("File Upload & Validation", () => {
     // Validate complete response format
     expect(responseBody.success).toBe(true);
     expect(responseBody.filename).toBeDefined();
-    expect(responseBody.filename).toMatch(/^database_\d+\.db$/); // Should match timestamp pattern
+    expect(responseBody.filename).toMatch(/^database_\d+_\d+\.db$/); // Should match timestamp_random pattern
     expect(responseBody.size).toBeGreaterThan(0); // Should have file size
     expect(responseBody.message).toBe("Database uploaded successfully");
 

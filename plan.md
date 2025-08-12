@@ -63,7 +63,7 @@ Tests are organized into three phases:
 - Test error handling when database is corrupted/inaccessible
 
 **Test Cases:**
-- `should extract and format schema correctly`
+- ✅ `should extract and format schema correctly`
 - `should handle databases with no tables gracefully`
 - `should return proper error when database file missing`
 

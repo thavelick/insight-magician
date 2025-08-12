@@ -17,6 +17,9 @@ export async function createDatabaseFromFixture(fixtureName, outputPath) {
     `${fixtureName}.sql`,
   );
 
+  // Remove existing database file if it exists
+  await cleanupDatabase(outputPath);
+  
   await new Promise((resolve, reject) => {
     const sqlite3 = spawn("sqlite3", [outputPath, `.read ${sqlFixturePath}`]);
     sqlite3.on("close", (code) => {

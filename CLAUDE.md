@@ -126,3 +126,16 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 - Keep sample code generic and database-agnostic  
 - User will handle customizing queries for their specific data
 - NEVER commit changes without explicit user permission - always ask first
+
+## Testing Guidelines
+
+### Playwright Integration Tests
+
+- **Run tests sequentially**: Set `workers: 1` in playwright.config.js to avoid database locking issues
+- **Response listener timing**: Always set up `page.waitForResponse()` listeners BEFORE triggering actions that cause responses
+  - ❌ Wrong: Upload file → Set up schema listener → Wait (race condition, timeouts)
+  - ✅ Correct: Set up both listeners → Upload file → Wait for both responses
+  - This prevents race conditions where fast API responses complete before the test starts listening
+- **Database cleanup**: Tests create temporary databases in `tests/fixtures/test-*.db` - cleanup happens automatically between tests
+
+- never run `npx playwright`. Either run `make test-integration` or `playwright test`

@@ -36,9 +36,10 @@ export async function handleUpload(request) {
       );
     }
 
-    // Generate unique filename
+    // Generate unique filename with timestamp and random component
     const timestamp = Date.now();
-    const filename = `database_${timestamp}.db`;
+    const random = Math.floor(Math.random() * 10000);
+    const filename = `database_${timestamp}_${random}.db`;
     const filePath = join(UPLOADS_DIR, filename);
 
     // Save file
