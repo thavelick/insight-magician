@@ -42,11 +42,6 @@ test.describe("File Upload & Validation", () => {
     return { uploadResponse, responseBody, uploadedFilename: responseBody.filename };
   }
 
-  async function testCleanup(uploadedFilename) {
-    if (uploadedFilename) {
-      await cleanupUploadedFile(uploadedFilename);
-    }
-  }
 
   test("should accept valid SQLite files and generate unique filename", async ({
     page,
@@ -71,7 +66,7 @@ test.describe("File Upload & Validation", () => {
     await expect(page.locator("text=users")).toBeVisible();
     await expect(page.locator("#add-widget")).toBeVisible();
 
-    await testCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 
   test("should validate SQLite file format using our validation logic", async ({

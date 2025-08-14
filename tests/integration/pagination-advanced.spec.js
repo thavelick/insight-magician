@@ -1,11 +1,9 @@
 import { expect, test } from "@playwright/test";
 import {
-  cleanupDatabase,
-  cleanupUploadedFile,
-  createDatabaseFromFixture,
-  getTempDatabasePath,
-  uploadFileViaUI,
-} from "../helpers/database.js";
+  setupDatabaseWithUpload,
+  executeQueryAPI,
+} from "../helpers/integration.js";
+import { cleanupUploadedFile } from "../helpers/database.js";
 
 test.describe("Pagination Edge Cases", () => {
   test.beforeEach(async ({ page }) => {
@@ -18,47 +16,9 @@ test.describe("Pagination Edge Cases", () => {
     await page.waitForSelector("text=Drop your SQLite database file here");
   });
 
-  // Helper functions for pagination edge case tests
-
-  async function setupDatabase(page, fixtureName = "basic") {
-    const testDbPath = getTempDatabasePath(fixtureName);
-    await createDatabaseFromFixture(fixtureName, testDbPath);
-
-    const uploadResponsePromise = page.waitForResponse((response) =>
-      response.url().includes("/api/upload"),
-    );
-
-    await uploadFileViaUI(page, testDbPath);
-
-    const uploadResponse = await uploadResponsePromise;
-    const uploadBody = await uploadResponse.json();
-    const uploadedFilename = uploadBody.filename;
-
-    await cleanupDatabase(testDbPath);
-    return { uploadedFilename };
-  }
-
-  async function executeQueryAPI(page, uploadedFilename, query, queryParams = {}) {
-    const defaultParams = {
-      filename: uploadedFilename,
-      query: query,
-      page: 1,
-      pageSize: 50,
-    };
-    
-    return await page.request.post("/api/query", {
-      data: { ...defaultParams, ...queryParams },
-    });
-  }
-
-  async function testCleanup(uploadedFilename) {
-    if (uploadedFilename) {
-      await cleanupUploadedFile(uploadedFilename);
-    }
-  }
 
   test("should handle different page sizes within limits", async ({ page }) => {
-    const { uploadedFilename } = await setupDatabase(page);
+    const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     // Test minimum page size (1)
     const minResponse = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users", { pageSize: 1 });
@@ -72,13 +32,13 @@ test.describe("Pagination Edge Cases", () => {
     expect(maxBody.pageSize).toBe(1000);
     expect(maxBody.rows.length).toBe(10); // All rows from basic.sql
 
-    await testCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 
   test("should fallback to counting all results when COUNT query fails", async ({
     page,
   }) => {
-    const { uploadedFilename } = await setupDatabase(page);
+    const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     // Use a complex query that might fail COUNT(*) wrapping
     const complexQuery = "SELECT DISTINCT name, COUNT(*) as cnt FROM users GROUP BY name";
@@ -89,11 +49,11 @@ test.describe("Pagination Edge Cases", () => {
     expect(body.totalRows).toBeGreaterThan(0);
     expect(body.totalPages).toBeGreaterThan(0);
 
-    await testCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 
   test("should handle pagination of empty result sets", async ({ page }) => {
-    const { uploadedFilename } = await setupDatabase(page);
+    const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     const response = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users WHERE name = 'NonexistentUser'", { pageSize: 10 });
     const body = await response.json();
@@ -104,13 +64,13 @@ test.describe("Pagination Edge Cases", () => {
     expect(body.rows.length).toBe(0);
     expect(body.columns.length).toBe(0); // No column info when no results
 
-    await testCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 
   test("should calculate pagination metadata correctly for edge cases", async ({
     page,
   }) => {
-    const { uploadedFilename } = await setupDatabase(page);
+    const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     // Test requesting page beyond available data
     const beyondResponse = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users", { page: 99, pageSize: 5 });
@@ -127,6 +87,6 @@ test.describe("Pagination Edge Cases", () => {
     expect(exactBody.totalPages).toBe(2);
     expect(exactBody.hasMore).toBe(false); // Last page
 
-    await testCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 });

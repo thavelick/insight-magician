@@ -49,11 +49,6 @@ test.describe("Schema Extraction", () => {
     };
   }
 
-  async function testCleanup(uploadedFilename) {
-    if (uploadedFilename) {
-      await cleanupUploadedFile(uploadedFilename);
-    }
-  }
 
   test("should extract and format schema correctly", async ({ page }) => {
     const { schemaResponse, uploadedFilename } =
@@ -96,7 +91,7 @@ test.describe("Schema Extraction", () => {
     await expect(page.locator(".schema-content >> text=name")).toBeVisible();
     await expect(page.locator(".schema-content >> text=email")).toBeVisible();
 
-    await testCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 
   test("should return proper error when database file missing", async ({

@@ -1,11 +1,8 @@
 import { expect, test } from "@playwright/test";
 import {
-  cleanupDatabase,
-  cleanupUploadedFile,
-  createDatabaseFromFixture,
-  getTempDatabasePath,
-  uploadFileViaUI,
-} from "../helpers/database.js";
+  setupDatabaseWithUpload,
+} from "../helpers/integration.js";
+import { cleanupUploadedFile } from "../helpers/database.js";
 
 test.describe("Widget State Management", () => {
   test.beforeEach(async ({ page }) => {
@@ -18,25 +15,7 @@ test.describe("Widget State Management", () => {
     await page.waitForSelector("text=Drop your SQLite database file here");
   });
 
-// Helper functions shared across all tests
-
-async function setupDatabase(page, fixtureName = "basic") {
-  const testDbPath = getTempDatabasePath(fixtureName);
-  await createDatabaseFromFixture(fixtureName, testDbPath);
-
-  const uploadResponsePromise = page.waitForResponse((response) =>
-    response.url().includes("/api/upload"),
-  );
-
-  await uploadFileViaUI(page, testDbPath);
-
-  const uploadResponse = await uploadResponsePromise;
-  const uploadBody = await uploadResponse.json();
-  const uploadedFilename = uploadBody.filename;
-
-  await cleanupDatabase(testDbPath);
-  return { uploadedFilename };
-}
+// Helper functions specific to widget state tests
 
 async function addWidget(page) {
   await page.click("button:has-text('Add Widget')");
@@ -54,12 +33,8 @@ async function runQueryInWidget(page, query) {
   return await queryResponsePromise;
 }
 
-async function setupTestCleanup(uploadedFilename) {
-  await cleanupUploadedFile(uploadedFilename);
-}
-
   test("should create and delete widgets properly", async ({ page }) => {
-    const { uploadedFilename } = await setupDatabase(page);
+    const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     await expect(page.locator(".widget")).toHaveCount(0);
 
@@ -91,13 +66,13 @@ async function setupTestCleanup(uploadedFilename) {
 
     await expect(page.locator(".upload-area")).toBeVisible();
 
-    await setupTestCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 
   test("should flip between edit and view modes correctly", async ({
     page,
   }) => {
-    const { uploadedFilename } = await setupDatabase(page);
+    const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     // Widgets start in edit mode after creation
     await addWidget(page);
@@ -111,13 +86,13 @@ async function setupTestCleanup(uploadedFilename) {
     await page.click(".widget .edit-btn");
     await expect(page.locator(".widget .query-editor")).toBeVisible();
 
-    await setupTestCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 
   test("should persist selected database across page reload", async ({
     page,
   }) => {
-    const { uploadedFilename } = await setupDatabase(page);
+    const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     await expect(page.locator("button:has-text('View Schema')")).toBeVisible();
 
@@ -127,11 +102,11 @@ async function setupTestCleanup(uploadedFilename) {
     // Database should still be selected (from sessionStorage)
     await expect(page.locator("button:has-text('View Schema')")).toBeVisible();
 
-    await setupTestCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 
   test("should execute queries through widget interface", async ({ page }) => {
-    const { uploadedFilename } = await setupDatabase(page);
+    const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     await addWidget(page);
     const queryResponse = await runQueryInWidget(page, "SELECT name, email FROM users WHERE name LIKE 'A%'");
@@ -146,11 +121,11 @@ async function setupTestCleanup(uploadedFilename) {
     await expect(page.locator(".widget .results-table")).toBeVisible();
     await expect(page.locator("text=Alice Johnson")).toBeVisible();
 
-    await setupTestCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 
   test("should render basic chart for graph widgets", async ({ page }) => {
-    const { uploadedFilename } = await setupDatabase(page);
+    const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     await addWidget(page);
 
@@ -174,6 +149,6 @@ function createChart(data, svg, d3, width, height) {
     await expect(page.locator(".widget .chart-container")).toBeVisible();
     await expect(page.locator(".widget svg")).toBeVisible();
 
-    await setupTestCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 });

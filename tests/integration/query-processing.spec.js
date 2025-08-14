@@ -1,11 +1,9 @@
 import { expect, test } from "@playwright/test";
 import {
-  cleanupDatabase,
-  cleanupUploadedFile,
-  createDatabaseFromFixture,
-  getTempDatabasePath,
-  uploadFileViaUI,
-} from "../helpers/database.js";
+  setupDatabaseWithUpload,
+  executeQueryAPI,
+} from "../helpers/integration.js";
+import { cleanupUploadedFile } from "../helpers/database.js";
 
 test.describe("Query Processing & Pagination", () => {
   test.beforeEach(async ({ page }) => {
@@ -18,50 +16,11 @@ test.describe("Query Processing & Pagination", () => {
     await page.waitForSelector("text=Drop your SQLite database file here");
   });
 
-  // Helper functions for query processing tests
-
-  async function setupDatabaseForQueries(page, fixtureName = "basic") {
-    const testDbPath = getTempDatabasePath(fixtureName);
-    await createDatabaseFromFixture(fixtureName, testDbPath);
-
-    const uploadResponsePromise = page.waitForResponse((response) =>
-      response.url().includes("/api/upload"),
-    );
-
-    await uploadFileViaUI(page, testDbPath);
-
-    const uploadResponse = await uploadResponsePromise;
-    const uploadBody = await uploadResponse.json();
-    const uploadedFilename = uploadBody.filename;
-
-    await cleanupDatabase(testDbPath);
-
-    return { uploadedFilename };
-  }
-
-  async function executeQueryAPI(page, uploadedFilename, query, queryParams = {}) {
-    const defaultParams = {
-      filename: uploadedFilename,
-      query: query,
-      page: 1,
-      pageSize: 50,
-    };
-    
-    return await page.request.post("/api/query", {
-      data: { ...defaultParams, ...queryParams },
-    });
-  }
-
-  async function testCleanup(uploadedFilename) {
-    if (uploadedFilename) {
-      await cleanupUploadedFile(uploadedFilename);
-    }
-  }
 
   test("should execute queries and format results correctly", async ({
     page,
   }) => {
-    const { uploadedFilename } = await setupDatabaseForQueries(page);
+    const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     // Widgets auto-flip to settings form after creation
     await page.click("button:has-text('Add Widget')");
@@ -106,11 +65,11 @@ test.describe("Query Processing & Pagination", () => {
     await expect(page.locator(".widget .results-table")).toBeVisible();
     await expect(page.locator("text=Alice Johnson")).toBeVisible();
 
-    await testCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 
   test("should implement pagination with proper metadata", async ({ page }) => {
-    const { uploadedFilename } = await setupDatabaseForQueries(page);
+    const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     const queryResponse = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users ORDER BY id", { pageSize: 3 });
 
@@ -138,13 +97,13 @@ test.describe("Query Processing & Pagination", () => {
     expect(lastPageBody.hasMore).toBe(false); // Last page
     expect(lastPageBody.rows.length).toBe(1); // Only 1 row on last page
 
-    await testCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 
   test("should validate and sanitize pagination parameters", async ({
     page,
   }) => {
-    const { uploadedFilename } = await setupDatabaseForQueries(page);
+    const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     const negativePageResponse = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users", { page: -5, pageSize: 10 });
     const negativePageBody = await negativePageResponse.json();
@@ -158,13 +117,13 @@ test.describe("Query Processing & Pagination", () => {
     const zeroSizeBody = await zeroSizeResponse.json();
     expect(zeroSizeBody.pageSize).toBe(1); // Clamped to minimum
 
-    await testCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 
   test("should calculate total pages and hasMore correctly", async ({
     page,
   }) => {
-    const { uploadedFilename } = await setupDatabaseForQueries(page);
+    const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     // Test exact division (10 rows, 5 per page = 2 pages)
     const exactResponse = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users", { pageSize: 5 });
@@ -190,6 +149,6 @@ test.describe("Query Processing & Pagination", () => {
     expect(emptyBody.hasMore).toBe(false);
     expect(emptyBody.rows.length).toBe(0);
 
-    await testCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 });

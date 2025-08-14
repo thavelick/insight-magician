@@ -1,11 +1,8 @@
 import { expect, test } from "@playwright/test";
 import {
-  cleanupDatabase,
-  cleanupUploadedFile,
-  createDatabaseFromFixture,
-  getTempDatabasePath,
-  uploadFileViaUI,
-} from "../helpers/database.js";
+  setupDatabaseWithUpload,
+} from "../helpers/integration.js";
+import { cleanupUploadedFile } from "../helpers/database.js";
 
 test.describe("Multiple Widget Management", () => {
   test.beforeEach(async ({ page }) => {
@@ -18,25 +15,7 @@ test.describe("Multiple Widget Management", () => {
     await page.waitForSelector("text=Drop your SQLite database file here");
   });
 
-  // Helper functions for multi-widget tests
-
-  async function setupDatabase(page, fixtureName = "basic") {
-    const testDbPath = getTempDatabasePath(fixtureName);
-    await createDatabaseFromFixture(fixtureName, testDbPath);
-
-    const uploadResponsePromise = page.waitForResponse((response) =>
-      response.url().includes("/api/upload"),
-    );
-
-    await uploadFileViaUI(page, testDbPath);
-
-    const uploadResponse = await uploadResponsePromise;
-    const uploadBody = await uploadResponse.json();
-    const uploadedFilename = uploadBody.filename;
-
-    await cleanupDatabase(testDbPath);
-    return { uploadedFilename };
-  }
+  // Helper functions specific to multi-widget tests
 
   async function addWidgets(page, count) {
     for (let i = 0; i < count; i++) {
@@ -45,14 +24,8 @@ test.describe("Multiple Widget Management", () => {
     await expect(page.locator(".widget")).toHaveCount(count);
   }
 
-  async function testCleanup(uploadedFilename) {
-    if (uploadedFilename) {
-      await cleanupUploadedFile(uploadedFilename);
-    }
-  }
-
   test("should create multiple widgets on dashboard", async ({ page }) => {
-    const { uploadedFilename } = await setupDatabase(page);
+    const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     await addWidgets(page, 3);
 
@@ -60,13 +33,13 @@ test.describe("Multiple Widget Management", () => {
     await expect(page.locator(".widget").nth(1)).toBeVisible();
     await expect(page.locator(".widget").nth(2)).toBeVisible();
 
-    await testCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 
   test("should update individual widget states independently", async ({
     page,
   }) => {
-    const { uploadedFilename } = await setupDatabase(page);
+    const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     await addWidgets(page, 2);
 
@@ -92,13 +65,13 @@ test.describe("Multiple Widget Management", () => {
     expect(title1).toBe("First Widget");
     expect(title2).toBe("Second Widget");
 
-    await testCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 
   test("should handle widget deletion without affecting others", async ({
     page,
   }) => {
-    const { uploadedFilename } = await setupDatabase(page);
+    const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     await addWidgets(page, 3);
 
@@ -114,13 +87,13 @@ test.describe("Multiple Widget Management", () => {
     const remainingTitles = await page.locator(".widget .widget-title-input").allTextContents();
     expect(remainingTitles).toHaveLength(3);
 
-    await testCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 
   test("should maintain widget functionality when multiple widgets exist", async ({
     page,
   }) => {
-    const { uploadedFilename } = await setupDatabase(page);
+    const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     await addWidgets(page, 2);
 
@@ -137,6 +110,6 @@ test.describe("Multiple Widget Management", () => {
     await expect(page.locator(".widget").nth(0).locator(".run-view-btn")).toBeVisible();
     await expect(page.locator(".widget").nth(1).locator(".run-view-btn")).toBeVisible();
 
-    await testCleanup(uploadedFilename);
+    await cleanupUploadedFile(uploadedFilename);
   });
 });

@@ -60,6 +60,7 @@ export async function cleanupDatabase(dbPath) {
  * @returns {Promise<void>}
  */
 export async function cleanupUploadedFile(filename) {
+  if (!filename) return;
   const uploadPath = join(process.cwd(), "uploads", filename);
   await unlink(uploadPath).catch(() => {});
 }
