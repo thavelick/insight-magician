@@ -95,15 +95,15 @@ Tests are organized into three phases:
 - Test basic chart rendering (without testing D3 internals)
 
 **Test Cases:**
-- `should create and delete widgets properly`
-- `should flip between edit and view modes correctly`
-- `should persist selected database across page reload`
-- `should execute queries through widget interface`
-- `should render basic chart for graph widgets`
+- ✅ `should create and delete widgets properly`
+- ✅ `should flip between edit and view modes correctly`
+- ✅ `should persist selected database across page reload`
+- ✅ `should execute queries through widget interface`
+- ✅ `should render basic chart for graph widgets`
 
 **Post-implementation tasks:**
-- Eliminate duplication between all 5 test cases (helper functions, setup/cleanup)
-- Consider moving non-UI logic to unit tests if appropriate
+- ✅ Eliminate duplication between all 5 test cases (helper functions, setup/cleanup)
+- ✅ Consider moving non-UI logic to unit tests if appropriate
 
 ---
 

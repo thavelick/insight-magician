@@ -18,14 +18,14 @@ test.describe("Schema Extraction", () => {
     await page.waitForSelector("text=Drop your SQLite database file here");
   });
 
-  // Helper function to upload a database and get schema response
-  // Handles the common timing pattern needed for reliable tests
+  // Helper functions for schema extraction tests
+  
+  // CRITICAL: Set up response listeners BEFORE triggering upload action
+  // This prevents race conditions where fast API responses complete before we start listening
   async function uploadDatabaseAndGetSchema(page, fixtureName) {
     const testDbPath = getTempDatabasePath(fixtureName);
     await createDatabaseFromFixture(fixtureName, testDbPath);
 
-    // CRITICAL: Set up response listeners BEFORE triggering upload action
-    // This prevents race conditions where fast API responses complete before we start listening
     const uploadResponsePromise = page.waitForResponse((response) =>
       response.url().includes("/api/upload"),
     );
@@ -35,12 +35,10 @@ test.describe("Schema Extraction", () => {
 
     await uploadFileViaUI(page, testDbPath);
 
-    // Wait for both responses
     const uploadResponse = await uploadResponsePromise;
     const uploadBody = await uploadResponse.json();
     const schemaResponse = await schemaResponsePromise;
 
-    // Clean up test database file
     await cleanupDatabase(testDbPath);
 
     return {
@@ -49,6 +47,12 @@ test.describe("Schema Extraction", () => {
       schemaResponse,
       uploadedFilename: uploadBody.filename,
     };
+  }
+
+  async function testCleanup(uploadedFilename) {
+    if (uploadedFilename) {
+      await cleanupUploadedFile(uploadedFilename);
+    }
   }
 
   test("should extract and format schema correctly", async ({ page }) => {
@@ -63,7 +67,6 @@ test.describe("Schema Extraction", () => {
     expect(schemaBody.filename).toBe(uploadedFilename);
     expect(schemaBody.schema).toBeDefined();
 
-    // Validate users table schema structure
     expect(schemaBody.schema.users).toBeDefined();
     const usersTable = schemaBody.schema.users;
 
@@ -93,14 +96,12 @@ test.describe("Schema Extraction", () => {
     await expect(page.locator(".schema-content >> text=name")).toBeVisible();
     await expect(page.locator(".schema-content >> text=email")).toBeVisible();
 
-    // Cleanup uploaded file (test database cleaned up by helper)
-    await cleanupUploadedFile(uploadedFilename);
+    await testCleanup(uploadedFilename);
   });
 
   test("should return proper error when database file missing", async ({
     page,
   }) => {
-    // Test direct API call with non-existent filename
     const response = await page.request.get(
       "/api/schema?filename=nonexistent.db",
     );

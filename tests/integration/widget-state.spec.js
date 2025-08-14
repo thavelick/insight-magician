@@ -18,36 +18,54 @@ test.describe("Widget State Management", () => {
     await page.waitForSelector("text=Drop your SQLite database file here");
   });
 
-  // Helper function to upload database
-  async function setupDatabase(page, fixtureName = "basic") {
-    const testDbPath = getTempDatabasePath(fixtureName);
-    await createDatabaseFromFixture(fixtureName, testDbPath);
+// Helper functions shared across all tests
 
-    const uploadResponsePromise = page.waitForResponse((response) =>
-      response.url().includes("/api/upload"),
-    );
+async function setupDatabase(page, fixtureName = "basic") {
+  const testDbPath = getTempDatabasePath(fixtureName);
+  await createDatabaseFromFixture(fixtureName, testDbPath);
 
-    await uploadFileViaUI(page, testDbPath);
+  const uploadResponsePromise = page.waitForResponse((response) =>
+    response.url().includes("/api/upload"),
+  );
 
-    const uploadResponse = await uploadResponsePromise;
-    const uploadBody = await uploadResponse.json();
-    const uploadedFilename = uploadBody.filename;
+  await uploadFileViaUI(page, testDbPath);
 
-    await cleanupDatabase(testDbPath);
-    return { uploadedFilename };
-  }
+  const uploadResponse = await uploadResponsePromise;
+  const uploadBody = await uploadResponse.json();
+  const uploadedFilename = uploadBody.filename;
+
+  await cleanupDatabase(testDbPath);
+  return { uploadedFilename };
+}
+
+async function addWidget(page) {
+  await page.click("button:has-text('Add Widget')");
+  await expect(page.locator(".widget .query-editor")).toBeVisible();
+}
+
+async function runQueryInWidget(page, query) {
+  await page.fill(".widget .query-editor", query);
+  
+  const queryResponsePromise = page.waitForResponse((response) =>
+    response.url().includes("/api/query"),
+  );
+
+  await page.click(".widget .run-view-btn");
+  return await queryResponsePromise;
+}
+
+async function setupTestCleanup(uploadedFilename) {
+  await cleanupUploadedFile(uploadedFilename);
+}
 
   test("should create and delete widgets properly", async ({ page }) => {
     const { uploadedFilename } = await setupDatabase(page);
 
-    // Initially no widgets
     await expect(page.locator(".widget")).toHaveCount(0);
 
-    // Add first widget
-    await page.click("button:has-text('Add Widget')");
+    await addWidget(page);
     await expect(page.locator(".widget")).toHaveCount(1);
 
-    // Add second widget
     await page.click("button:has-text('Add Widget')");
     await expect(page.locator(".widget")).toHaveCount(2);
 
@@ -55,83 +73,68 @@ test.describe("Widget State Management", () => {
     await page.waitForTimeout(500);
 
     // Set up dialog handler for all deletions
-    page.on('dialog', dialog => dialog.accept());
-    
-    // Delete first widget
-    await page.locator(".widget").nth(0).locator(".card-back .delete-btn").click({ force: true });
+    page.on("dialog", (dialog) => dialog.accept());
+
+    await page
+      .locator(".widget")
+      .nth(0)
+      .locator(".card-back .delete-btn")
+      .click({ force: true });
     await expect(page.locator(".widget")).toHaveCount(1);
 
-    // Delete last widget
-    await page.locator(".widget").nth(0).locator(".card-back .delete-btn").click({ force: true });
+    await page
+      .locator(".widget")
+      .nth(0)
+      .locator(".card-back .delete-btn")
+      .click({ force: true });
     await expect(page.locator(".widget")).toHaveCount(0);
 
-    // Upload area should be visible again (wait for it to appear)
     await expect(page.locator(".upload-area")).toBeVisible();
 
-    await cleanupUploadedFile(uploadedFilename);
+    await setupTestCleanup(uploadedFilename);
   });
 
-  test("should flip between edit and view modes correctly", async ({ page }) => {
+  test("should flip between edit and view modes correctly", async ({
+    page,
+  }) => {
     const { uploadedFilename } = await setupDatabase(page);
 
-    // Add widget (starts in edit mode)
-    await page.click("button:has-text('Add Widget')");
-    await expect(page.locator(".widget .query-editor")).toBeVisible();
+    // Widgets start in edit mode after creation
+    await addWidget(page);
 
-    // Fill in query and set up response listener before clicking
-    await page.fill(".widget .query-editor", "SELECT name, email FROM users WHERE name LIKE 'A%'");
-    
-    const queryResponsePromise = page.waitForResponse((response) =>
-      response.url().includes("/api/query"),
-    );
-
-    await page.click(".widget .run-view-btn");
-    await queryResponsePromise;
+    await runQueryInWidget(page, "SELECT name, email FROM users WHERE name LIKE 'A%'");
 
     // Should now be in view mode showing results
     await expect(page.locator(".widget .results-table")).toBeVisible();
     await expect(page.locator(".widget .edit-btn")).toBeVisible();
 
-    // Click edit to flip back
     await page.click(".widget .edit-btn");
     await expect(page.locator(".widget .query-editor")).toBeVisible();
 
-    await cleanupUploadedFile(uploadedFilename);
+    await setupTestCleanup(uploadedFilename);
   });
 
-  test("should persist selected database across page reload", async ({ page }) => {
+  test("should persist selected database across page reload", async ({
+    page,
+  }) => {
     const { uploadedFilename } = await setupDatabase(page);
 
-    // Verify database is loaded
     await expect(page.locator("button:has-text('View Schema')")).toBeVisible();
 
-    // Reload page
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
 
     // Database should still be selected (from sessionStorage)
     await expect(page.locator("button:has-text('View Schema')")).toBeVisible();
 
-    await cleanupUploadedFile(uploadedFilename);
+    await setupTestCleanup(uploadedFilename);
   });
 
   test("should execute queries through widget interface", async ({ page }) => {
     const { uploadedFilename } = await setupDatabase(page);
 
-    // Add widget
-    await page.click("button:has-text('Add Widget')");
-    await expect(page.locator(".widget .query-editor")).toBeVisible();
-
-    // Enter query
-    await page.fill(".widget .query-editor", "SELECT name, email FROM users WHERE name LIKE 'A%'");
-
-    // Execute query
-    const queryResponsePromise = page.waitForResponse((response) =>
-      response.url().includes("/api/query"),
-    );
-
-    await page.click(".widget .run-view-btn");
-    const queryResponse = await queryResponsePromise;
+    await addWidget(page);
+    const queryResponse = await runQueryInWidget(page, "SELECT name, email FROM users WHERE name LIKE 'A%'");
 
     // Verify query executed successfully
     expect(queryResponse.status()).toBe(200);
@@ -143,23 +146,16 @@ test.describe("Widget State Management", () => {
     await expect(page.locator(".widget .results-table")).toBeVisible();
     await expect(page.locator("text=Alice Johnson")).toBeVisible();
 
-    await cleanupUploadedFile(uploadedFilename);
+    await setupTestCleanup(uploadedFilename);
   });
 
   test("should render basic chart for graph widgets", async ({ page }) => {
     const { uploadedFilename } = await setupDatabase(page);
 
-    // Add widget
-    await page.click("button:has-text('Add Widget')");
-    await expect(page.locator(".widget .query-editor")).toBeVisible();
+    await addWidget(page);
 
-    // Switch to graph widget type
     await page.selectOption(".widget .widget-type-select", "graph");
 
-    // Enter query
-    await page.fill(".widget .query-editor", "SELECT name, id FROM users");
-
-    // Add simple chart function
     const chartFunction = `
 function createChart(data, svg, d3, width, height) {
   svg.append('circle')
@@ -172,18 +168,12 @@ function createChart(data, svg, d3, width, height) {
 
     await page.fill(".widget .chart-function-editor", chartFunction);
 
-    // Execute query - set up listener before clicking
-    const queryResponsePromise = page.waitForResponse((response) =>
-      response.url().includes("/api/query"),
-    );
-
-    await page.click(".widget .run-view-btn");
-    await queryResponsePromise;
+    await runQueryInWidget(page, "SELECT name, id FROM users");
 
     // Verify chart container appears
     await expect(page.locator(".widget .chart-container")).toBeVisible();
     await expect(page.locator(".widget svg")).toBeVisible();
 
-    await cleanupUploadedFile(uploadedFilename);
+    await setupTestCleanup(uploadedFilename);
   });
 });

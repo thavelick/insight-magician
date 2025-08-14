@@ -20,12 +20,14 @@ test.describe("File Upload & Validation", () => {
     await page.waitForSelector("text=Drop your SQLite database file here");
   });
 
-  test("should accept valid SQLite files and generate unique filename", async ({
-    page,
-  }) => {
-    const testDbPath = getTempDatabasePath("basic");
-    await createDatabaseFromFixture("basic", testDbPath);
+  // Helper functions for upload tests
+  async function setupDatabaseForUpload(fixtureName = "basic") {
+    const testDbPath = getTempDatabasePath(fixtureName);
+    await createDatabaseFromFixture(fixtureName, testDbPath);
+    return testDbPath;
+  }
 
+  async function uploadAndValidateResponse(page, testDbPath) {
     // Set up promise to wait for upload response
     const uploadResponsePromise = page.waitForResponse((response) =>
       response.url().includes("/api/upload"),
@@ -33,34 +35,43 @@ test.describe("File Upload & Validation", () => {
 
     await uploadFileViaUI(page, testDbPath);
 
-    // Wait for and validate upload response
     const uploadResponse = await uploadResponsePromise;
-    expect(uploadResponse.status()).toBe(200);
     const responseBody = await uploadResponse.json();
+    
+    await cleanupDatabase(testDbPath);
+    return { uploadResponse, responseBody, uploadedFilename: responseBody.filename };
+  }
+
+  async function testCleanup(uploadedFilename) {
+    if (uploadedFilename) {
+      await cleanupUploadedFile(uploadedFilename);
+    }
+  }
+
+  test("should accept valid SQLite files and generate unique filename", async ({
+    page,
+  }) => {
+    const testDbPath = await setupDatabaseForUpload("basic");
+    const { uploadResponse, responseBody, uploadedFilename } = await uploadAndValidateResponse(page, testDbPath);
+
+    expect(uploadResponse.status()).toBe(200);
 
     // Validate complete response format
     expect(responseBody.success).toBe(true);
     expect(responseBody.filename).toBeDefined();
     expect(responseBody.filename).toMatch(/^database_\d+_\d+\.db$/); // Should match timestamp_random pattern
-    expect(responseBody.size).toBeGreaterThan(0); // Should have file size
+    expect(responseBody.size).toBeGreaterThan(0);
     expect(responseBody.message).toBe("Database uploaded successfully");
-
-    const uploadedFilename = responseBody.filename;
 
     await page.waitForSelector(".upload-success, .schema-content", {
       timeout: 10000,
     });
 
-    const schemaContent = page.locator(".schema-content");
-    await expect(schemaContent).toBeVisible();
+    await expect(page.locator(".schema-content")).toBeVisible();
     await expect(page.locator("text=users")).toBeVisible();
+    await expect(page.locator("#add-widget")).toBeVisible();
 
-    const addWidgetBtn = page.locator("#add-widget");
-    await expect(addWidgetBtn).toBeVisible();
-
-    // Cleanup
-    await cleanupDatabase(testDbPath);
-    await cleanupUploadedFile(uploadedFilename);
+    await testCleanup(uploadedFilename);
   });
 
   test("should validate SQLite file format using our validation logic", async ({
@@ -81,7 +92,6 @@ test.describe("File Upload & Validation", () => {
   });
 
   test("should enforce file size limits correctly", async ({ page }) => {
-    // Create a file that exceeds 100MB limit for testing
     const oversizedFilePath = join(
       process.cwd(),
       "tests",
@@ -111,7 +121,6 @@ test.describe("File Upload & Validation", () => {
       page.locator("text=File too large. Maximum size is 100MB"),
     ).toBeVisible();
 
-    // Cleanup the large test file
     await cleanupDatabase(oversizedFilePath);
   });
 });
