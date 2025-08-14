@@ -185,7 +185,7 @@ Tests are organized into three phases:
 - ✅ Eliminate duplication between all 5 test cases (helper functions, setup/cleanup)
 - ✅ Consider moving non-UI logic to unit tests if appropriate (CSS grid properties are user-visible layout changes)
 
-### 2.5 Widget Configuration (`widget-config.spec.js`)
+### 2.5 Widget Configuration (`widget-config.spec.js`) ✅
 **Priority: HIGH**
 
 - Test widget title editing and display
@@ -194,14 +194,14 @@ Tests are organized into three phases:
 - Test widget settings persistence
 
 **Test Cases:**
-- `should update widget title and display in header`
-- `should switch between data table and graph widget types`
-- `should show chart function input only for graph widgets`
-- `should persist widget configuration across sessions`
+- ✅ `should update widget title and display in header`
+- ✅ `should switch between data table and graph widget types`
+- ✅ `should show chart function input only for graph widgets`
+- ✅ `should persist widget configuration across sessions`
 
 **Post-implementation tasks:**
-- Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
-- Consider moving non-UI logic to unit tests if appropriate
+- ✅ Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
+- ✅ Consider moving non-UI logic to unit tests if appropriate
 
 ### 2.6 Upload Area Management (`upload-area.spec.js`)
 **Priority: HIGH**
