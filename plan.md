@@ -203,7 +203,7 @@ Tests are organized into three phases:
 - ✅ Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
 - ✅ Consider moving non-UI logic to unit tests if appropriate
 
-### 2.6 Upload Area Management (`upload-area.spec.js`)
+### 2.6 Upload Area Management (`upload-area.spec.js`) ✅
 **Priority: HIGH**
 
 - Test upload area hiding when first widget is added
@@ -212,14 +212,14 @@ Tests are organized into three phases:
 - Test upload success/error message display
 
 **Test Cases:**
-- `should hide upload area after adding first widget`
-- `should show upload area again when no widgets remain`
-- `should toggle upload area visibility with toggle button`
-- `should display upload success and error messages`
+- ✅ `should hide upload area after adding first widget`
+- ✅ `should show upload area again when no widgets remain`
+- ✅ `should toggle upload area visibility with toggle button`
+- ✅ `should display upload success and error messages`
 
 **Post-implementation tasks:**
-- Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
-- Consider moving non-UI logic to unit tests if appropriate
+- ✅ Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
+- ✅ Consider moving non-UI logic to unit tests if appropriate
 
 ### 2.7 Schema Sidebar (`schema-sidebar.spec.js`)
 **Priority: HIGH**
