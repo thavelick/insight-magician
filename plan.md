@@ -221,7 +221,7 @@ Tests are organized into three phases:
 - ✅ Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
 - ✅ Consider moving non-UI logic to unit tests if appropriate
 
-### 2.7 Schema Sidebar (`schema-sidebar.spec.js`)
+### 2.7 Schema Sidebar (`schema-sidebar.spec.js`) ✅
 **Priority: HIGH**
 
 - Test schema sidebar show/hide functionality
@@ -230,14 +230,14 @@ Tests are organized into three phases:
 - Test schema content formatting
 
 **Test Cases:**
-- `should show schema sidebar after database upload`
-- `should hide and show schema sidebar with view schema button`
-- `should display schema with proper table and column information`
-- `should hide view schema button when no database is loaded`
+- ✅ `should show schema sidebar after database upload`
+- ✅ `should hide and show schema sidebar with view schema button`
+- ✅ `should display schema with proper table and column information`
+- ✅ `should hide view schema button when no database is loaded`
 
 **Post-implementation tasks:**
-- Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
-- Consider moving non-UI logic to unit tests if appropriate
+- ✅ Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
+- ✅ Consider moving non-UI logic to unit tests if appropriate
 
 ---
 

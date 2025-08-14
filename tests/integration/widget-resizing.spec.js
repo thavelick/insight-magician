@@ -48,32 +48,28 @@ test.describe("Widget Resizing Controls", () => {
     const { uploadedFilename } = await setupDatabaseWithUpload(page);
     await addWidget(page);
 
-    // Default size should be 2x2
     let size = await getWidgetSize(page);
     expect(size.width).toBe(2);
     expect(size.height).toBe(2);
 
-    // Increase width to 3
+    // Test increasing width to maximum
     await clickResizeButton(page, "width-plus");
     size = await getWidgetSize(page);
     expect(size.width).toBe(3);
 
-    // Increase width to 4 (maximum)
     await clickResizeButton(page, "width-plus");
     size = await getWidgetSize(page);
     expect(size.width).toBe(4);
 
-    // Decrease width back to 3
+    // Test decreasing width back down
     await clickResizeButton(page, "width-minus");
     size = await getWidgetSize(page);
     expect(size.width).toBe(3);
 
-    // Decrease width to 2
     await clickResizeButton(page, "width-minus");
     size = await getWidgetSize(page);
     expect(size.width).toBe(2);
 
-    // Decrease width to 1 (minimum)
     await clickResizeButton(page, "width-minus");
     size = await getWidgetSize(page);
     expect(size.width).toBe(1);
@@ -87,32 +83,28 @@ test.describe("Widget Resizing Controls", () => {
     const { uploadedFilename } = await setupDatabaseWithUpload(page);
     await addWidget(page);
 
-    // Default size should be 2x2
     let size = await getWidgetSize(page);
     expect(size.width).toBe(2);
     expect(size.height).toBe(2);
 
-    // Increase height to 3
+    // Test increasing height to maximum
     await clickResizeButton(page, "height-plus");
     size = await getWidgetSize(page);
     expect(size.height).toBe(3);
 
-    // Increase height to 4 (maximum)
     await clickResizeButton(page, "height-plus");
     size = await getWidgetSize(page);
     expect(size.height).toBe(4);
 
-    // Decrease height back to 3
+    // Test decreasing height back down
     await clickResizeButton(page, "height-minus");
     size = await getWidgetSize(page);
     expect(size.height).toBe(3);
 
-    // Decrease height to 2
     await clickResizeButton(page, "height-minus");
     size = await getWidgetSize(page);
     expect(size.height).toBe(2);
 
-    // Decrease height to 1 (minimum)
     await clickResizeButton(page, "height-minus");
     size = await getWidgetSize(page);
     expect(size.height).toBe(1);

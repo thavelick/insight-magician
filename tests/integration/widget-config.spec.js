@@ -48,7 +48,6 @@ test.describe("Widget Configuration", () => {
       "Widget Settings",
     );
 
-    // Set a custom title
     const customTitle = "User Analytics Dashboard";
     await page.fill(".widget .widget-title-input", customTitle);
 
@@ -60,7 +59,7 @@ test.describe("Widget Configuration", () => {
       `${customTitle} Widget Settings`,
     );
 
-    // Clear title to test fallback
+    // Test fallback when title is cleared
     await page.fill(".widget .widget-title-input", "");
     await expect(page.locator(".widget .card-front h4")).toContainText(
       "Query Results",

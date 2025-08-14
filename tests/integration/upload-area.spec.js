@@ -72,7 +72,6 @@ test.describe("Upload Area Management", () => {
     // Upload area should be visible initially
     await verifyUploadAreaState(page, true, false);
 
-    // Add first widget
     await addWidget(page);
 
     // Upload area should be hidden, toggle button should appear
@@ -89,7 +88,6 @@ test.describe("Upload Area Management", () => {
     // Verify widget was added and upload area hidden
     await verifyUploadAreaState(page, false, true);
 
-    // Delete the widget
     await deleteWidget(page);
 
     // Upload area should reappear, toggle button should disappear
