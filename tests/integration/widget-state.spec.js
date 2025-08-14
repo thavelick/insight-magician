@@ -1,8 +1,11 @@
 import { expect, test } from "@playwright/test";
+import { cleanupUploadedFile } from "../helpers/database.js";
 import {
+  addWidget,
+  reloadAndWait,
+  runQueryInWidget,
   setupDatabaseWithUpload,
 } from "../helpers/integration.js";
-import { cleanupUploadedFile } from "../helpers/database.js";
 
 test.describe("Widget State Management", () => {
   test.beforeEach(async ({ page }) => {
@@ -15,23 +18,7 @@ test.describe("Widget State Management", () => {
     await page.waitForSelector("text=Drop your SQLite database file here");
   });
 
-// Helper functions specific to widget state tests
-
-async function addWidget(page) {
-  await page.click("button:has-text('Add Widget')");
-  await expect(page.locator(".widget .query-editor")).toBeVisible();
-}
-
-async function runQueryInWidget(page, query) {
-  await page.fill(".widget .query-editor", query);
-  
-  const queryResponsePromise = page.waitForResponse((response) =>
-    response.url().includes("/api/query"),
-  );
-
-  await page.click(".widget .run-view-btn");
-  return await queryResponsePromise;
-}
+  // Helper functions are now in ../helpers/integration.js
 
   test("should create and delete widgets properly", async ({ page }) => {
     const { uploadedFilename } = await setupDatabaseWithUpload(page);
@@ -77,7 +64,10 @@ async function runQueryInWidget(page, query) {
     // Widgets start in edit mode after creation
     await addWidget(page);
 
-    await runQueryInWidget(page, "SELECT name, email FROM users WHERE name LIKE 'A%'");
+    await runQueryInWidget(
+      page,
+      "SELECT name, email FROM users WHERE name LIKE 'A%'",
+    );
 
     // Should now be in view mode showing results
     await expect(page.locator(".widget .results-table")).toBeVisible();
@@ -96,8 +86,7 @@ async function runQueryInWidget(page, query) {
 
     await expect(page.locator("button:has-text('View Schema')")).toBeVisible();
 
-    await page.reload();
-    await page.waitForLoadState("domcontentloaded");
+    await reloadAndWait(page);
 
     // Database should still be selected (from sessionStorage)
     await expect(page.locator("button:has-text('View Schema')")).toBeVisible();
@@ -109,7 +98,10 @@ async function runQueryInWidget(page, query) {
     const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     await addWidget(page);
-    const queryResponse = await runQueryInWidget(page, "SELECT name, email FROM users WHERE name LIKE 'A%'");
+    const queryResponse = await runQueryInWidget(
+      page,
+      "SELECT name, email FROM users WHERE name LIKE 'A%'",
+    );
 
     // Verify query executed successfully
     expect(queryResponse.status()).toBe(200);

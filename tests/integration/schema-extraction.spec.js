@@ -19,7 +19,7 @@ test.describe("Schema Extraction", () => {
   });
 
   // Helper functions for schema extraction tests
-  
+
   // CRITICAL: Set up response listeners BEFORE triggering upload action
   // This prevents race conditions where fast API responses complete before we start listening
   async function uploadDatabaseAndGetSchema(page, fixtureName) {
@@ -48,7 +48,6 @@ test.describe("Schema Extraction", () => {
       uploadedFilename: uploadBody.filename,
     };
   }
-
 
   test("should extract and format schema correctly", async ({ page }) => {
     const { schemaResponse, uploadedFilename } =

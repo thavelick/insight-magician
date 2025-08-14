@@ -37,17 +37,21 @@ test.describe("File Upload & Validation", () => {
 
     const uploadResponse = await uploadResponsePromise;
     const responseBody = await uploadResponse.json();
-    
-    await cleanupDatabase(testDbPath);
-    return { uploadResponse, responseBody, uploadedFilename: responseBody.filename };
-  }
 
+    await cleanupDatabase(testDbPath);
+    return {
+      uploadResponse,
+      responseBody,
+      uploadedFilename: responseBody.filename,
+    };
+  }
 
   test("should accept valid SQLite files and generate unique filename", async ({
     page,
   }) => {
     const testDbPath = await setupDatabaseForUpload("basic");
-    const { uploadResponse, responseBody, uploadedFilename } = await uploadAndValidateResponse(page, testDbPath);
+    const { uploadResponse, responseBody, uploadedFilename } =
+      await uploadAndValidateResponse(page, testDbPath);
 
     expect(uploadResponse.status()).toBe(200);
 

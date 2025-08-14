@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
-import {
-  setupDatabaseWithUpload,
-  executeQueryAPI,
-} from "../helpers/integration.js";
 import { cleanupUploadedFile } from "../helpers/database.js";
+import {
+  executeQueryAPI,
+  setupDatabaseWithUpload,
+} from "../helpers/integration.js";
 
 test.describe("Query Processing & Pagination", () => {
   test.beforeEach(async ({ page }) => {
@@ -15,7 +15,6 @@ test.describe("Query Processing & Pagination", () => {
     await page.waitForLoadState("domcontentloaded");
     await page.waitForSelector("text=Drop your SQLite database file here");
   });
-
 
   test("should execute queries and format results correctly", async ({
     page,
@@ -29,7 +28,9 @@ test.describe("Query Processing & Pagination", () => {
     // Wait for settings form to appear after auto-flip animation
     await expect(page.locator(".widget .query-editor")).toBeVisible();
 
-    await page.locator(".widget .query-editor").fill("SELECT * FROM users WHERE name LIKE 'A%'");
+    await page
+      .locator(".widget .query-editor")
+      .fill("SELECT * FROM users WHERE name LIKE 'A%'");
 
     // Set up response listener before executing query
     const queryResponsePromise = page.waitForResponse((response) =>
@@ -71,7 +72,12 @@ test.describe("Query Processing & Pagination", () => {
   test("should implement pagination with proper metadata", async ({ page }) => {
     const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
-    const queryResponse = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users ORDER BY id", { pageSize: 3 });
+    const queryResponse = await executeQueryAPI(
+      page,
+      uploadedFilename,
+      "SELECT * FROM users ORDER BY id",
+      { pageSize: 3 },
+    );
 
     expect(queryResponse.status()).toBe(200);
     const queryBody = await queryResponse.json();
@@ -85,13 +91,23 @@ test.describe("Query Processing & Pagination", () => {
     expect(queryBody.hasMore).toBe(true);
     expect(queryBody.rows.length).toBe(3);
 
-    const page2Response = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users ORDER BY id", { page: 2, pageSize: 3 });
+    const page2Response = await executeQueryAPI(
+      page,
+      uploadedFilename,
+      "SELECT * FROM users ORDER BY id",
+      { page: 2, pageSize: 3 },
+    );
     const page2Body = await page2Response.json();
     expect(page2Body.page).toBe(2);
     expect(page2Body.hasMore).toBe(true);
     expect(page2Body.rows.length).toBe(3);
 
-    const lastPageResponse = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users ORDER BY id", { page: 4, pageSize: 3 });
+    const lastPageResponse = await executeQueryAPI(
+      page,
+      uploadedFilename,
+      "SELECT * FROM users ORDER BY id",
+      { page: 4, pageSize: 3 },
+    );
     const lastPageBody = await lastPageResponse.json();
     expect(lastPageBody.page).toBe(4);
     expect(lastPageBody.hasMore).toBe(false); // Last page
@@ -105,15 +121,30 @@ test.describe("Query Processing & Pagination", () => {
   }) => {
     const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
-    const negativePageResponse = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users", { page: -5, pageSize: 10 });
+    const negativePageResponse = await executeQueryAPI(
+      page,
+      uploadedFilename,
+      "SELECT * FROM users",
+      { page: -5, pageSize: 10 },
+    );
     const negativePageBody = await negativePageResponse.json();
     expect(negativePageBody.page).toBe(1); // Clamped to minimum
 
-    const largeSizeResponse = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users", { pageSize: 5000 });
+    const largeSizeResponse = await executeQueryAPI(
+      page,
+      uploadedFilename,
+      "SELECT * FROM users",
+      { pageSize: 5000 },
+    );
     const largeSizeBody = await largeSizeResponse.json();
     expect(largeSizeBody.pageSize).toBe(1000); // Clamped to maximum
 
-    const zeroSizeResponse = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users", { pageSize: 0 });
+    const zeroSizeResponse = await executeQueryAPI(
+      page,
+      uploadedFilename,
+      "SELECT * FROM users",
+      { pageSize: 0 },
+    );
     const zeroSizeBody = await zeroSizeResponse.json();
     expect(zeroSizeBody.pageSize).toBe(1); // Clamped to minimum
 
@@ -126,23 +157,43 @@ test.describe("Query Processing & Pagination", () => {
     const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     // Test exact division (10 rows, 5 per page = 2 pages)
-    const exactResponse = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users", { pageSize: 5 });
+    const exactResponse = await executeQueryAPI(
+      page,
+      uploadedFilename,
+      "SELECT * FROM users",
+      { pageSize: 5 },
+    );
     const exactBody = await exactResponse.json();
     expect(exactBody.totalPages).toBe(2); // 10 / 5 = 2
     expect(exactBody.hasMore).toBe(true); // Page 1 of 2
 
-    const exact2Response = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users", { page: 2, pageSize: 5 });
+    const exact2Response = await executeQueryAPI(
+      page,
+      uploadedFilename,
+      "SELECT * FROM users",
+      { page: 2, pageSize: 5 },
+    );
     const exact2Body = await exact2Response.json();
     expect(exact2Body.hasMore).toBe(false); // Last page
 
     // Test single page (page size larger than total)
-    const singlePageResponse = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users", { pageSize: 20 });
+    const singlePageResponse = await executeQueryAPI(
+      page,
+      uploadedFilename,
+      "SELECT * FROM users",
+      { pageSize: 20 },
+    );
     const singlePageBody = await singlePageResponse.json();
     expect(singlePageBody.totalPages).toBe(1);
     expect(singlePageBody.hasMore).toBe(false);
 
     // Test empty result set
-    const emptyResponse = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users WHERE name = 'NonexistentUser'", { pageSize: 10 });
+    const emptyResponse = await executeQueryAPI(
+      page,
+      uploadedFilename,
+      "SELECT * FROM users WHERE name = 'NonexistentUser'",
+      { pageSize: 10 },
+    );
     const emptyBody = await emptyResponse.json();
     expect(emptyBody.totalRows).toBe(0);
     expect(emptyBody.totalPages).toBe(0);

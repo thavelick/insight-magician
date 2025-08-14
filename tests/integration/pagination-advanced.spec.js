@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
-import {
-  setupDatabaseWithUpload,
-  executeQueryAPI,
-} from "../helpers/integration.js";
 import { cleanupUploadedFile } from "../helpers/database.js";
+import {
+  executeQueryAPI,
+  setupDatabaseWithUpload,
+} from "../helpers/integration.js";
 
 test.describe("Pagination Edge Cases", () => {
   test.beforeEach(async ({ page }) => {
@@ -16,18 +16,27 @@ test.describe("Pagination Edge Cases", () => {
     await page.waitForSelector("text=Drop your SQLite database file here");
   });
 
-
   test("should handle different page sizes within limits", async ({ page }) => {
     const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     // Test minimum page size (1)
-    const minResponse = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users", { pageSize: 1 });
+    const minResponse = await executeQueryAPI(
+      page,
+      uploadedFilename,
+      "SELECT * FROM users",
+      { pageSize: 1 },
+    );
     const minBody = await minResponse.json();
     expect(minBody.pageSize).toBe(1);
     expect(minBody.rows.length).toBe(1);
 
     // Test maximum page size (1000)
-    const maxResponse = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users", { pageSize: 1000 });
+    const maxResponse = await executeQueryAPI(
+      page,
+      uploadedFilename,
+      "SELECT * FROM users",
+      { pageSize: 1000 },
+    );
     const maxBody = await maxResponse.json();
     expect(maxBody.pageSize).toBe(1000);
     expect(maxBody.rows.length).toBe(10); // All rows from basic.sql
@@ -41,9 +50,15 @@ test.describe("Pagination Edge Cases", () => {
     const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     // Use a complex query that might fail COUNT(*) wrapping
-    const complexQuery = "SELECT DISTINCT name, COUNT(*) as cnt FROM users GROUP BY name";
+    const complexQuery =
+      "SELECT DISTINCT name, COUNT(*) as cnt FROM users GROUP BY name";
 
-    const response = await executeQueryAPI(page, uploadedFilename, complexQuery, { pageSize: 5 });
+    const response = await executeQueryAPI(
+      page,
+      uploadedFilename,
+      complexQuery,
+      { pageSize: 5 },
+    );
     const body = await response.json();
     expect(body.success).toBe(true);
     expect(body.totalRows).toBeGreaterThan(0);
@@ -55,7 +70,12 @@ test.describe("Pagination Edge Cases", () => {
   test("should handle pagination of empty result sets", async ({ page }) => {
     const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
-    const response = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users WHERE name = 'NonexistentUser'", { pageSize: 10 });
+    const response = await executeQueryAPI(
+      page,
+      uploadedFilename,
+      "SELECT * FROM users WHERE name = 'NonexistentUser'",
+      { pageSize: 10 },
+    );
     const body = await response.json();
     expect(body.success).toBe(true);
     expect(body.totalRows).toBe(0);
@@ -73,7 +93,12 @@ test.describe("Pagination Edge Cases", () => {
     const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
     // Test requesting page beyond available data
-    const beyondResponse = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users", { page: 99, pageSize: 5 });
+    const beyondResponse = await executeQueryAPI(
+      page,
+      uploadedFilename,
+      "SELECT * FROM users",
+      { page: 99, pageSize: 5 },
+    );
     const beyondBody = await beyondResponse.json();
     expect(beyondBody.success).toBe(true);
     expect(beyondBody.page).toBe(99);
@@ -81,7 +106,12 @@ test.describe("Pagination Edge Cases", () => {
     expect(beyondBody.hasMore).toBe(false);
 
     // Test edge case with exactly divisible pages
-    const exactResponse = await executeQueryAPI(page, uploadedFilename, "SELECT * FROM users", { page: 2, pageSize: 5 }); // 10 total rows / 5 = 2 pages exactly
+    const exactResponse = await executeQueryAPI(
+      page,
+      uploadedFilename,
+      "SELECT * FROM users",
+      { page: 2, pageSize: 5 },
+    ); // 10 total rows / 5 = 2 pages exactly
     const exactBody = await exactResponse.json();
     expect(exactBody.page).toBe(2);
     expect(exactBody.totalPages).toBe(2);
