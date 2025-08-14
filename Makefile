@@ -31,9 +31,14 @@ test-coverage: # Run unit tests with coverage
 	@echo "Running unit tests with coverage.."
 	bun run test:coverage
 
-test-integration: # Run integration tests with Playwright
+test-integration: # Run integration tests with Playwright (use FILE=filename.spec.js to run specific file)
 	@echo "Running integration tests.."
+ifdef FILE
+	@echo "Running specific test file: $(FILE)"
+	bun run playwright test tests/integration/$(FILE)
+else
 	bun run test:integration
+endif
 
 test-all: # Run both unit and integration tests
 	@echo "Running all tests.."
