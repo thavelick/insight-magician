@@ -256,6 +256,7 @@ Tests are organized into three phases:
 **Post-implementation tasks:**
 - Eliminate duplication between all 2 test cases (helper functions, setup/cleanup)
 - Consider moving non-UI logic to unit tests if appropriate
+- Audit comments to remove redundant ones that just repeat code
 
 ### 3.2 Path Traversal Prevention (`path-traversal.spec.js`)
 **Priority: MEDIUM**
@@ -274,6 +275,7 @@ Tests are organized into three phases:
 **Post-implementation tasks:**
 - Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
 - Consider moving non-UI logic to unit tests if appropriate
+- Audit comments to remove redundant ones that just repeat code
 
 ### 3.3 Database Connection Errors (`connection-errors.spec.js`)
 **Priority: MEDIUM**
@@ -288,6 +290,7 @@ Tests are organized into three phases:
 **Post-implementation tasks:**
 - Eliminate duplication between all 2 test cases (helper functions, setup/cleanup)
 - Consider moving non-UI logic to unit tests if appropriate
+- Audit comments to remove redundant ones that just repeat code
 
 ### 3.4 Chart Function Validation (`chart-function-validation.spec.js`)
 **Priority: MEDIUM**
@@ -306,6 +309,7 @@ Tests are organized into three phases:
 **Post-implementation tasks:**
 - Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
 - Consider moving non-UI logic to unit tests if appropriate
+- Audit comments to remove redundant ones that just repeat code
 
 ### 3.5 Widget Confirmation Dialogs (`widget-confirmations.spec.js`)
 **Priority: LOW**
@@ -322,6 +326,7 @@ Tests are organized into three phases:
 **Post-implementation tasks:**
 - Eliminate duplication between all 3 test cases (helper functions, setup/cleanup)
 - Consider moving non-UI logic to unit tests if appropriate
+- Audit comments to remove redundant ones that just repeat code
 
 ### 3.6 User-Facing Error Messages (`user-error-messages.spec.js`)
 **Priority: LOW**
@@ -336,6 +341,7 @@ Tests are organized into three phases:
 **Post-implementation tasks:**
 - Eliminate duplication between all 2 test cases (helper functions, setup/cleanup)
 - Consider moving non-UI logic to unit tests if appropriate
+- Audit comments to remove redundant ones that just repeat code
 
 ---
 

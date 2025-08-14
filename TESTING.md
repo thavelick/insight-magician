@@ -51,5 +51,5 @@ make format && make lint                          # Before commit
 
 ### 5. Follow plan.md
 - Update checkmarks as you complete sections
-- The "Post-implementation tasks" are real - do the duplication audit!
+- The "Post-implementation tasks" are real - do the duplication audit and comment audit!
 - Test your tests: `make test-integration FILE=your-file.spec.js`
