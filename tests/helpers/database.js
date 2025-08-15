@@ -22,9 +22,20 @@ export async function createDatabaseFromFixture(fixtureName, outputPath) {
 
   await new Promise((resolve, reject) => {
     const sqlite3 = spawn("sqlite3", [outputPath, `.read ${sqlFixturePath}`]);
+
+    let stderr = "";
+    sqlite3.stderr.on("data", (data) => {
+      stderr += data.toString();
+    });
+
     sqlite3.on("close", (code) => {
       if (code === 0) resolve();
-      else reject(new Error(`sqlite3 process exited with code ${code}`));
+      else
+        reject(
+          new Error(
+            `sqlite3 process exited with code ${code}. Error: ${stderr}`,
+          ),
+        );
     });
   });
 }
