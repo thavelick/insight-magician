@@ -83,7 +83,6 @@ export async function uploadFileViaUI(page, filePath) {
  * @returns {Promise<void>}
  */
 export async function createCorruptedDatabase(outputPath) {
-  // Create a file that starts with SQLite header but has corrupted content
   const sqliteHeader = Buffer.from("SQLite format 3\0", "utf8");
   const corruptedData = Buffer.from(
     "corrupted data that will break the database",

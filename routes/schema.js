@@ -65,7 +65,6 @@ export async function handleSchema(request) {
           { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
-      // Re-throw other database errors to be handled by outer catch
       throw dbError;
     } finally {
       await dbManager.disconnect();

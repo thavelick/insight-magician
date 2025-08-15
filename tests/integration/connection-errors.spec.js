@@ -18,7 +18,6 @@ test.describe("Database Connection Errors", () => {
       await uploadCorruptedDatabaseAndTestSchemaFailure(page);
 
     try {
-      // Verify UI error handling
       await expect(page.locator(".upload-status.error")).toBeVisible();
       await expect(
         page.locator("text=Failed to load database schema"),
@@ -27,7 +26,6 @@ test.describe("Database Connection Errors", () => {
         page.locator("button:has-text('View Schema')"),
       ).not.toBeVisible();
 
-      // Schema content should not contain actual table data
       const schemaContentText = await page
         .locator(".schema-content")
         .textContent();

@@ -143,7 +143,6 @@ export async function uploadCorruptedDatabaseAndTestSchemaFailure(page) {
   const corruptedDbPath = getTempDatabasePath("corrupted");
   await createCorruptedDatabase(corruptedDbPath);
 
-  // Upload the corrupted file through UI
   const uploadResponsePromise = page.waitForResponse((response) =>
     response.url().includes("/api/upload"),
   );
@@ -155,7 +154,6 @@ export async function uploadCorruptedDatabaseAndTestSchemaFailure(page) {
   const uploadBody = await uploadResponse.json();
   const uploadedFilename = uploadBody.filename;
 
-  // Try to get schema - this should fail gracefully
   const schemaResponse = await page.request.get(
     `/api/schema?filename=${uploadedFilename}`,
   );
