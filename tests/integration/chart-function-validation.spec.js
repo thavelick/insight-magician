@@ -38,7 +38,7 @@ test.describe("Chart Function Validation", () => {
     await expectChartFunctionError(
       page,
       invalidFunction,
-      "JavaScript syntax error",
+      "JavaScript syntax error:",
     );
   });
 
@@ -55,7 +55,7 @@ test.describe("Chart Function Validation", () => {
     await expectChartFunctionError(
       page,
       whileLoopFunction,
-      "while loops are not allowed",
+      "Dangerous code detected: while loops are not allowed due to infinite loop risk",
     );
 
     const forLoopFunction = `function createChart(data, svg, d3, width, height) {
@@ -65,7 +65,7 @@ test.describe("Chart Function Validation", () => {
       return svg;
     }`;
 
-    await expectChartFunctionError(page, forLoopFunction, "infinite for loops");
+    await expectChartFunctionError(page, forLoopFunction, "Dangerous code detected: infinite for loops (for(;;)) are not allowed");
 
     const doWhileFunction = `function createChart(data, svg, d3, width, height) {
       do {
@@ -77,7 +77,7 @@ test.describe("Chart Function Validation", () => {
     await expectChartFunctionError(
       page,
       doWhileFunction,
-      "do-while loops are not allowed",
+      "Dangerous code detected: do-while loops are not allowed due to infinite loop risk",
     );
   });
 

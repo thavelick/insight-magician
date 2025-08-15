@@ -159,14 +159,14 @@ export async function setupGraphWidget(page, fixtureName = "basic") {
  * @returns {Promise<Response>} API response
  */
 export async function runChartFunction(page, chartFunction, query) {
-  await page.fill(".chart-function-editor", chartFunction);
-  await page.fill(".query-editor", query);
+  await page.fill(".widget .chart-function-editor", chartFunction);
+  await page.fill(".widget .query-editor", query);
 
   const queryResponsePromise = page.waitForResponse((response) =>
     response.url().includes("/api/query"),
   );
 
-  await page.click(".run-view-btn");
+  await page.click(".widget .run-view-btn");
   return await queryResponsePromise;
 }
 
@@ -185,13 +185,18 @@ export async function expectChartFunctionError(
   expectedError,
   query = "SELECT 1 as test",
 ) {
-  await page.fill(".chart-function-editor", chartFunction);
-  await page.fill(".query-editor", query);
+  await page.fill(".widget .chart-function-editor", chartFunction);
+  await page.fill(".widget .query-editor", query);
 
-  await page.click(".run-view-btn");
+  // Wait for button to be clickable and stable
+  await expect(page.locator(".widget .run-view-btn")).toBeVisible();
+  await page.waitForTimeout(100); // Small delay to ensure stability
+  
+  await page.click(".widget .run-view-btn", { force: true });
 
+  // Error appears as a paragraph directly in the settings panel
   await expect(
-    page.locator(`.error-message:has-text("${expectedError}")`),
+    page.locator(`.widget p:has-text("Error: ${expectedError}")`),
   ).toBeVisible();
 }
 
