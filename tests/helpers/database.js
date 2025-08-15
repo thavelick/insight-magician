@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
-import { unlink, writeFile } from "node:fs/promises";
+import { mkdirSync } from "node:fs";
+import { unlink } from "node:fs/promises";
 import { join } from "node:path";
 
 /**
@@ -35,14 +36,14 @@ export async function createDatabaseFromFixture(fixtureName, outputPath) {
  * @returns {string} Full path to temporary database file with unique name
  */
 export function getTempDatabasePath(fixtureName) {
+  const tempDir = join(process.cwd(), "tests", "temp");
+
+  // Ensure temp directory exists (synchronously)
+  mkdirSync(tempDir, { recursive: true });
+
   const timestamp = Date.now();
   const random = Math.floor(Math.random() * 10000);
-  return join(
-    process.cwd(),
-    "tests",
-    "temp",
-    `test-${fixtureName}_${timestamp}_${random}.db`,
-  );
+  return join(tempDir, `test-${fixtureName}_${timestamp}_${random}.db`);
 }
 
 /**
@@ -74,20 +75,4 @@ export async function cleanupUploadedFile(filename) {
 export async function uploadFileViaUI(page, filePath) {
   const fileInput = page.locator('input[type="file"]');
   await fileInput.setInputFiles(filePath);
-}
-
-/**
- * Create a corrupted database file that looks like SQLite but is broken
- * @param {string} outputPath - Full path where the corrupted database should be created
- * @returns {Promise<void>}
- */
-export async function createCorruptedDatabase(outputPath) {
-  // Create a file that starts with SQLite header but has corrupted content
-  const sqliteHeader = Buffer.from("SQLite format 3\0", "utf8");
-  const corruptedData = Buffer.from(
-    "corrupted data that will break the database",
-  );
-  const corruptedFile = Buffer.concat([sqliteHeader, corruptedData]);
-
-  await writeFile(outputPath, corruptedFile);
 }
