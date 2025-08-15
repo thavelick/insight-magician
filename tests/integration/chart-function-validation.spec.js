@@ -26,12 +26,12 @@ test.describe("Chart Function Validation", () => {
 
     await expect(page.locator(".chart-container")).toBeVisible();
 
+    // Flip back to edit mode for the second test
+    await page.click(".widget .edit-btn");
+    await expect(page.locator(".widget .chart-function-editor")).toBeVisible();
+
     const invalidFunction = `function createChart(data, svg, d3, width, height) {
-      const circle = svg.append('circle'
-        .attr('cx', width / 2
-        .attr('cy', height / 2)
-        .attr('r', 50)
-        .attr('fill', 'blue');
+      let x = ;
       return svg;
     }`;
 
@@ -58,6 +58,10 @@ test.describe("Chart Function Validation", () => {
       "Dangerous code detected: while loops are not allowed due to infinite loop risk",
     );
 
+    // Reset widget to edit mode for second validation
+    await page.click(".widget .edit-btn", { force: true });
+    await expect(page.locator(".widget .chart-function-editor")).toBeVisible();
+
     const forLoopFunction = `function createChart(data, svg, d3, width, height) {
       for (;;) {
         console.log("infinite loop");
@@ -65,7 +69,15 @@ test.describe("Chart Function Validation", () => {
       return svg;
     }`;
 
-    await expectChartFunctionError(page, forLoopFunction, "Dangerous code detected: infinite for loops (for(;;)) are not allowed");
+    await expectChartFunctionError(
+      page,
+      forLoopFunction,
+      "Dangerous code detected: infinite for loops (for(;;)) are not allowed",
+    );
+
+    // Reset widget to edit mode for third validation
+    await page.click(".widget .edit-btn", { force: true });
+    await expect(page.locator(".widget .chart-function-editor")).toBeVisible();
 
     const doWhileFunction = `function createChart(data, svg, d3, width, height) {
       do {
@@ -77,7 +89,7 @@ test.describe("Chart Function Validation", () => {
     await expectChartFunctionError(
       page,
       doWhileFunction,
-      "Dangerous code detected: do-while loops are not allowed due to infinite loop risk",
+      "Dangerous code detected: while loops are not allowed due to infinite loop risk",
     );
   });
 

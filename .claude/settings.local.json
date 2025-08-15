@@ -1,9 +1,6 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(make test-unit:*)",
-      "Bash(make test-integration:*)"
-    ],
+    "allow": ["Bash(make test-unit:*)", "Bash(make test-integration:*)"],
     "deny": [],
     "ask": []
   }

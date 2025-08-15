@@ -191,13 +191,12 @@ export async function expectChartFunctionError(
   // Wait for button to be clickable and stable
   await expect(page.locator(".widget .run-view-btn")).toBeVisible();
   await page.waitForTimeout(100); // Small delay to ensure stability
-  
+
   await page.click(".widget .run-view-btn", { force: true });
 
-  // Error appears as a paragraph directly in the settings panel
-  await expect(
-    page.locator(`.widget p:has-text("Error: ${expectedError}")`),
-  ).toBeVisible();
+  await page.waitForSelector(`.widget p:has-text("Error: ${expectedError}")`, {
+    timeout: 5000,
+  });
 }
 
 /**
