@@ -288,24 +288,24 @@ Tests are organized into three phases:
 - Consider moving non-UI logic to unit tests if appropriate
 - Audit comments to remove redundant ones that just repeat code
 
-### 3.4 Chart Function Validation (`chart-function-validation.spec.js`)
+### 3.4 Chart Function Validation (`chart-function-validation.spec.js`) ✅
 **Priority: MEDIUM**
 
-- Test chart function syntax validation
-- Test dangerous code pattern detection (infinite loops)
-- Test chart function execution error handling
-- Test chart fallback display when function fails
+- ✅ Test chart function syntax validation
+- ✅ Test dangerous code pattern detection (infinite loops)
+- ✅ Test chart function execution error handling
+- ✅ Test chart fallback display when function fails
 
 **Test Cases:**
-- `should validate JavaScript syntax in chart functions`
-- `should reject dangerous patterns like while loops`
-- `should show helpful error messages when chart function fails`
-- `should display data preview when chart rendering fails`
+- ✅ `should validate JavaScript syntax in chart functions`
+- ✅ `should reject dangerous patterns like while loops`
+- ✅ `should show helpful error messages when chart function fails`
+- ✅ `should display data preview when chart rendering fails`
 
 **Post-implementation tasks:**
-- Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
-- Consider moving non-UI logic to unit tests if appropriate
-- Audit comments to remove redundant ones that just repeat code
+- ✅ Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
+- ✅ Consider moving non-UI logic to unit tests if appropriate
+- ✅ Audit comments to remove redundant ones that just repeat code
 
 ### 3.5 Widget Confirmation Dialogs (`widget-confirmations.spec.js`)
 **Priority: LOW**

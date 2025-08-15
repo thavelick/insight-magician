@@ -130,3 +130,58 @@ export async function openSchemaSidebar(page) {
   await expect(page.locator(".schema-sidebar")).toBeVisible();
   await expect(page.locator(".schema-content >> text=users")).toBeVisible();
 }
+
+/**
+ * Setup a graph widget ready for chart function testing
+ *
+ * @param {object} page - Playwright page object
+ * @param {string} fixtureName - Name of SQL fixture (defaults to "basic")
+ * @returns {Promise<void>}
+ */
+export async function setupGraphWidget(page, fixtureName = "basic") {
+  await page.goto("http://localhost:3000");
+  await setupDatabaseWithUpload(page, fixtureName);
+  await addWidget(page);
+  
+  // Switch to graph widget type to enable chart function
+  await page.selectOption(".widget-type-select", "graph");
+  await expect(page.locator(".chart-function-group")).toBeVisible();
+}
+
+/**
+ * Run a chart function with query and wait for API response
+ *
+ * @param {object} page - Playwright page object
+ * @param {string} chartFunction - JavaScript chart function code
+ * @param {string} query - SQL query to execute
+ * @returns {Promise<Response>} API response
+ */
+export async function runChartFunction(page, chartFunction, query) {
+  await page.fill(".chart-function-editor", chartFunction);
+  await page.fill(".query-editor", query);
+  
+  const queryResponsePromise = page.waitForResponse(response => 
+    response.url().includes("/api/query")
+  );
+  
+  await page.click(".run-view-btn");
+  return await queryResponsePromise;
+}
+
+/**
+ * Test a chart function that should show an error message
+ *
+ * @param {object} page - Playwright page object
+ * @param {string} chartFunction - JavaScript chart function code
+ * @param {string} expectedError - Expected error text to appear
+ * @param {string} query - SQL query (defaults to simple test query)
+ * @returns {Promise<void>}
+ */
+export async function expectChartFunctionError(page, chartFunction, expectedError, query = "SELECT 1 as test") {
+  await page.fill(".chart-function-editor", chartFunction);
+  await page.fill(".query-editor", query);
+  
+  await page.click(".run-view-btn");
+  
+  await expect(page.locator(`.error-message:has-text("${expectedError}")`)).toBeVisible();
+}
