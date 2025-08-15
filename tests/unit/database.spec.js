@@ -97,7 +97,7 @@ test("should return 404 for missing database files in query endpoint", async () 
 test("should return 500 for corrupted database files in schema endpoint", async () => {
   const uploadsDir = join(process.cwd(), "uploads");
   mkdirSync(uploadsDir, { recursive: true });
-  
+
   const corruptedDbPath = join(
     uploadsDir,
     `test-corrupted-${Date.now()}-${Math.floor(Math.random() * 10000)}.db`,
