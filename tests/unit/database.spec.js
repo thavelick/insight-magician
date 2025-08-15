@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { copyFileSync } from "node:fs";
+import { copyFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { handleSchema } from "../../routes/schema.js";
 import {
@@ -11,14 +11,17 @@ import {
 // Helper function to test schema extraction with a given fixture
 async function testSchemaExtraction(fixtureName) {
   const testDbPath = getTempDatabasePath(fixtureName);
+  const uploadsDir = join(process.cwd(), "uploads");
   const uploadedDbPath = join(
-    process.cwd(),
-    "uploads",
+    uploadsDir,
     `test-${fixtureName}-${Date.now()}-${Math.floor(Math.random() * 10000)}.db`,
   );
 
   try {
     await createDatabaseFromFixture(fixtureName, testDbPath);
+
+    // Ensure uploads directory exists
+    mkdirSync(uploadsDir, { recursive: true });
     copyFileSync(testDbPath, uploadedDbPath);
     const filename = uploadedDbPath.split("/").pop();
 
