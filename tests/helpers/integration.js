@@ -142,7 +142,7 @@ export async function setupGraphWidget(page, fixtureName = "basic") {
   await page.goto("http://localhost:3000");
   await setupDatabaseWithUpload(page, fixtureName);
   await addWidget(page);
-  
+
   // Switch to graph widget type to enable chart function
   await page.selectOption(".widget-type-select", "graph");
   await expect(page.locator(".chart-function-group")).toBeVisible();
@@ -159,11 +159,11 @@ export async function setupGraphWidget(page, fixtureName = "basic") {
 export async function runChartFunction(page, chartFunction, query) {
   await page.fill(".chart-function-editor", chartFunction);
   await page.fill(".query-editor", query);
-  
-  const queryResponsePromise = page.waitForResponse(response => 
-    response.url().includes("/api/query")
+
+  const queryResponsePromise = page.waitForResponse((response) =>
+    response.url().includes("/api/query"),
   );
-  
+
   await page.click(".run-view-btn");
   return await queryResponsePromise;
 }
@@ -177,11 +177,18 @@ export async function runChartFunction(page, chartFunction, query) {
  * @param {string} query - SQL query (defaults to simple test query)
  * @returns {Promise<void>}
  */
-export async function expectChartFunctionError(page, chartFunction, expectedError, query = "SELECT 1 as test") {
+export async function expectChartFunctionError(
+  page,
+  chartFunction,
+  expectedError,
+  query = "SELECT 1 as test",
+) {
   await page.fill(".chart-function-editor", chartFunction);
   await page.fill(".query-editor", query);
-  
+
   await page.click(".run-view-btn");
-  
-  await expect(page.locator(`.error-message:has-text("${expectedError}")`)).toBeVisible();
+
+  await expect(
+    page.locator(`.error-message:has-text("${expectedError}")`),
+  ).toBeVisible();
 }
