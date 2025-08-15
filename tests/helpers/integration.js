@@ -141,7 +141,7 @@ export async function openSchemaSidebar(page) {
  * @returns {Promise<void>}
  */
 export async function setupGraphWidget(page, fixtureName = "basic") {
-  await page.goto("http://localhost:3000");
+  await page.goto("/");
   await setupDatabaseWithUpload(page, fixtureName);
   await addWidget(page);
 
