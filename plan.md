@@ -243,39 +243,35 @@ Tests are organized into three phases:
 
 ## Phase 3: Edge Cases & Error Handling Tests
 
-### 3.1 File Upload Security (`upload-security.spec.js`)
+### 3.1 File Upload Security ✅
 **Priority: MEDIUM**
 
-- Test our file size limit enforcement (MAX_FILE_SIZE)
-- Test our SQLite format validation logic
+- ✅ Test our file size limit enforcement (MAX_FILE_SIZE)
+- ✅ Test our SQLite format validation logic
 
 **Test Cases:**
-- `should reject files exceeding our 100MB limit`
-- `should reject non-SQLite files with proper error message`
+- ✅ `should reject files exceeding our 100MB limit` (covered in upload.spec.js:93)
+- ✅ `should reject non-SQLite files with proper error message` (covered in upload.spec.js:76)
 
-**Post-implementation tasks:**
-- Eliminate duplication between all 2 test cases (helper functions, setup/cleanup)
-- Consider moving non-UI logic to unit tests if appropriate
-- Audit comments to remove redundant ones that just repeat code
+**Note:** Already implemented in existing upload.spec.js integration tests and upload.spec.js unit tests.
 
-### 3.2 Path Traversal Prevention (`path-traversal.spec.js`)
+### 3.2 Input Validation Security (`input-validation.spec.js`) ✅
 **Priority: MEDIUM**
 
-- Test filename validation in upload and query functionality
-- Test our specific path traversal prevention logic
-- Test our SQL validation (validateSql function)
-- Test error response consistency
+- ✅ Test filename validation in upload and query functionality
+- ✅ Test our specific path traversal prevention logic
+- ✅ Test our SQL validation (validateSql function)
+- ✅ Test error response consistency
 
 **Test Cases:**
-- `should block filenames with path traversal characters`
-- `should prevent directory traversal in filename parameter`
-- `should validate SQL queries using our validation logic`
-- `should return consistent error response format`
+- ✅ `should block filenames with path traversal characters in schema endpoint`
+- ✅ `should prevent directory traversal in query endpoint`
+- ✅ `should validate SQL queries using validation logic`
+- ✅ `should return consistent error response format`
 
 **Post-implementation tasks:**
-- Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
-- Consider moving non-UI logic to unit tests if appropriate
-- Audit comments to remove redundant ones that just repeat code
+- ✅ Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
+- ✅ Consider moving non-UI logic to unit tests if appropriate
 
 ### 3.3 Database Connection Errors (`connection-errors.spec.js`)
 **Priority: MEDIUM**
