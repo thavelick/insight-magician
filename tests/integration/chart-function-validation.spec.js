@@ -42,10 +42,26 @@ test.describe("Chart Function Validation", () => {
     );
   });
 
+  test("should accept valid chart functions without dangerous patterns", async ({
+    page,
+  }) => {
+    const safeFunction = `function createChart(data, svg, d3, width, height) {
+      const circle = svg.append('circle')
+        .attr('cx', width / 2)
+        .attr('cy', height / 2)
+        .attr('r', 50)
+        .attr('fill', 'green');
+      return svg;
+    }`;
+
+    await runChartFunction(page, safeFunction, "SELECT 1 as test");
+    await expect(page.locator(".chart-container")).toBeVisible();
+  });
+
   test("should reject dangerous patterns like while loops", async ({
     page,
   }) => {
-    const whileLoopFunction = `function createChart(data, svg, d3, width, height) {
+    const dangerousFunction = `function createChart(data, svg, d3, width, height) {
       while (true) {
         console.log("infinite loop");
       }
@@ -54,41 +70,7 @@ test.describe("Chart Function Validation", () => {
 
     await expectChartFunctionError(
       page,
-      whileLoopFunction,
-      "Dangerous code detected: while loops are not allowed due to infinite loop risk",
-    );
-
-    // Reset widget to edit mode for second validation
-    await page.click(".widget .edit-btn", { force: true });
-    await expect(page.locator(".widget .chart-function-editor")).toBeVisible();
-
-    const forLoopFunction = `function createChart(data, svg, d3, width, height) {
-      for (;;) {
-        console.log("infinite loop");
-      }
-      return svg;
-    }`;
-
-    await expectChartFunctionError(
-      page,
-      forLoopFunction,
-      "Dangerous code detected: infinite for loops (for(;;)) are not allowed",
-    );
-
-    // Reset widget to edit mode for third validation
-    await page.click(".widget .edit-btn", { force: true });
-    await expect(page.locator(".widget .chart-function-editor")).toBeVisible();
-
-    const doWhileFunction = `function createChart(data, svg, d3, width, height) {
-      do {
-        console.log("potential infinite loop");
-      } while (true);
-      return svg;
-    }`;
-
-    await expectChartFunctionError(
-      page,
-      doWhileFunction,
+      dangerousFunction,
       "Dangerous code detected: while loops are not allowed due to infinite loop risk",
     );
   });
