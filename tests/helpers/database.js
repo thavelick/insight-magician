@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { mkdirSync } from "node:fs";
+import { existsSync, mkdirSync } from "node:fs";
 import { unlink } from "node:fs/promises";
 import { join } from "node:path";
 
@@ -23,9 +23,31 @@ export async function createDatabaseFromFixture(fixtureName, outputPath) {
 
   await new Promise((resolve, reject) => {
     const sqlite3 = spawn("sqlite3", [outputPath, `.read ${sqlFixturePath}`]);
+
+    let stderr = "";
+    sqlite3.stderr?.on("data", (data) => {
+      stderr += data.toString();
+    });
+
     sqlite3.on("close", (code) => {
-      if (code === 0) resolve();
-      else reject(new Error(`sqlite3 process exited with code ${code}`));
+      if (code === 0) {
+        // Verify the database file was actually created
+        if (existsSync(outputPath)) {
+          resolve();
+        } else {
+          reject(
+            new Error(
+              `sqlite3 completed successfully but database file was not created at ${outputPath}`,
+            ),
+          );
+        }
+      } else {
+        reject(
+          new Error(
+            `sqlite3 process exited with code ${code}. Error: ${stderr || "No error output"}`,
+          ),
+        );
+      }
     });
   });
 }
