@@ -54,6 +54,19 @@ export async function handleSchema(request) {
           headers: { "Content-Type": "application/json" },
         },
       );
+    } catch (dbError) {
+      // Handle database-specific errors (corrupted files, etc.)
+      if (
+        dbError.code === "SQLITE_NOTADB" ||
+        dbError.message?.includes("file is not a database")
+      ) {
+        return new Response(
+          JSON.stringify({ error: "Database file is corrupted or invalid" }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      // Re-throw other database errors to be handled by outer catch
+      throw dbError;
     } finally {
       await dbManager.disconnect();
     }

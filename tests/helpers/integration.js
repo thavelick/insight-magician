@@ -134,35 +134,6 @@ export async function openSchemaSidebar(page) {
 }
 
 /**
- * Test API endpoint with non-existent database file
- *
- * @param {object} page - Playwright page object
- * @param {string} endpoint - Endpoint path (e.g., "/api/schema", "/api/query")
- * @param {object} options - Optional request options for POST requests
- * @returns {Promise<Response>} - API response
- */
-export async function testMissingDatabaseFile(page, endpoint, options = {}) {
-  const filename = "nonexistent.db";
-
-  if (endpoint.includes("/schema")) {
-    return await page.request.get(`${endpoint}?filename=${filename}`);
-  }
-  if (endpoint.includes("/query")) {
-    return await page.request.post(endpoint, {
-      data: {
-        filename,
-        query: "SELECT * FROM users",
-        page: 1,
-        pageSize: 50,
-        ...options,
-      },
-    });
-  }
-
-  throw new Error(`Unsupported endpoint: ${endpoint}`);
-}
-
-/**
  * Upload a corrupted database and test schema extraction failure
  *
  * @param {object} page - Playwright page object
@@ -189,9 +160,9 @@ export async function uploadCorruptedDatabaseAndTestSchemaFailure(page) {
     `/api/schema?filename=${uploadedFilename}`,
   );
 
-  expect(schemaResponse.status()).toBe(500);
+  expect(schemaResponse.status()).toBe(400);
   const schemaBody = await schemaResponse.json();
-  expect(schemaBody.error).toBe("Failed to read database schema");
+  expect(schemaBody.error).toBe("Database file is corrupted or invalid");
   expect(schemaBody.success).toBeUndefined();
 
   return { uploadedFilename, corruptedDbPath };

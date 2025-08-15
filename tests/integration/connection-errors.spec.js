@@ -1,9 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { cleanupDatabase, cleanupUploadedFile } from "../helpers/database.js";
-import {
-  testMissingDatabaseFile,
-  uploadCorruptedDatabaseAndTestSchemaFailure,
-} from "../helpers/integration.js";
+import { uploadCorruptedDatabaseAndTestSchemaFailure } from "../helpers/integration.js";
 
 test.describe("Database Connection Errors", () => {
   test.beforeEach(async ({ page }) => {
@@ -14,20 +11,6 @@ test.describe("Database Connection Errors", () => {
     });
     await page.waitForLoadState("domcontentloaded");
     await page.waitForSelector("text=Drop your SQLite database file here");
-  });
-
-  test("should handle missing database files gracefully", async ({ page }) => {
-    const schemaResponse = await testMissingDatabaseFile(page, "/api/schema");
-    expect(schemaResponse.status()).toBe(404);
-    const schemaBody = await schemaResponse.json();
-    expect(schemaBody.error).toBe("Database file not found");
-    expect(schemaBody.success).toBeUndefined();
-
-    const queryResponse = await testMissingDatabaseFile(page, "/api/query");
-    expect(queryResponse.status()).toBe(404);
-    const queryBody = await queryResponse.json();
-    expect(queryBody.error).toBe("Database file not found");
-    expect(queryBody.success).toBeUndefined();
   });
 
   test("should handle schema extraction failures", async ({ page }) => {

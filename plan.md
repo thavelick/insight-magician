@@ -280,11 +280,11 @@ Tests are organized into three phases:
 - ✅ Test corrupted database file handling
 
 **Test Cases:**
-- ✅ `should handle missing database files gracefully`
+- ✅ `should handle missing database files gracefully` (moved to unit tests)
 - ✅ `should handle schema extraction failures`
 
 **Post-implementation tasks:**
-- ✅ Eliminate duplication between all 2 test cases (helper functions, setup/cleanup)
+- ✅ Eliminate duplication between test cases (helper functions, setup/cleanup)
 - ✅ Consider moving non-UI logic to unit tests if appropriate
 - ✅ Audit comments to remove redundant ones that just repeat code
 

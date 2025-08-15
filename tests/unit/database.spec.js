@@ -94,7 +94,7 @@ test("should return 404 for missing database files in query endpoint", async () 
   expect(body.success).toBeUndefined();
 });
 
-test("should return 500 for corrupted database files in schema endpoint", async () => {
+test("should return 400 for corrupted database files in schema endpoint", async () => {
   const uploadsDir = join(process.cwd(), "uploads");
   mkdirSync(uploadsDir, { recursive: true });
 
@@ -112,9 +112,9 @@ test("should return 500 for corrupted database files in schema endpoint", async 
     );
     const response = await handleSchema(request);
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(400);
     const body = await response.json();
-    expect(body.error).toBe("Failed to read database schema");
+    expect(body.error).toBe("Database file is corrupted or invalid");
     expect(body.success).toBeUndefined();
   } finally {
     await cleanupDatabase(corruptedDbPath);
