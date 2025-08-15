@@ -1,6 +1,8 @@
 import { expect } from "@playwright/test";
 import {
   cleanupDatabase,
+  cleanupUploadedFile,
+  createCorruptedDatabase,
   createDatabaseFromFixture,
   getTempDatabasePath,
   uploadFileViaUI,
@@ -191,4 +193,37 @@ export async function expectChartFunctionError(
   await expect(
     page.locator(`.error-message:has-text("${expectedError}")`),
   ).toBeVisible();
+}
+
+/**
+ * Upload a corrupted database and test schema extraction failure
+ *
+ * @param {object} page - Playwright page object
+ * @returns {Promise<{uploadedFilename: string, corruptedDbPath: string}>}
+ */
+export async function uploadCorruptedDatabaseAndTestSchemaFailure(page) {
+  const corruptedDbPath = getTempDatabasePath("corrupted");
+  await createCorruptedDatabase(corruptedDbPath);
+
+  const uploadResponsePromise = page.waitForResponse((response) =>
+    response.url().includes("/api/upload"),
+  );
+
+  await uploadFileViaUI(page, corruptedDbPath);
+  const uploadResponse = await uploadResponsePromise;
+
+  expect(uploadResponse.status()).toBe(200);
+  const uploadBody = await uploadResponse.json();
+  const uploadedFilename = uploadBody.filename;
+
+  const schemaResponse = await page.request.get(
+    `/api/schema?filename=${uploadedFilename}`,
+  );
+
+  expect(schemaResponse.status()).toBe(400);
+  const schemaBody = await schemaResponse.json();
+  expect(schemaBody.error).toBe("Database file is corrupted or invalid");
+  expect(schemaBody.success).toBeUndefined();
+
+  return { uploadedFilename, corruptedDbPath };
 }
