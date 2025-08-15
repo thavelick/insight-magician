@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { mkdirSync } from "node:fs";
 import { unlink } from "node:fs/promises";
 import { join } from "node:path";
 
@@ -46,14 +47,14 @@ export async function createDatabaseFromFixture(fixtureName, outputPath) {
  * @returns {string} Full path to temporary database file with unique name
  */
 export function getTempDatabasePath(fixtureName) {
+  const tempDir = join(process.cwd(), "tests", "temp");
+
+  // Ensure temp directory exists (synchronously)
+  mkdirSync(tempDir, { recursive: true });
+
   const timestamp = Date.now();
   const random = Math.floor(Math.random() * 10000);
-  return join(
-    process.cwd(),
-    "tests",
-    "temp",
-    `test-${fixtureName}_${timestamp}_${random}.db`,
-  );
+  return join(tempDir, `test-${fixtureName}_${timestamp}_${random}.db`);
 }
 
 /**
