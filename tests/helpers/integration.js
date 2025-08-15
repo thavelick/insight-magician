@@ -1,6 +1,8 @@
 import { expect } from "@playwright/test";
 import {
   cleanupDatabase,
+  cleanupUploadedFile,
+  createCorruptedDatabase,
   createDatabaseFromFixture,
   getTempDatabasePath,
   uploadFileViaUI,
@@ -129,4 +131,68 @@ export async function openSchemaSidebar(page) {
   await page.click("button:has-text('View Schema')");
   await expect(page.locator(".schema-sidebar")).toBeVisible();
   await expect(page.locator(".schema-content >> text=users")).toBeVisible();
+}
+
+/**
+ * Test API endpoint with non-existent database file
+ *
+ * @param {object} page - Playwright page object
+ * @param {string} endpoint - Endpoint path (e.g., "/api/schema", "/api/query")
+ * @param {object} options - Optional request options for POST requests
+ * @returns {Promise<Response>} - API response
+ */
+export async function testMissingDatabaseFile(page, endpoint, options = {}) {
+  const filename = "nonexistent.db";
+
+  if (endpoint.includes("/schema")) {
+    return await page.request.get(`${endpoint}?filename=${filename}`);
+  }
+  if (endpoint.includes("/query")) {
+    return await page.request.post(endpoint, {
+      data: {
+        filename,
+        query: "SELECT * FROM users",
+        page: 1,
+        pageSize: 50,
+        ...options,
+      },
+    });
+  }
+
+  throw new Error(`Unsupported endpoint: ${endpoint}`);
+}
+
+/**
+ * Upload a corrupted database and test schema extraction failure
+ *
+ * @param {object} page - Playwright page object
+ * @returns {Promise<{uploadedFilename: string, corruptedDbPath: string}>}
+ */
+export async function uploadCorruptedDatabaseAndTestSchemaFailure(page) {
+  const corruptedDbPath = getTempDatabasePath("corrupted");
+  await createCorruptedDatabase(corruptedDbPath);
+
+  // Upload the corrupted file through UI
+  const uploadResponsePromise = page.waitForResponse((response) =>
+    response.url().includes("/api/upload"),
+  );
+
+  await uploadFileViaUI(page, corruptedDbPath);
+  const uploadResponse = await uploadResponsePromise;
+
+  expect(uploadResponse.status()).toBe(200);
+  const uploadBody = await uploadResponse.json();
+  const uploadedFilename = uploadBody.filename;
+
+  // Try to get schema - this should fail gracefully
+  const schemaResponse = await page.request.get(
+    `/api/schema?filename=${uploadedFilename}`,
+  );
+
+  expect(schemaResponse.status()).toBe(500);
+  const schemaBody = await schemaResponse.json();
+  expect(schemaBody.error).toBe("Failed to read database schema");
+  expect(schemaBody.success).toBeUndefined();
+
+  return { uploadedFilename, corruptedDbPath };
 }
