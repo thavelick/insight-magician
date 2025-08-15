@@ -273,20 +273,20 @@ Tests are organized into three phases:
 - ✅ Eliminate duplication between all 4 test cases (helper functions, setup/cleanup)
 - ✅ Consider moving non-UI logic to unit tests if appropriate
 
-### 3.3 Database Connection Errors (`connection-errors.spec.js`)
+### 3.3 Database Connection Errors (`connection-errors.spec.js`) ✅
 **Priority: MEDIUM**
 
-- Test missing file scenarios
-- Test corrupted database file handling
+- ✅ Test missing file scenarios
+- ✅ Test corrupted database file handling
 
 **Test Cases:**
-- `should handle missing database files gracefully`
-- `should handle schema extraction failures`
+- ✅ `should handle missing database files gracefully` (moved to unit tests)
+- ✅ `should handle schema extraction failures`
 
 **Post-implementation tasks:**
-- Eliminate duplication between all 2 test cases (helper functions, setup/cleanup)
-- Consider moving non-UI logic to unit tests if appropriate
-- Audit comments to remove redundant ones that just repeat code
+- ✅ Eliminate duplication between test cases (helper functions, setup/cleanup)
+- ✅ Consider moving non-UI logic to unit tests if appropriate
+- ✅ Audit comments to remove redundant ones that just repeat code
 
 ### 3.4 Chart Function Validation (`chart-function-validation.spec.js`)
 **Priority: MEDIUM**

@@ -1,9 +1,11 @@
 import { expect, test } from "bun:test";
 import { copyFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
+import { handleQuery } from "../../routes/query.js";
 import { handleSchema } from "../../routes/schema.js";
 import {
   cleanupDatabase,
+  createCorruptedDatabase,
   createDatabaseFromFixture,
   getTempDatabasePath,
 } from "../helpers/database.js";
@@ -59,4 +61,62 @@ test("should extract schema correctly from database with tables", async () => {
 test("should handle databases with no tables gracefully", async () => {
   const schema = await testSchemaExtraction("empty");
   expect(schema).toEqual({}); // Empty object for no tables
+});
+
+test("should return 404 for missing database files in schema endpoint", async () => {
+  const request = new Request(
+    "http://localhost:3001/api/schema?filename=nonexistent.db",
+  );
+  const response = await handleSchema(request);
+
+  expect(response.status).toBe(404);
+  const body = await response.json();
+  expect(body.error).toBe("Database file not found");
+  expect(body.success).toBeUndefined();
+});
+
+test("should return 404 for missing database files in query endpoint", async () => {
+  const request = new Request("http://localhost:3001/api/query", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      filename: "nonexistent.db",
+      query: "SELECT * FROM users",
+      page: 1,
+      pageSize: 50,
+    }),
+  });
+  const response = await handleQuery(request);
+
+  expect(response.status).toBe(404);
+  const body = await response.json();
+  expect(body.error).toBe("Database file not found");
+  expect(body.success).toBeUndefined();
+});
+
+test("should return 400 for corrupted database files in schema endpoint", async () => {
+  const uploadsDir = join(process.cwd(), "uploads");
+  mkdirSync(uploadsDir, { recursive: true });
+
+  const corruptedDbPath = join(
+    uploadsDir,
+    `test-corrupted-${Date.now()}-${Math.floor(Math.random() * 10000)}.db`,
+  );
+
+  try {
+    await createCorruptedDatabase(corruptedDbPath);
+    const filename = corruptedDbPath.split("/").pop();
+
+    const request = new Request(
+      `http://localhost:3001/api/schema?filename=${filename}`,
+    );
+    const response = await handleSchema(request);
+
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.error).toBe("Database file is corrupted or invalid");
+    expect(body.success).toBeUndefined();
+  } finally {
+    await cleanupDatabase(corruptedDbPath);
+  }
 });
