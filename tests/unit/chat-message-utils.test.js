@@ -12,7 +12,7 @@ import {
   isValidContent,
   isValidMessage,
   isValidRole,
-  sanitizeContent,
+  normalizeContent,
   truncate,
 } from "../../lib/chat-message-utils.js";
 
@@ -66,17 +66,17 @@ describe("Chat Message Functions", () => {
     });
   });
 
-  describe("Content Sanitization", () => {
-    test("should sanitize content by trimming", () => {
-      expect(sanitizeContent("  Hello world  ")).toBe("Hello world");
-      expect(sanitizeContent("\n\tTest\n\t")).toBe("Test");
+  describe("Content Normalization", () => {
+    test("should normalize content by trimming", () => {
+      expect(normalizeContent("  Hello world  ")).toBe("Hello world");
+      expect(normalizeContent("\n\tTest\n\t")).toBe("Test");
     });
 
     test("should handle non-string content", () => {
-      expect(sanitizeContent(null)).toBe("");
-      expect(sanitizeContent(undefined)).toBe("");
-      expect(sanitizeContent(123)).toBe("");
-      expect(sanitizeContent({})).toBe("");
+      expect(normalizeContent(null)).toBe("");
+      expect(normalizeContent(undefined)).toBe("");
+      expect(normalizeContent(123)).toBe("");
+      expect(normalizeContent({})).toBe("");
     });
 
     test("should format content preserving structure", () => {
@@ -199,14 +199,14 @@ describe("Chat Message Functions", () => {
   describe("Edge Cases", () => {
     test("should handle special characters in content", () => {
       const specialChars = "<script>alert('xss')</script>";
-      expect(sanitizeContent(specialChars)).toBe(specialChars);
+      expect(normalizeContent(specialChars)).toBe(specialChars);
       expect(formatContent(specialChars)).toBe(specialChars);
       expect(isValidContent(specialChars)).toBe(true);
     });
 
     test("should handle unicode characters", () => {
       const unicode = "Hello 👋 World 🌍";
-      expect(sanitizeContent(unicode)).toBe(unicode);
+      expect(normalizeContent(unicode)).toBe(unicode);
       expect(formatContent(unicode)).toBe(unicode);
       expect(isValidContent(unicode)).toBe(true);
     });

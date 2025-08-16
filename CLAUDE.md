@@ -127,6 +127,13 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 - User will handle customizing queries for their specific data
 - NEVER commit changes without explicit user permission - always ask first
 
+## AI Chat Implementation
+
+- Business logic in `/lib/chat-history.js` and `/lib/chat-message-utils.js`
+- UI component at `/public/components/ai-chat.js`
+- XSS prevention via `textContent`, not `innerHTML`
+- SessionStorage for persistence (survives refresh, not browser close)
+
 ## Testing Guidelines
 
 ### Playwright Integration Tests
