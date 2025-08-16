@@ -1,4 +1,4 @@
-import { test, expect, mock } from "bun:test";
+import { expect, mock, test } from "bun:test";
 import { handleChat } from "../../routes/chat.js";
 
 function createMockRequest(body) {
@@ -14,16 +14,24 @@ async function getResponseData(response) {
 
 // Create a mock OpenRouterClient class
 function createMockOpenRouterClient(mockResponse) {
-  return class MockOpenRouterClient {
+  class MockOpenRouterClient {
     constructor() {
       this.createChatCompletion = mock(() => Promise.resolve(mockResponse));
     }
-  };
+  }
+  // Set the name property to match our dependency injection check
+  Object.defineProperty(MockOpenRouterClient, "name", {
+    value: "OpenRouterClient",
+  });
+  return MockOpenRouterClient;
 }
 
 test("handleChat returns error for missing message", async () => {
   const request = createMockRequest({});
-  const mockClient = createMockOpenRouterClient({ success: true, message: "test" });
+  const mockClient = createMockOpenRouterClient({
+    success: true,
+    message: "test",
+  });
   const response = await handleChat(request, mockClient);
   const data = await getResponseData(response);
 
@@ -33,7 +41,10 @@ test("handleChat returns error for missing message", async () => {
 
 test("handleChat returns error for non-string message", async () => {
   const request = createMockRequest({ message: 123 });
-  const mockClient = createMockOpenRouterClient({ success: true, message: "test" });
+  const mockClient = createMockOpenRouterClient({
+    success: true,
+    message: "test",
+  });
   const response = await handleChat(request, mockClient);
   const data = await getResponseData(response);
 
@@ -44,7 +55,10 @@ test("handleChat returns error for non-string message", async () => {
 test("handleChat returns error for too long message", async () => {
   const longMessage = "a".repeat(4001); // Exceeds 4000 char limit
   const request = createMockRequest({ message: longMessage });
-  const mockClient = createMockOpenRouterClient({ success: true, message: "test" });
+  const mockClient = createMockOpenRouterClient({
+    success: true,
+    message: "test",
+  });
   const response = await handleChat(request, mockClient);
   const data = await getResponseData(response);
 
@@ -57,7 +71,10 @@ test("handleChat returns error for non-array chatHistory", async () => {
     message: "Hello",
     chatHistory: "not an array",
   });
-  const mockClient = createMockOpenRouterClient({ success: true, message: "test" });
+  const mockClient = createMockOpenRouterClient({
+    success: true,
+    message: "test",
+  });
   const response = await handleChat(request, mockClient);
   const data = await getResponseData(response);
 
@@ -71,7 +88,10 @@ test("handleChat returns error for too long chatHistory", async () => {
     message: "Hello",
     chatHistory: longHistory,
   });
-  const mockClient = createMockOpenRouterClient({ success: true, message: "test" });
+  const mockClient = createMockOpenRouterClient({
+    success: true,
+    message: "test",
+  });
   const response = await handleChat(request, mockClient);
   const data = await getResponseData(response);
 
@@ -84,7 +104,10 @@ test("handleChat returns error for invalid chatHistory message structure", async
     message: "Hello",
     chatHistory: [{ role: "user" }], // Missing content
   });
-  const mockClient = createMockOpenRouterClient({ success: true, message: "test" });
+  const mockClient = createMockOpenRouterClient({
+    success: true,
+    message: "test",
+  });
   const response = await handleChat(request, mockClient);
   const data = await getResponseData(response);
 
@@ -99,7 +122,10 @@ test("handleChat returns error for invalid message role", async () => {
     message: "Hello",
     chatHistory: [{ role: "admin", content: "test" }], // Invalid role
   });
-  const mockClient = createMockOpenRouterClient({ success: true, message: "test" });
+  const mockClient = createMockOpenRouterClient({
+    success: true,
+    message: "test",
+  });
   const response = await handleChat(request, mockClient);
   const data = await getResponseData(response);
 
@@ -113,9 +139,9 @@ test("handleChat succeeds with valid input and no history", async () => {
   const mockResponse = {
     success: true,
     message: "Test AI response",
-    usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 }
+    usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
   };
-  
+
   const request = createMockRequest({
     message: "Hello, how are you?",
   });
@@ -133,7 +159,7 @@ test("handleChat succeeds with valid input and chat history", async () => {
   const mockResponse = {
     success: true,
     message: "Test AI response with history",
-    usage: { prompt_tokens: 20, completion_tokens: 8, total_tokens: 28 }
+    usage: { prompt_tokens: 20, completion_tokens: 8, total_tokens: 28 },
   };
 
   const request = createMockRequest({
@@ -156,7 +182,7 @@ test("handleChat handles OpenRouter API failure", async () => {
   const mockResponse = {
     success: false,
     error: "Rate limit exceeded",
-    code: "RATE_LIMIT"
+    code: "RATE_LIMIT",
   };
 
   const request = createMockRequest({
@@ -177,6 +203,8 @@ test("handleChat handles client construction error", async () => {
       throw new Error("OPENROUTER_API_KEY environment variable is required");
     }
   }
+  // Set the name property to match our dependency injection check
+  Object.defineProperty(FailingClient, "name", { value: "OpenRouterClient" });
 
   const request = createMockRequest({
     message: "Hello",

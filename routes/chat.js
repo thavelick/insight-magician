@@ -1,14 +1,16 @@
-import { OpenRouterClient } from "../lib/openrouter-client.js";
-import { SYSTEM_PROMPT } from "../lib/ai-system-prompt.js";
 import { AI_CONFIG } from "../lib/ai-config.js";
+import { SYSTEM_PROMPT } from "../lib/ai-system-prompt.js";
+import { OpenRouterClient } from "../lib/openrouter-client.js";
 
-export async function handleChat(request, openRouterClientClass = OpenRouterClient) {
-  console.log('handleChat called with:', {
-    requestType: typeof request,
-    clientClassType: typeof openRouterClientClass,
-    clientClassName: openRouterClientClass?.name,
-    isUndefined: openRouterClientClass === undefined
-  });
+export async function handleChat(request, openRouterClientClass) {
+  // Use explicit default parameter handling for Bun compatibility
+  // Check if it's actually a constructor function, not just any truthy value
+  const ClientClass =
+    typeof openRouterClientClass === "function" &&
+    openRouterClientClass.name === "OpenRouterClient"
+      ? openRouterClientClass
+      : OpenRouterClient;
+
   try {
     const body = await request.json();
     const { message, chatHistory = [] } = body;
@@ -100,7 +102,7 @@ export async function handleChat(request, openRouterClientClass = OpenRouterClie
     ];
 
     // Initialize OpenRouter client
-    const client = new openRouterClientClass();
+    const client = new ClientClass();
 
     // Call OpenRouter API
     const result = await client.createChatCompletion(messages);

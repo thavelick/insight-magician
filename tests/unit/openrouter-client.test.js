@@ -1,16 +1,25 @@
-import { test, expect, mock } from "bun:test";
-import { OpenRouterClient, createOpenRouterClient } from "../../lib/openrouter-client.js";
+import { expect, mock, test } from "bun:test";
+import {
+  OpenRouterClient,
+  createOpenRouterClient,
+} from "../../lib/openrouter-client.js";
 
 // Create a mock OpenAI module
 function createMockOpenAI() {
   return function MockOpenAI(config) {
     this.chat = {
       completions: {
-        create: mock(() => Promise.resolve({
-          choices: [{ message: { content: "Test response from AI" } }],
-          usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 }
-        }))
-      }
+        create: mock(() =>
+          Promise.resolve({
+            choices: [{ message: { content: "Test response from AI" } }],
+            usage: {
+              prompt_tokens: 10,
+              completion_tokens: 5,
+              total_tokens: 15,
+            },
+          }),
+        ),
+      },
     };
     return this;
   };
@@ -42,7 +51,7 @@ test("createChatCompletion handles successful response", async () => {
 
   const messages = [
     { role: "system", content: "You are a helpful assistant" },
-    { role: "user", content: "Hello" }
+    { role: "user", content: "Hello" },
   ];
 
   const result = await client.createChatCompletion(messages);
@@ -59,14 +68,20 @@ test("createChatCompletion handles successful response", async () => {
 });
 
 test("createChatCompletion handles empty response", async () => {
-  const mockOpenAI = function(config) {
+  const mockOpenAI = function (config) {
     this.chat = {
       completions: {
-        create: mock(() => Promise.resolve({
-          choices: [],
-          usage: { prompt_tokens: 10, completion_tokens: 0, total_tokens: 10 }
-        }))
-      }
+        create: mock(() =>
+          Promise.resolve({
+            choices: [],
+            usage: {
+              prompt_tokens: 10,
+              completion_tokens: 0,
+              total_tokens: 10,
+            },
+          }),
+        ),
+      },
     };
     return this;
   };
@@ -84,11 +99,11 @@ test("createChatCompletion handles API errors", async () => {
   const apiError = new Error("API rate limit exceeded");
   apiError.code = "RATE_LIMIT_EXCEEDED";
 
-  const mockOpenAI = function(config) {
+  const mockOpenAI = function (config) {
     this.chat = {
       completions: {
-        create: mock(() => Promise.reject(apiError))
-      }
+        create: mock(() => Promise.reject(apiError)),
+      },
     };
     return this;
   };
@@ -106,11 +121,11 @@ test("createChatCompletion handles API errors", async () => {
 test("createChatCompletion handles errors without code", async () => {
   const apiError = new Error("Network connection failed");
 
-  const mockOpenAI = function(config) {
+  const mockOpenAI = function (config) {
     this.chat = {
       completions: {
-        create: mock(() => Promise.reject(apiError))
-      }
+        create: mock(() => Promise.reject(apiError)),
+      },
     };
     return this;
   };
