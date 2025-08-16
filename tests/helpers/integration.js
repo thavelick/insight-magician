@@ -194,7 +194,6 @@ export async function expectChartFunctionError(
 
   await page.click(".widget .run-view-btn");
 
-  // Wait for error element to appear, then check the text
   await expect(page.locator(".widget .error-message")).toBeVisible();
   await expect(page.locator(".widget .error-message")).toContainText(
     expectedError,
