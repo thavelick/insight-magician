@@ -15,10 +15,8 @@ test.describe("Input Validation Security", () => {
   });
 
   test.afterEach(async ({ page }) => {
-    if (uploadedFilename) {
-      await cleanupUploadedFile(uploadedFilename);
-      uploadedFilename = null;
-    }
+    await cleanupUploadedFile(uploadedFilename);
+    uploadedFilename = null;
     await page.evaluate(() => sessionStorage.clear());
   });
 

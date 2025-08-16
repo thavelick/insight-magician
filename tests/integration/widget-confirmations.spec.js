@@ -19,10 +19,8 @@ test.describe("Widget Confirmation Dialogs", () => {
   });
 
   test.afterEach(async () => {
-    if (uploadedFilename) {
-      await cleanupUploadedFile(uploadedFilename);
-      uploadedFilename = null;
-    }
+    await cleanupUploadedFile(uploadedFilename);
+    uploadedFilename = null;
   });
 
   async function setupWidgetWithDialog(page, handler) {
@@ -53,7 +51,9 @@ test.describe("Widget Confirmation Dialogs", () => {
     const dialog = await setupWidgetWithDialog(page, (d) => d.dismiss());
     const widget = getWidgetLocator(page);
 
-    await widget.locator(".card-back .delete-btn").click({ force: true });
+    const deleteBtn = widget.locator(".card-back .delete-btn");
+    await expect(deleteBtn).toBeVisible();
+    await deleteBtn.click();
 
     expect(dialog.dialogShown()).toBe(true);
     expect(dialog.dialogMessage()).toBe(
@@ -102,7 +102,9 @@ test.describe("Widget Confirmation Dialogs", () => {
     const dialog = await setupWidgetWithDialog(page, (d) => d.accept());
     const widget = getWidgetLocator(page);
 
-    await widget.locator(".card-back .delete-btn").click({ force: true });
+    const deleteBtn = widget.locator(".card-back .delete-btn");
+    await expect(deleteBtn).toBeVisible();
+    await deleteBtn.click();
 
     await expect(page.locator(".widget")).toHaveCount(0);
   });
