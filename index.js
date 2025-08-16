@@ -2,6 +2,7 @@ import indexHtml from "./index.html";
 import { handleQuery } from "./routes/query.js";
 import { handleSchema } from "./routes/schema.js";
 import { handleUpload } from "./routes/upload.js";
+import { handleChat } from "./routes/chat.js";
 
 Bun.serve({
   port: process.env.PORT || 3000,
@@ -36,6 +37,9 @@ Bun.serve({
     },
     "/api/query": {
       POST: handleQuery,
+    },
+    "/api/chat": {
+      POST: handleChat,
     },
   },
   development: {
