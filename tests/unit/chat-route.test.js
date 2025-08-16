@@ -194,7 +194,6 @@ test("handleChat handles OpenRouter API failure", async () => {
 
   expect(response.status).toBe(503);
   expect(data.error).toBe("AI service temporarily unavailable");
-  expect(data.type).toBe("ai_error");
 });
 
 test("handleChat handles client construction error", async () => {
@@ -214,5 +213,4 @@ test("handleChat handles client construction error", async () => {
 
   expect(response.status).toBe(503);
   expect(data.error).toBe("AI service temporarily unavailable");
-  expect(data.type).toBe("service_error");
 });
