@@ -15,41 +15,83 @@ Mirror the **schema sidebar** implementation (`/public/components/schema.js`) bu
 **Goal:** Create a working chat interface that slides in from the left and echoes user messages. No AI integration yet - just focus on the UI/UX foundation and basic message flow.
 
 **Tasks:** *(Mark completed items with ✅)*
-- Create AI Chat Component (`/public/components/ai-chat.js`)
-  - Copy structure from `/public/components/schema.js`
-  - Create sidebar DOM structure with header, messages container, and input area
-  - Implement `show()` and `hide()` methods like schema component
-  - Add close button event listener
-  - Implement basic echo functionality (user types message, it echoes back)
-- Add CSS Styles (`/public/style.css`)
-  - Mirror `.schema-sidebar` styles but use `left` positioning instead of `right`
-  - Create `body.ai-chat-open` class with `margin-left` (copy `body.schema-open` pattern)
-  - Add chat-specific styling for messages and input containers
-  - Style chat button to match existing button design
-  - Add basic message styling (user vs assistant messages)
-  - **Mobile Responsiveness**: Add mobile-specific CSS for AI chat sidebar (follow `.schema-sidebar` mobile pattern)
-    - Full width sidebar on mobile (`width: 100vw`, `left: -100vw`)
-    - Prevent body scrolling when chat open (`overflow: hidden`)
-    - Smaller padding and font sizes for mobile
-- Add Header Button (`/index.html`)
-  - Add AI chat button to `.main-buttons` section following existing pattern
-- Integrate with Main App (`/public/app.js`)
-  - Import AIChatComponent 
-  - Add component to constructor
-  - Create `setupAIChatButton()` method following `setupViewSchemaButton()` pattern
-  - Call setup method in `init()`
-- **Integration Tests for Phase 1** (`/tests/integration/ai-chat-basic.test.js`) *(Read `/TESTING.md` first - set up response listeners BEFORE actions, avoid `waitForTimeout`, create helper functions early)*
-  - Test AI chat button appears in header
-  - Test sidebar slides in from left when button clicked
-  - Test content pushes to the right (check `body.ai-chat-open` class)
-  - Test close button hides sidebar
-  - Test typing message and hitting send echoes the message back
-  - Test chat history persists across page reloads (sessionStorage, not localStorage)
-  - **Mobile Tests**: Test mobile responsive behavior (viewport resize, full-width sidebar)
-  - Add helper functions to `/tests/helpers/integration.js`
-- **Manual Testing**
-  - Run `make test-integration FILE=ai-chat-basic.test.js`
-  - Manually verify all UI interactions work smoothly
+- ✅ Create AI Chat Component (`/public/components/ai-chat.js`)
+  - ✅ Copy structure from `/public/components/schema.js`
+  - ✅ Create sidebar DOM structure with header, messages container, and input area
+  - ✅ Implement `show()` and `hide()` methods like schema component
+  - ✅ Add close button event listener
+  - ✅ Implement basic echo functionality (user types message, it echoes back)
+- ✅ Add CSS Styles (`/public/style.css`)
+  - ✅ Mirror `.schema-sidebar` styles but use `left` positioning instead of `right`
+  - ✅ Create `body.ai-chat-open` class with `margin-left` (copy `body.schema-open` pattern)
+  - ✅ Add chat-specific styling for messages and input containers
+  - ✅ Style chat button to match existing button design
+  - ✅ Add basic message styling (user vs assistant messages)
+  - ✅ **Mobile Responsiveness**: Add mobile-specific CSS for AI chat sidebar (follow `.schema-sidebar` mobile pattern)
+    - ✅ Full width sidebar on mobile (`width: 100vw`, `left: -100vw`)
+    - ✅ Prevent body scrolling when chat open (`overflow: hidden`)
+    - ✅ Smaller padding and font sizes for mobile
+- ✅ Add Header Button (`/index.html`)
+  - ✅ Add AI chat button to `.main-buttons` section following existing pattern
+- ✅ Integrate with Main App (`/public/app.js`)
+  - ✅ Import AIChatComponent 
+  - ✅ Add component to constructor
+  - ✅ Create `setupAIChatButton()` method following `setupViewSchemaButton()` pattern
+  - ✅ Call setup method in `init()`
+- ✅ **Integration Tests for Phase 1** (`/tests/integration/ai-chat-basic.test.js`) *(Read `/TESTING.md` first - set up response listeners BEFORE actions, avoid `waitForTimeout`, create helper functions early)*
+  - ✅ Test AI chat button appears in header
+  - ✅ Test sidebar slides in from left when button clicked
+  - ✅ Test content pushes to the right (check `body.ai-chat-open` class)
+  - ✅ Test close button hides sidebar
+  - ✅ Test typing message and hitting send echoes the message back
+  - ✅ Test chat history persists across page reloads (sessionStorage, not localStorage)
+  - ✅ **Mobile Tests**: Test mobile responsive behavior (viewport resize, full-width sidebar)
+  - ✅ Add helper functions to `/tests/helpers/integration.js`
+- ✅ **Manual Testing**
+  - ✅ Run `make test-integration FILE=ai-chat-basic.test.js`
+  - ✅ Manually verify all UI interactions work smoothly
+- ✅ **Code Quality**
+  - ✅ Lint and format all code (`make lint && make format`)
+  - ✅ Comment audit - remove redundant comments, keep valuable ones
+  - ✅ Replace `forEach` with `for...of` for performance
+
+### Phase 1.5: Business Logic Extraction & Unit Testing
+
+**Goal:** Extract pure business logic from the AI Chat component into testable utility classes and add comprehensive unit tests for the business logic.
+
+**Tasks:** *(Mark completed items with ✅)*
+- Extract Chat History Business Logic (`/lib/chat-history.js`)
+  - Create `ChatHistory` utility class with message management
+  - Message creation with timestamps and validation
+  - Chat history serialization/deserialization with error handling
+  - Input validation and sanitization methods
+  - Limit enforcement (200 message limit from plan)
+- Extract Message Business Logic (`/lib/chat-message.js`)
+  - Create `ChatMessage` utility class for message operations
+  - Message role validation (user/assistant)
+  - Content sanitization and XSS prevention helpers
+  - Message formatting utilities
+- Refactor AI Chat Component (`/public/components/ai-chat.js`)
+  - Update component to use new utility classes
+  - Keep only UI/DOM manipulation in component
+  - Maintain exact same public API and behavior
+- **Unit Tests for Business Logic**
+  - Create ChatHistory Unit Tests (`/tests/unit/chat-history.test.js`)
+    - Test message creation, serialization, deserialization
+    - Test error handling for malformed data
+    - Test message limit enforcement
+    - Test input validation
+  - Create ChatMessage Unit Tests (`/tests/unit/chat-message.test.js`)
+    - Test message validation and sanitization
+    - Test XSS prevention
+    - Test role validation
+- **Integration Test Updates**
+  - Verify existing integration tests still pass after refactor
+  - No behavior changes should be visible to end users
+- **Quality Assurance**
+  - Run full test suite: `make test-all`
+  - Ensure all linting passes: `make lint`
+  - Verify no regressions in functionality
 
 ### Phase 2: Server-Side AI Integration
 

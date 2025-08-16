@@ -1,3 +1,4 @@
+import { AIChatComponent } from "./components/ai-chat.js";
 import { SchemaComponent } from "./components/schema.js";
 import { UploadComponent } from "./components/upload.js";
 import { WidgetComponent } from "./components/widget.js";
@@ -18,16 +19,15 @@ class App {
       this.hideUploadArea.bind(this),
     );
     this.schemaComponent = new SchemaComponent();
+    this.aiChatComponent = new AIChatComponent();
 
-    // Hide schema sidebar initially
+    // Show AI chat by default, hide schema sidebar
     this.schemaComponent.hide();
-
-    // Set up action buttons
+    this.aiChatComponent.show();
     this.setupAddWidgetButton();
+    this.setupAIChatButton();
     this.setupViewSchemaButton();
     this.setupToggleUploadButton();
-
-    // Check for existing database in sessionStorage
     await this.checkExistingDatabase();
   }
 
@@ -40,6 +40,15 @@ class App {
           return;
         }
         this.addWidget();
+      });
+    }
+  }
+
+  setupAIChatButton() {
+    const aiChatBtn = document.getElementById("ai-chat");
+    if (aiChatBtn) {
+      aiChatBtn.addEventListener("click", () => {
+        this.aiChatComponent.show();
       });
     }
   }
