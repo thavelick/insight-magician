@@ -9,3 +9,4 @@ scratch/
 tests/temp/
 worktrees/
 .claude/
+logs/
