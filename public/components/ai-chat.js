@@ -1,6 +1,15 @@
+import { ChatHistory } from "../../lib/chat-history.js";
+import {
+  MESSAGE_ROLES,
+  createEchoResponse,
+  formatContent,
+  getMessageClasses,
+  isEmpty,
+} from "../../lib/chat-message-utils.js";
+
 export class AIChatComponent {
   constructor() {
-    this.messages = [];
+    this.chatHistory = new ChatHistory("ai-chat-history", 200);
     this.createSidebar();
     this.loadChatHistory();
   }
@@ -39,7 +48,6 @@ export class AIChatComponent {
         this.sendMessage();
       });
 
-    // Enter to send, Shift+Enter for new line
     this.sidebar
       .querySelector(".ai-chat-input")
       .addEventListener("keydown", (e) => {
@@ -56,20 +64,19 @@ export class AIChatComponent {
     const input = this.sidebar.querySelector(".ai-chat-input");
     const message = input.value.trim();
 
-    if (!message) return;
+    if (isEmpty(message)) return;
 
-    this.addMessage("user", message);
+    this.addMessage(MESSAGE_ROLES.USER, message);
     input.value = "";
 
-    // Echo the message back (Phase 1 functionality)
     setTimeout(() => {
-      this.addMessage("assistant", `Echo: ${message}`);
+      const echoResponse = createEchoResponse(message);
+      this.addMessage(MESSAGE_ROLES.ASSISTANT, echoResponse);
     }, 500);
   }
 
   addMessage(role, content) {
-    const message = { role, content, timestamp: Date.now() };
-    this.messages.push(message);
+    const message = this.chatHistory.addMessage(role, content);
     this.renderMessage(message);
     this.scrollToBottom();
     this.saveChatHistory();
@@ -78,10 +85,9 @@ export class AIChatComponent {
   renderMessage(message) {
     const messagesContainer = this.sidebar.querySelector(".ai-chat-messages");
     const messageDiv = document.createElement("div");
-    messageDiv.className = `ai-chat-message ai-chat-message-${message.role}`;
+    messageDiv.className = getMessageClasses(message.role);
 
-    // Prevent XSS
-    messageDiv.textContent = message.content;
+    messageDiv.textContent = formatContent(message.content);
 
     messagesContainer.appendChild(messageDiv);
   }
@@ -92,36 +98,33 @@ export class AIChatComponent {
   }
 
   saveChatHistory() {
-    sessionStorage.setItem("ai-chat-history", JSON.stringify(this.messages));
+    this.chatHistory.save(sessionStorage);
   }
 
   loadChatHistory() {
-    const saved = sessionStorage.getItem("ai-chat-history");
-    if (saved) {
-      try {
-        this.messages = JSON.parse(saved);
-        this.renderAllMessages();
-      } catch (error) {
-        console.error("Failed to load chat history:", error);
-        this.messages = [];
-      }
+    const loaded = this.chatHistory.load(sessionStorage);
+    if (loaded) {
+      this.renderAllMessages();
     }
   }
 
   renderAllMessages() {
     const messagesContainer = this.sidebar.querySelector(".ai-chat-messages");
     messagesContainer.innerHTML = "";
-    for (const message of this.messages) {
+    for (const message of this.chatHistory.getMessages()) {
       this.renderMessage(message);
     }
     this.scrollToBottom();
+  }
+
+  get messages() {
+    return this.chatHistory.getMessages();
   }
 
   show() {
     this.sidebar.classList.add("visible");
     document.body.classList.add("ai-chat-open");
 
-    // Focus after transition (300ms)
     setTimeout(() => {
       this.sidebar.querySelector(".ai-chat-input").focus();
     }, 300);

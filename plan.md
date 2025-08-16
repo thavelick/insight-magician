@@ -60,38 +60,44 @@ Mirror the **schema sidebar** implementation (`/public/components/schema.js`) bu
 **Goal:** Extract pure business logic from the AI Chat component into testable utility classes and add comprehensive unit tests for the business logic.
 
 **Tasks:** *(Mark completed items with ✅)*
-- Extract Chat History Business Logic (`/lib/chat-history.js`)
-  - Create `ChatHistory` utility class with message management
-  - Message creation with timestamps and validation
-  - Chat history serialization/deserialization with error handling
-  - Input validation and sanitization methods
-  - Limit enforcement (200 message limit from plan)
-- Extract Message Business Logic (`/lib/chat-message.js`)
-  - Create `ChatMessage` utility class for message operations
-  - Message role validation (user/assistant)
-  - Content sanitization and XSS prevention helpers
-  - Message formatting utilities
-- Refactor AI Chat Component (`/public/components/ai-chat.js`)
-  - Update component to use new utility classes
-  - Keep only UI/DOM manipulation in component
-  - Maintain exact same public API and behavior
-- **Unit Tests for Business Logic**
-  - Create ChatHistory Unit Tests (`/tests/unit/chat-history.test.js`)
-    - Test message creation, serialization, deserialization
-    - Test error handling for malformed data
-    - Test message limit enforcement
-    - Test input validation
-  - Create ChatMessage Unit Tests (`/tests/unit/chat-message.test.js`)
-    - Test message validation and sanitization
-    - Test XSS prevention
-    - Test role validation
-- **Integration Test Updates**
-  - Verify existing integration tests still pass after refactor
-  - No behavior changes should be visible to end users
-- **Quality Assurance**
-  - Run full test suite: `make test-all`
-  - Ensure all linting passes: `make lint`
-  - Verify no regressions in functionality
+- ✅ Extract Chat History Business Logic (`/lib/chat-history.js`)
+  - ✅ Create `ChatHistory` utility class with message management
+  - ✅ Message creation with timestamps and validation
+  - ✅ Chat history serialization/deserialization with error handling
+  - ✅ Input validation and sanitization methods
+  - ✅ Limit enforcement (200 message limit from plan)
+- ✅ Extract Message Business Logic (`/lib/chat-message-utils.js`)
+  - ✅ Create message utility functions (converted from class to individual functions)
+  - ✅ Message role validation (user/assistant)
+  - ✅ Content sanitization and XSS prevention helpers
+  - ✅ Message formatting utilities
+- ✅ Refactor AI Chat Component (`/public/components/ai-chat.js`)
+  - ✅ Update component to use new utility classes
+  - ✅ Keep only UI/DOM manipulation in component
+  - ✅ Maintain exact same public API and behavior
+- ✅ **Unit Tests for Business Logic**
+  - ✅ Create ChatHistory Unit Tests (`/tests/unit/chat-history.test.js`)
+    - ✅ Test message creation, serialization, deserialization
+    - ✅ Test error handling for malformed data
+    - ✅ Test message limit enforcement
+    - ✅ Test input validation
+  - ✅ Create ChatMessage Unit Tests (`/tests/unit/chat-message-utils.test.js`)
+    - ✅ Test message validation and sanitization
+    - ✅ Test XSS prevention
+    - ✅ Test role validation
+- ✅ **Integration Test Updates**
+  - ✅ Verify existing integration tests still pass after refactor
+  - ✅ No behavior changes should be visible to end users
+- ✅ **Quality Assurance**
+  - ✅ Run full test suite: `make test-all`
+  - ✅ Ensure all linting passes: `make lint`
+  - ✅ Verify no regressions in functionality
+
+**Implementation Notes & Pivots:**
+- **Class → Functions Conversion**: Initially implemented ChatMessage as a class with static methods, but converted to individual exported functions to follow linter recommendations and improve tree-shaking
+- **File Renaming**: Renamed `chat-message.js` to `chat-message-utils.js` to better reflect the functional approach
+- **Comment Cleanup**: Removed redundant comments while preserving valuable context about security decisions
+- **88 Unit Tests**: Created comprehensive test coverage with 43 ChatHistory tests + 45 ChatMessage function tests
 
 ### Phase 2: Server-Side AI Integration
 
