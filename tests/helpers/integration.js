@@ -190,13 +190,15 @@ export async function expectChartFunctionError(
 
   // Wait for button to be clickable and stable
   await expect(page.locator(".widget .run-view-btn")).toBeVisible();
-  await page.waitForTimeout(100); // Small delay to ensure stability
+  await expect(page.locator(".widget .run-view-btn")).toBeEnabled();
 
-  await page.click(".widget .run-view-btn", { force: true });
+  await page.click(".widget .run-view-btn");
 
-  await page.waitForSelector(`.widget p:has-text("Error: ${expectedError}")`, {
-    timeout: 5000,
-  });
+  // Wait for error element to appear, then check the text
+  await expect(page.locator(".widget .error-message")).toBeVisible();
+  await expect(page.locator(".widget .error-message")).toContainText(
+    expectedError,
+  );
 }
 
 /**

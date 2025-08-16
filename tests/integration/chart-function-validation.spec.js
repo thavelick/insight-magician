@@ -10,7 +10,7 @@ test.describe("Chart Function Validation", () => {
     await setupGraphWidget(page, "basic");
   });
 
-  test("should validate JavaScript syntax in chart functions", async ({
+  test("should accept valid chart functions with proper syntax and safe patterns", async ({
     page,
   }) => {
     const validFunction = `function createChart(data, svg, d3, width, height) {
@@ -25,11 +25,11 @@ test.describe("Chart Function Validation", () => {
     await runChartFunction(page, validFunction, "SELECT 1 as test");
 
     await expect(page.locator(".chart-container")).toBeVisible();
+  });
 
-    // Flip back to edit mode for the second test
-    await page.click(".widget .edit-btn");
-    await expect(page.locator(".widget .chart-function-editor")).toBeVisible();
-
+  test("should detect JavaScript syntax errors in chart functions", async ({
+    page,
+  }) => {
     const invalidFunction = `function createChart(data, svg, d3, width, height) {
       let x = ;
       return svg;
@@ -40,22 +40,6 @@ test.describe("Chart Function Validation", () => {
       invalidFunction,
       "JavaScript syntax error:",
     );
-  });
-
-  test("should accept valid chart functions without dangerous patterns", async ({
-    page,
-  }) => {
-    const safeFunction = `function createChart(data, svg, d3, width, height) {
-      const circle = svg.append('circle')
-        .attr('cx', width / 2)
-        .attr('cy', height / 2)
-        .attr('r', 50)
-        .attr('fill', 'green');
-      return svg;
-    }`;
-
-    await runChartFunction(page, safeFunction, "SELECT 1 as test");
-    await expect(page.locator(".chart-container")).toBeVisible();
   });
 
   test("should reject dangerous patterns like while loops", async ({
