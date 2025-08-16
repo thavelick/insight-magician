@@ -44,21 +44,24 @@ export async function handleChat(request, openRouterClientClass) {
     }
 
     if (chatHistory.length > AI_CONFIG.MAX_CHAT_HISTORY_MESSAGES) {
-      return createErrorResponse(`Chat history too long. Maximum messages: ${AI_CONFIG.MAX_CHAT_HISTORY_MESSAGES}`, 400);
+      return createErrorResponse(
+        `Chat history too long. Maximum messages: ${AI_CONFIG.MAX_CHAT_HISTORY_MESSAGES}`,
+        400,
+      );
     }
 
     for (const msg of chatHistory) {
       if (!msg || typeof msg !== "object" || !msg.role || !msg.content) {
         return createErrorResponse(
           "Invalid chat history format. Each message must have role and content",
-          400
+          400,
         );
       }
 
       if (!["user", "assistant"].includes(msg.role)) {
         return createErrorResponse(
           'Invalid message role. Must be "user" or "assistant"',
-          400
+          400,
         );
       }
     }
@@ -84,16 +87,16 @@ export async function handleChat(request, openRouterClientClass) {
       usage: result.usage,
     });
   } catch (error) {
-    if (error.name === 'SyntaxError') {
+    if (error.name === "SyntaxError") {
       // JSON parsing error - client's fault
       return createErrorResponse("Invalid JSON in request body", 400);
     }
-    
-    if (error.message.includes('OPENROUTER_API_KEY')) {
+
+    if (error.message.includes("OPENROUTER_API_KEY")) {
       // Service unavailable due to config - our fault, but not unexpected
       return createErrorResponse("AI service temporarily unavailable", 503);
     }
-    
+
     // True unexpected errors - let the framework handle them
     console.error("Unexpected error in chat handler:", error);
     throw error;
