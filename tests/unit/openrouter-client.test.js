@@ -62,7 +62,6 @@ test("createChatCompletion handles successful response", async () => {
   expect(client.client.chat.completions.create).toHaveBeenCalledWith({
     model: "anthropic/claude-3.5-haiku",
     messages: messages,
-    temperature: 0.7,
     max_tokens: 2000,
   });
 });
