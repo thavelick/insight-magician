@@ -4,7 +4,6 @@ import {
   createOpenRouterClient,
 } from "../../lib/openrouter-client.js";
 
-// Create a mock OpenAI module
 function createMockOpenAI() {
   return function MockOpenAI(config) {
     this.chat = {

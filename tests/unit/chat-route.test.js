@@ -63,7 +63,7 @@ test("handleChat returns error for too long message", async () => {
   const data = await getResponseData(response);
 
   expect(response.status).toBe(400);
-  expect(data.error).toBe("Message too long. Maximum length: 4000 characters");
+  expect(data.error).toBe("Message too long");
 });
 
 test("handleChat returns error for non-array chatHistory", async () => {
@@ -212,7 +212,7 @@ test("handleChat handles client construction error", async () => {
   const response = await handleChat(request, FailingClient);
   const data = await getResponseData(response);
 
-  expect(response.status).toBe(500);
-  expect(data.error).toBe("Internal server error");
-  expect(data.type).toBe("server_error");
+  expect(response.status).toBe(503);
+  expect(data.error).toBe("AI service temporarily unavailable");
+  expect(data.type).toBe("service_error");
 });
