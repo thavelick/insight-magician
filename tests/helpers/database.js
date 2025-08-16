@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { mkdirSync } from "node:fs";
-import { unlink } from "node:fs/promises";
+import { unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 /**
@@ -86,4 +86,19 @@ export async function cleanupUploadedFile(filename) {
 export async function uploadFileViaUI(page, filePath) {
   const fileInput = page.locator('input[type="file"]');
   await fileInput.setInputFiles(filePath);
+}
+
+/**
+ * Create a corrupted database file that looks like SQLite but is broken
+ * @param {string} outputPath - Full path where the corrupted database should be created
+ * @returns {Promise<void>}
+ */
+export async function createCorruptedDatabase(outputPath) {
+  const sqliteHeader = Buffer.from("SQLite format 3\0", "utf8");
+  const corruptedData = Buffer.from(
+    "corrupted data that will break the database",
+  );
+  const corruptedFile = Buffer.concat([sqliteHeader, corruptedData]);
+
+  await writeFile(outputPath, corruptedFile);
 }

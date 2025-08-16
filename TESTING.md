@@ -35,21 +35,31 @@ await page.waitForTimeout(1500);
 await page.waitForSelector(".element", { state: "hidden" });
 ```
 
-### 3. Create helper functions early
+### 3. Avoid force clicks - use proper waits instead
+```javascript
+// ❌ Masks timing issues
+await page.click(".widget .run-view-btn", { force: true });
+
+// ✅ Wait for element to be properly interactive
+await expect(page.locator(".widget .run-view-btn")).toBeVisible();
+await page.click(".widget .run-view-btn");
+```
+
+### 4. Create helper functions early
 Extract common patterns to `../helpers/integration.js`:
 ```javascript
 async function setupDatabaseWithUpload(page, fixtureName = "basic") { }
 async function addWidget(page) { }
 ```
 
-### 4. Use Makefile patterns
+### 5. Use Makefile patterns
 ```bash
 make test-integration FILE=specific-test.spec.js  # Run one file
 make test-integration                             # Run all integration tests
 make format && make lint                          # Before commit
 ```
 
-### 5. Follow plan.md
+### 6. Follow plan.md
 - Update checkmarks as you complete sections
 - The "Post-implementation tasks" are real - do the duplication audit and comment audit!
 - Test your tests: `make test-integration FILE=your-file.spec.js`

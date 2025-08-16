@@ -1,6 +1,8 @@
 import { expect } from "@playwright/test";
 import {
   cleanupDatabase,
+  cleanupUploadedFile,
+  createCorruptedDatabase,
   createDatabaseFromFixture,
   getTempDatabasePath,
   uploadFileViaUI,
@@ -129,4 +131,104 @@ export async function openSchemaSidebar(page) {
   await page.click("button:has-text('View Schema')");
   await expect(page.locator(".schema-sidebar")).toBeVisible();
   await expect(page.locator(".schema-content >> text=users")).toBeVisible();
+}
+
+/**
+ * Setup a graph widget ready for chart function testing
+ *
+ * @param {object} page - Playwright page object
+ * @param {string} fixtureName - Name of SQL fixture (defaults to "basic")
+ * @returns {Promise<void>}
+ */
+export async function setupGraphWidget(page, fixtureName = "basic") {
+  await page.goto("/");
+  await setupDatabaseWithUpload(page, fixtureName);
+  await addWidget(page);
+
+  // Switch to graph widget type to enable chart function
+  await page.selectOption(".widget-type-select", "graph");
+  await expect(page.locator(".chart-function-group")).toBeVisible();
+}
+
+/**
+ * Run a chart function with query and wait for API response
+ *
+ * @param {object} page - Playwright page object
+ * @param {string} chartFunction - JavaScript chart function code
+ * @param {string} query - SQL query to execute
+ * @returns {Promise<Response>} API response
+ */
+export async function runChartFunction(page, chartFunction, query) {
+  await page.fill(".widget .chart-function-editor", chartFunction);
+  await page.fill(".widget .query-editor", query);
+
+  const queryResponsePromise = page.waitForResponse((response) =>
+    response.url().includes("/api/query"),
+  );
+
+  await page.click(".widget .run-view-btn");
+  return await queryResponsePromise;
+}
+
+/**
+ * Test a chart function that should show an error message
+ *
+ * @param {object} page - Playwright page object
+ * @param {string} chartFunction - JavaScript chart function code
+ * @param {string} expectedError - Expected error text to appear
+ * @param {string} query - SQL query (defaults to simple test query)
+ * @returns {Promise<void>}
+ */
+export async function expectChartFunctionError(
+  page,
+  chartFunction,
+  expectedError,
+  query = "SELECT 1 as test",
+) {
+  await page.fill(".widget .chart-function-editor", chartFunction);
+  await page.fill(".widget .query-editor", query);
+
+  // Wait for button to be clickable and stable
+  await expect(page.locator(".widget .run-view-btn")).toBeVisible();
+  await expect(page.locator(".widget .run-view-btn")).toBeEnabled();
+
+  await page.click(".widget .run-view-btn");
+
+  await expect(page.locator(".widget .error-message")).toBeVisible();
+  await expect(page.locator(".widget .error-message")).toContainText(
+    expectedError,
+  );
+}
+
+/**
+ * Upload a corrupted database and test schema extraction failure
+ *
+ * @param {object} page - Playwright page object
+ * @returns {Promise<{uploadedFilename: string, corruptedDbPath: string}>}
+ */
+export async function uploadCorruptedDatabaseAndTestSchemaFailure(page) {
+  const corruptedDbPath = getTempDatabasePath("corrupted");
+  await createCorruptedDatabase(corruptedDbPath);
+
+  const uploadResponsePromise = page.waitForResponse((response) =>
+    response.url().includes("/api/upload"),
+  );
+
+  await uploadFileViaUI(page, corruptedDbPath);
+  const uploadResponse = await uploadResponsePromise;
+
+  expect(uploadResponse.status()).toBe(200);
+  const uploadBody = await uploadResponse.json();
+  const uploadedFilename = uploadBody.filename;
+
+  const schemaResponse = await page.request.get(
+    `/api/schema?filename=${uploadedFilename}`,
+  );
+
+  expect(schemaResponse.status()).toBe(400);
+  const schemaBody = await schemaResponse.json();
+  expect(schemaBody.error).toBe("Database file is corrupted or invalid");
+  expect(schemaBody.success).toBeUndefined();
+
+  return { uploadedFilename, corruptedDbPath };
 }
