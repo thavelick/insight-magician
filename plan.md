@@ -307,22 +307,22 @@ Tests are organized into three phases:
 - ✅ Consider moving non-UI logic to unit tests if appropriate
 - ✅ Audit comments to remove redundant ones that just repeat code
 
-### 3.5 Widget Confirmation Dialogs (`widget-confirmations.spec.js`)
+### 3.5 Widget Confirmation Dialogs (`widget-confirmations.spec.js`) ✅
 **Priority: LOW**
 
-- Test widget deletion confirmation dialog
-- Test widget type switching confirmation when losing chart function
-- Test confirmation dialog responses (accept/cancel)
+- ✅ Test widget deletion confirmation dialog
+- ✅ Test widget type switching confirmation when losing chart function
+- ✅ Test confirmation dialog responses (accept/cancel)
 
 **Test Cases:**
-- `should show confirmation before deleting widget`
-- `should warn before switching from graph to table with existing chart function`
-- `should respect user choice in confirmation dialogs`
+- ✅ `should show confirmation before deleting widget`
+- ✅ `should warn before switching from graph to table with existing chart function`
+- ✅ `should respect user choice in confirmation dialogs`
 
 **Post-implementation tasks:**
-- Eliminate duplication between all 3 test cases (helper functions, setup/cleanup)
-- Consider moving non-UI logic to unit tests if appropriate
-- Audit comments to remove redundant ones that just repeat code
+- ✅ Eliminate duplication between all 3 test cases (helper functions, setup/cleanup)
+- ✅ Consider moving non-UI logic to unit tests if appropriate
+- ✅ Audit comments to remove redundant ones that just repeat code
 
 ### 3.6 User-Facing Error Messages (`user-error-messages.spec.js`)
 **Priority: LOW**
