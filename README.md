@@ -130,6 +130,9 @@ make test-integration
 
 # Run all tests
 make test-all
+
+# View development server logs (last 20 lines)
+make tail-logs
 ```
 
 ## Architecture
