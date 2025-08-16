@@ -9,7 +9,8 @@ MAKEFLAGS += --no-builtin-rules
 # ---------------------- COMMANDS ---------------------------
 dev: # Start development server with hot reload
 	@echo "Starting development server.."
-	bun run dev
+	@mkdir -p logs
+	bun run dev 2>&1 | tee logs/dev.log
 
 format: # Format code with Biome
 	@echo "Formatting code.."
@@ -44,6 +45,10 @@ test-all: # Run both unit and integration tests
 	@echo "Running all tests.."
 	bun run test:all
 
+tail-logs: # Show last 20 lines of development server logs
+	@echo "Last 20 lines of development server logs:"
+	@tail -n 20 logs/dev.log 2>/dev/null || echo "No log file found. Run 'make dev' first."
+
 install: # Install dependencies
 	@echo "Installing dependencies.."
 	bun install
@@ -53,7 +58,7 @@ install: # Install dependencies
 # command, you need to add it to .PHONY below, otherwise it
 # won't work. E.g. `make run` wouldn't work if you have
 # `run` file in pwd.
-.PHONY: help dev format lint check test-unit test-coverage test-integration test-all install
+.PHONY: help dev format lint check test-unit test-coverage test-integration test-all tail-logs install
 
 # -----------------------------------------------------------
 # -----       (Makefile helpers and decoration)      --------
