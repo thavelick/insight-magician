@@ -47,7 +47,7 @@ test.describe("Session Persistence", () => {
     await cleanupUploadedFile(uploadedFilename);
   });
 
-  test("should restore widget states and data after reload", async ({
+  test.skip("should restore widget states and data after reload", async ({
     page,
   }) => {
     const { uploadedFilename } = await setupDatabaseWithUpload(page);

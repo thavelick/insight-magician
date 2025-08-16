@@ -2,6 +2,25 @@ import { expect, test } from "@playwright/test";
 
 test.describe("AI Chat Basic Functionality", () => {
   test.beforeEach(async ({ page }) => {
+    // Mock the AI chat API endpoint
+    await page.route('/api/chat', async route => {
+      const request = route.request();
+      const postData = JSON.parse(request.postData());
+      
+      // Simulate AI response based on the message
+      const mockResponse = {
+        success: true,
+        message: `AI response to: ${postData.message}`,
+        usage: { prompt_tokens: 15, completion_tokens: 8, total_tokens: 23 }
+      };
+      
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(mockResponse)
+      });
+    });
+
     await page.goto("/");
     await page.evaluate(() => {
       sessionStorage.clear();
@@ -73,12 +92,12 @@ test.describe("AI Chat Basic Functionality", () => {
     await verifyAIChatSidebar(page, true);
   });
 
-  test("should echo user messages", async ({ page }) => {
+  test("should send user messages and receive AI responses", async ({ page }) => {
     const testMessage = "Hello, AI!";
 
     await sendChatMessage(page, testMessage);
     await verifyMessageInChat(page, testMessage, "user");
-    await verifyMessageInChat(page, `Echo: ${testMessage}`, "assistant");
+    await verifyMessageInChat(page, `AI response to: ${testMessage}`, "assistant");
     await expect(page.locator(".ai-chat-input")).toHaveValue("");
   });
 
@@ -89,7 +108,7 @@ test.describe("AI Chat Basic Functionality", () => {
     await page.press(".ai-chat-input", "Enter");
 
     await verifyMessageInChat(page, testMessage, "user");
-    await verifyMessageInChat(page, `Echo: ${testMessage}`, "assistant");
+    await verifyMessageInChat(page, `AI response to: ${testMessage}`, "assistant");
   });
 
   test("should handle Shift+Enter for new lines", async ({ page }) => {
@@ -107,18 +126,18 @@ test.describe("AI Chat Basic Functionality", () => {
     const message2 = "Second message";
     await sendChatMessage(page, message1);
     await verifyMessageInChat(page, message1, "user");
-    await verifyMessageInChat(page, `Echo: ${message1}`, "assistant");
+    await verifyMessageInChat(page, `AI response to: ${message1}`, "assistant");
 
     await sendChatMessage(page, message2);
     await verifyMessageInChat(page, message2, "user");
-    await verifyMessageInChat(page, `Echo: ${message2}`, "assistant");
+    await verifyMessageInChat(page, `AI response to: ${message2}`, "assistant");
 
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
     await verifyMessageInChat(page, message1, "user");
-    await verifyMessageInChat(page, `Echo: ${message1}`, "assistant");
+    await verifyMessageInChat(page, `AI response to: ${message1}`, "assistant");
     await verifyMessageInChat(page, message2, "user");
-    await verifyMessageInChat(page, `Echo: ${message2}`, "assistant");
+    await verifyMessageInChat(page, `AI response to: ${message2}`, "assistant");
   });
 
   test("should focus input when sidebar opens", async ({ page }) => {
@@ -169,9 +188,67 @@ test.describe("AI Chat Basic Functionality", () => {
     await expect(userMessage).toBeVisible();
     await expect(userMessage).toHaveCSS("align-self", "flex-end");
     const assistantMessage = page.locator(
-      `.ai-chat-message-assistant:has-text("Echo: ${testMessage}")`,
+      `.ai-chat-message-assistant:has-text("AI response to: ${testMessage}")`,
     );
     await expect(assistantMessage).toBeVisible();
     await expect(assistantMessage).toHaveCSS("align-self", "flex-start");
+  });
+
+  test("should show loading indicator while waiting for AI response", async ({ page }) => {
+    // Mock a slower API response
+    await page.route('/api/chat', async route => {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
+      const request = route.request();
+      const postData = JSON.parse(request.postData());
+      
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: `AI response to: ${postData.message}`,
+          usage: { prompt_tokens: 15, completion_tokens: 8, total_tokens: 23 }
+        })
+      });
+    });
+
+    const testMessage = "Loading test";
+    await page.fill(".ai-chat-input", testMessage);
+    
+    // Click send and immediately check for loading indicator
+    await page.click(".ai-chat-send");
+    
+    // Should show typing indicator
+    await expect(page.locator("#typing-indicator")).toBeVisible();
+    await expect(page.locator("#typing-indicator")).toContainText("AI is typing");
+    
+    // Input should be disabled during loading
+    await expect(page.locator(".ai-chat-input")).toBeDisabled();
+    await expect(page.locator(".ai-chat-send")).toBeDisabled();
+    
+    // Wait for response and verify loading indicator disappears
+    await verifyMessageInChat(page, `AI response to: ${testMessage}`, "assistant");
+    await expect(page.locator("#typing-indicator")).not.toBeVisible();
+    
+    // Input should be re-enabled
+    await expect(page.locator(".ai-chat-input")).not.toBeDisabled();
+    await expect(page.locator(".ai-chat-send")).not.toBeDisabled();
+  });
+
+  test("should handle API errors gracefully", async ({ page }) => {
+    // Mock API error response
+    await page.route('/api/chat', async route => {
+      await route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: "Internal server error" })
+      });
+    });
+
+    const testMessage = "Error test";
+    await sendChatMessage(page, testMessage);
+    
+    await verifyMessageInChat(page, testMessage, "user");
+    await verifyMessageInChat(page, "Sorry, I'm having trouble connecting right now. Please try again.", "assistant");
   });
 });

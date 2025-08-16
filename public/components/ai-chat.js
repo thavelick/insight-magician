@@ -1,15 +1,16 @@
 import { ChatHistory } from "../../lib/chat-history.js";
+import { ChatAPI } from "../../lib/chat-api.js";
 import {
   MESSAGE_ROLES,
-  createEchoResponse,
   formatContent,
   getMessageClasses,
   isEmpty,
 } from "../../lib/chat-message-utils.js";
 
 export class AIChatComponent {
-  constructor() {
+  constructor(chatAPI = new ChatAPI()) {
     this.chatHistory = new ChatHistory("ai-chat-history", 200);
+    this.chatAPI = chatAPI;
     this.createSidebar();
     this.loadChatHistory();
   }
@@ -60,19 +61,35 @@ export class AIChatComponent {
     document.body.appendChild(this.sidebar);
   }
 
-  sendMessage() {
+  async sendMessage() {
     const input = this.sidebar.querySelector(".ai-chat-input");
     const message = input.value.trim();
 
     if (isEmpty(message)) return;
 
+    // Disable input while processing
+    this.setInputEnabled(false);
     this.addMessage(MESSAGE_ROLES.USER, message);
     input.value = "";
 
-    setTimeout(() => {
-      const echoResponse = createEchoResponse(message);
-      this.addMessage(MESSAGE_ROLES.ASSISTANT, echoResponse);
-    }, 500);
+    // Add loading indicator
+    this.showTypingIndicator();
+
+    try {
+      // Call the chat API
+      const result = await this.chatAPI.sendMessage(message, this.chatHistory.getMessages());
+
+      // Add AI response
+      this.addMessage(MESSAGE_ROLES.ASSISTANT, result.message);
+    } catch (error) {
+      console.error('Chat API error:', error);
+      this.addMessage(MESSAGE_ROLES.ASSISTANT, 
+        "Sorry, I'm having trouble connecting right now. Please try again.");
+    } finally {
+      this.hideTypingIndicator();
+      this.setInputEnabled(true);
+      this.sidebar.querySelector(".ai-chat-input").focus();
+    }
   }
 
   addMessage(role, content) {
@@ -115,6 +132,40 @@ export class AIChatComponent {
       this.renderMessage(message);
     }
     this.scrollToBottom();
+  }
+
+
+  setInputEnabled(enabled) {
+    const input = this.sidebar.querySelector(".ai-chat-input");
+    const sendButton = this.sidebar.querySelector(".ai-chat-send");
+    
+    input.disabled = !enabled;
+    sendButton.disabled = !enabled;
+    
+    if (enabled) {
+      input.classList.remove("disabled");
+      sendButton.classList.remove("disabled");
+    } else {
+      input.classList.add("disabled");
+      sendButton.classList.add("disabled");
+    }
+  }
+
+  showTypingIndicator() {
+    const messagesContainer = this.sidebar.querySelector(".ai-chat-messages");
+    const indicator = document.createElement("div");
+    indicator.className = "message assistant typing-indicator";
+    indicator.textContent = "AI is typing...";
+    indicator.id = "typing-indicator";
+    messagesContainer.appendChild(indicator);
+    this.scrollToBottom();
+  }
+
+  hideTypingIndicator() {
+    const indicator = this.sidebar.querySelector("#typing-indicator");
+    if (indicator) {
+      indicator.remove();
+    }
   }
 
   get messages() {
