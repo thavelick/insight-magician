@@ -36,7 +36,6 @@ test.describe("Widget Confirmation Dialogs", () => {
       handler(dialog);
     });
 
-    await page.waitForTimeout(500);
     return {
       dialogShown: () => dialogShown,
       dialogMessage: () => dialogMessage,
