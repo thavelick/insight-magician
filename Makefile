@@ -41,6 +41,11 @@ else
 	bun run test:integration
 endif
 
+test-integration-expensive: # Run expensive integration tests that use real APIs (tagged with @expensive)
+	@echo "Running expensive integration tests with real API calls.."
+	@echo "⚠️  These tests may cost money and require OPENROUTER_API_KEY"
+	bun run playwright test --grep "@expensive"
+
 test-all: # Run both unit and integration tests
 	@echo "Running all tests.."
 	bun run test:all
@@ -58,7 +63,7 @@ install: # Install dependencies
 # command, you need to add it to .PHONY below, otherwise it
 # won't work. E.g. `make run` wouldn't work if you have
 # `run` file in pwd.
-.PHONY: help dev format lint check test-unit test-coverage test-integration test-all tail-logs install
+.PHONY: help dev format lint check test-unit test-coverage test-integration test-integration-expensive test-all tail-logs install
 
 # -----------------------------------------------------------
 # -----       (Makefile helpers and decoration)      --------

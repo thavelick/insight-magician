@@ -178,14 +178,23 @@ Mirror the **schema sidebar** implementation (`/public/components/schema.js`) bu
     - Test show/hide functionality
     - Test API integration (mock fetch)
 - **Integration Tests for Phase 3** (update existing file) *(Follow `/TESTING.md` - set up response listeners BEFORE triggering actions, avoid force clicks)*
-  - Update `/tests/integration/ai-chat-basic.test.js` to test real AI responses
-  - Set up response listeners BEFORE triggering actions
-  - Test message sending end-to-end (with mocked API)
-  - Test error handling in UI
-  - Test loading states and typing indicators
+  - **Regular Integration Tests** (majority) - Use Playwright route interception to mock `/api/chat` calls
+    - Mock API responses at network level with `page.route('/api/chat', ...)`
+    - Test complete UI flow with predictable responses (no external API costs)
+    - Test error scenarios by mocking different API failure responses
+    - Test loading states and message rendering
+    - Set up response listeners BEFORE triggering actions
+  - **Expensive Integration Tests** - Tag with `@expensive` for real OpenRouter API calls
+    - One or two tests that verify actual API integration works
+    - Test real AI response handling end-to-end
+    - Only run manually or in special CI scenarios
+- **Make Commands**
+  - Add `test-integration-expensive` target for `@expensive` tagged tests
+  - Regular `test-integration` runs regular tests with mocked APIs
 - **Run Tests**
   - Unit tests pass: `make test-unit`
-  - Integration tests pass: `make test-integration FILE=ai-chat-basic.test.js`
+  - Regular integration tests pass: `make test-integration`
+  - Expensive tests pass: `make test-integration-expensive` (when API key available)
 
 ### Phase 4: Error Handling & Polish
 
