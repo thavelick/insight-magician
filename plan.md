@@ -104,97 +104,97 @@ Mirror the **schema sidebar** implementation (`/public/components/schema.js`) bu
 **Goal:** Build the backend infrastructure to handle AI chat requests. Create the OpenRouter client, API route, and configuration files needed for AI conversations.
 
 **Tasks:** *(Mark completed items with ✅)*
-- Create AI Configuration (`/lib/ai-config.js`)
-  - Define OpenRouter base URL, model name, site info constants
-  - Make model easily configurable
-- Create System Prompt (`/lib/ai-system-prompt.js`)
-  - Write system prompt as JS constant export
-  - Focus on database visualization and analysis assistance
-- Install OpenAI Package
-  - Run `bun add openai` to install OpenAI SDK
-- Create OpenRouter Client (`/lib/openrouter-client.js`)
-  - Use OpenAI SDK configured for OpenRouter endpoints
-  - Configure base URL to `https://openrouter.ai/api/v1`
-  - Handle authentication with OPENROUTER_API_KEY environment variable
-  - Include required headers (HTTP-Referer, X-Title) in default headers
-  - Export `createChatCompletion()` method that uses OpenAI SDK
-- Create Chat API Route (`/routes/chat.js`)
-  - Follow pattern from `/routes/query.js`
-  - **Security**: Validate and sanitize input (message required, chatHistory optional)
-  - **Security**: Limit message length (e.g., 4000 characters max)
-  - **Security**: Limit chat history size (max 300 messages in request)
-  - Build messages array with system prompt
-  - Call OpenRouter client
-  - Return response with success/error handling
-- Add Route to Server (`/index.js`)
-  - Import handleChat function
-  - Add `"/api/chat": { POST: handleChat }` to routes object
-- **Unit Tests for Phase 2**
-  - Create OpenRouter Client Unit Tests (`/tests/unit/openrouter-client.test.js`)
-    - Test client initialization with/without API key
-    - Test createChatCompletion method (mock fetch)
-    - Test error handling for API failures
-  - Create Chat Route Unit Tests (`/tests/unit/chat-route.test.js`)
-    - Test successful chat completion
-    - Test missing message validation
-    - Test malformed input handling
-    - Test OpenRouter API error handling
-- **Manual API Testing**
-  - Test API route with curl: `curl -X POST http://localhost:3000/api/chat -H "Content-Type: application/json" -d '{"message":"Hello"}'`
-  - Verify OpenRouter API key is set (check environment variable exists, don't look at value)
-  - Test error handling for missing/invalid inputs with curl
-- **Run Tests**
-  - Unit tests pass: `make test-unit`
+- ✅ Create AI Configuration (`/lib/ai-config.js`)
+  - ✅ Define OpenRouter base URL, model name, site info constants
+  - ✅ Make model easily configurable
+- ✅ Create System Prompt (`/lib/ai-system-prompt.js`)
+  - ✅ Write system prompt as JS constant export
+  - ✅ Focus on database visualization and analysis assistance
+- ✅ Install OpenAI Package
+  - ✅ Run `bun add openai` to install OpenAI SDK
+- ✅ Create OpenRouter Client (`/lib/openrouter-client.js`)
+  - ✅ Use OpenAI SDK configured for OpenRouter endpoints
+  - ✅ Configure base URL to `https://openrouter.ai/api/v1`
+  - ✅ Handle authentication with OPENROUTER_API_KEY environment variable
+  - ✅ Include required headers (HTTP-Referer, X-Title) in default headers
+  - ✅ Export `createChatCompletion()` method that uses OpenAI SDK
+- ✅ Create Chat API Route (`/routes/chat.js`)
+  - ✅ Follow pattern from `/routes/query.js`
+  - ✅ **Security**: Validate and sanitize input (message required, chatHistory optional)
+  - ✅ **Security**: Limit message length (e.g., 4000 characters max)
+  - ✅ **Security**: Limit chat history size (max 300 messages in request)
+  - ✅ Build messages array with system prompt
+  - ✅ Call OpenRouter client
+  - ✅ Return response with success/error handling
+- ✅ Add Route to Server (`/index.js`)
+  - ✅ Import handleChat function
+  - ✅ Add `"/api/chat": { POST: handleChat }` to routes object
+- ✅ **Unit Tests for Phase 2**
+  - ✅ Create OpenRouter Client Unit Tests (`/tests/unit/openrouter-client.test.js`)
+    - ✅ Test client initialization with/without API key
+    - ✅ Test createChatCompletion method (mock fetch)
+    - ✅ Test error handling for API failures
+  - ✅ Create Chat Route Unit Tests (`/tests/unit/chat-route.test.js`)
+    - ✅ Test successful chat completion
+    - ✅ Test missing message validation
+    - ✅ Test malformed input handling
+    - ✅ Test OpenRouter API error handling
+- ✅ **Manual API Testing**
+  - ✅ Test API route with curl: `curl -X POST http://localhost:3000/api/chat -H "Content-Type: application/json" -d '{"message":"Hello"}'`
+  - ✅ Verify OpenRouter API key is set (check environment variable exists, don't look at value)
+  - ✅ Test error handling for missing/invalid inputs with curl
+- ✅ **Run Tests**
+  - ✅ Unit tests pass: `make test-unit`
 
 ### Phase 3: Frontend Chat Logic
 
 **Goal:** Replace the echo functionality with real AI chat. Connect the frontend to the backend API and handle the complete chat flow including loading states and error handling.
 
 **Tasks:** *(Mark completed items with ✅)*
-- Replace Echo with AI Integration
-  - Modify `sendMessage()` method to call `/api/chat` instead of echoing
-  - Update message handling to work with AI responses
-  - Keep existing message rendering and persistence logic
-- Add Message Handling to Component
-  - Implement `addMessage()` to append messages to chat
-  - **Security**: Implement `renderMessage()` with XSS prevention (escape HTML, use textContent)
-  - Add loading states and typing indicators
-  - Handle API errors gracefully
-- Add Chat History Persistence
-  - Implement `saveChatHistory()` using sessionStorage (persists refreshes, not browser sessions)
-  - Implement `loadChatHistory()` to restore on page load
-  - Load and render existing messages on component creation
-  - **Security**: Validate loaded chat history structure before rendering
-- Add Input Handling
-  - Wire up send button click handler
-  - Add Enter key submission (Shift+Enter for new line)
-  - Clear input after sending
-  - Disable input while loading
-- **Unit Tests for Phase 3**
-  - Create AI Chat Component Unit Tests (`/tests/unit/ai-chat.test.js`)
-    - Test component initialization
-    - Test message rendering
-    - Test chat history save/load
-    - Test show/hide functionality
-    - Test API integration (mock fetch)
-- **Integration Tests for Phase 3** (update existing file) *(Follow `/TESTING.md` - set up response listeners BEFORE triggering actions, avoid force clicks)*
-  - **Regular Integration Tests** (majority) - Use Playwright route interception to mock `/api/chat` calls
-    - Mock API responses at network level with `page.route('/api/chat', ...)`
-    - Test complete UI flow with predictable responses (no external API costs)
-    - Test error scenarios by mocking different API failure responses
-    - Test loading states and message rendering
-    - Set up response listeners BEFORE triggering actions
-  - **Expensive Integration Tests** - Tag with `@expensive` for real OpenRouter API calls
-    - One or two tests that verify actual API integration works
-    - Test real AI response handling end-to-end
-    - Only run manually or in special CI scenarios
-- **Make Commands**
-  - Add `test-integration-expensive` target for `@expensive` tagged tests
-  - Regular `test-integration` runs regular tests with mocked APIs
-- **Run Tests**
-  - Unit tests pass: `make test-unit`
-  - Regular integration tests pass: `make test-integration`
-  - Expensive tests pass: `make test-integration-expensive` (when API key available)
+- ✅ Replace Echo with AI Integration
+  - ✅ Modify `sendMessage()` method to call `/api/chat` instead of echoing
+  - ✅ Update message handling to work with AI responses
+  - ✅ Keep existing message rendering and persistence logic
+- ✅ Add Message Handling to Component
+  - ✅ Implement `addMessage()` to append messages to chat
+  - ✅ **Security**: Implement `renderMessage()` with XSS prevention (escape HTML, use textContent)
+  - ✅ Add loading states and typing indicators
+  - ✅ Handle API errors gracefully
+- ✅ Add Chat History Persistence
+  - ✅ Implement `saveChatHistory()` using sessionStorage (persists refreshes, not browser sessions)
+  - ✅ Implement `loadChatHistory()` to restore on page load
+  - ✅ Load and render existing messages on component creation
+  - ✅ **Security**: Validate loaded chat history structure before rendering
+- ✅ Add Input Handling
+  - ✅ Wire up send button click handler
+  - ✅ Add Enter key submission (Shift+Enter for new line)
+  - ✅ Clear input after sending
+  - ✅ Disable input while loading
+- ✅ **Unit Tests for Phase 3**
+  - ✅ Create AI Chat Component Unit Tests (`/tests/unit/chat-api.test.js`) - *Note: Created ChatAPI class and tests instead*
+    - ✅ Test component initialization
+    - ✅ Test message rendering (via ChatAPI extraction)
+    - ✅ Test chat history save/load (existing from Phase 1.5)
+    - ✅ Test show/hide functionality (existing from Phase 1)
+    - ✅ Test API integration (mock fetch)
+- ✅ **Integration Tests for Phase 3** (update existing file) *(Follow `/TESTING.md` - set up response listeners BEFORE triggering actions, avoid force clicks)*
+  - ✅ **Regular Integration Tests** (majority) - Use Playwright route interception to mock `/api/chat` calls
+    - ✅ Mock API responses at network level with `page.route('/api/chat', ...)`
+    - ✅ Test complete UI flow with predictable responses (no external API costs)
+    - ✅ Test error scenarios by mocking different API failure responses
+    - ✅ Test loading states and message rendering
+    - ✅ Set up response listeners BEFORE triggering actions
+  - ✅ **Expensive Integration Tests** - Tag with `@expensive` for real OpenRouter API calls
+    - ✅ One or two tests that verify actual API integration works
+    - ✅ Test real AI response handling end-to-end
+    - ✅ Only run manually or in special CI scenarios
+- ✅ **Make Commands**
+  - ✅ Add `test-integration-expensive` target for `@expensive` tagged tests
+  - ✅ Regular `test-integration` runs regular tests with mocked APIs
+- ✅ **Run Tests**
+  - ✅ Unit tests pass: `make test-unit`
+  - ✅ Regular integration tests pass: `make test-integration`
+  - ✅ Expensive tests pass: `make test-integration-expensive` (when API key available)
 
 ### Phase 4: Error Handling & Polish
 

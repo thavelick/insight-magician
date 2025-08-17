@@ -37,10 +37,7 @@ test.describe("AI Chat Real API Integration", () => {
       const userMessage =
         "Hello! Please respond with exactly 'Test successful' and nothing else.";
 
-      // Send message and wait for AI response
       await sendChatMessage(page, userMessage);
-
-      // Verify user message appears
       await verifyMessageInChat(page, userMessage, "user");
 
       // Wait for AI response (real API call may take longer)
@@ -57,7 +54,6 @@ test.describe("AI Chat Real API Integration", () => {
       expect(responseText).toBeTruthy();
       expect(responseText.length).toBeGreaterThan(0);
 
-      // Verify input is re-enabled after response
       await expect(page.locator(".ai-chat-input")).not.toBeDisabled();
       await expect(page.locator(".ai-chat-send")).not.toBeDisabled();
     },
@@ -70,25 +66,21 @@ test.describe("AI Chat Real API Integration", () => {
       const message1 = "Say 'first' and nothing else.";
       const message2 = "Say 'second' and nothing else.";
 
-      // Send first message
       await sendChatMessage(page, message1);
       await verifyMessageInChat(page, message1, "user");
       await expect(page.locator(".ai-chat-message-assistant")).toHaveCount(1, {
         timeout: 10000,
       });
 
-      // Send second message
       await sendChatMessage(page, message2);
       await verifyMessageInChat(page, message2, "user");
       await expect(page.locator(".ai-chat-message-assistant")).toHaveCount(2, {
         timeout: 10000,
       });
 
-      // Verify chat history includes both user messages and both AI responses
       await expect(page.locator(".ai-chat-message-user")).toHaveCount(2);
       await expect(page.locator(".ai-chat-message-assistant")).toHaveCount(2);
 
-      // Reload page and verify history persists
       await page.reload();
       await page.waitForLoadState("domcontentloaded");
 
