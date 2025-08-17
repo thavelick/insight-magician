@@ -259,6 +259,22 @@ export class AIChatComponent {
           console.log("SQL query executed successfully:", result.data);
           break;
 
+        case "widget_created":
+          console.log("Widget created successfully:", result.widgetConfig);
+          if (window.app?.createWidgetFromTool) {
+            const createResult = window.app.createWidgetFromTool(
+              result.widgetConfig,
+            );
+            if (createResult.success) {
+              console.log(`✅ Widget created: ${createResult.message}`);
+            } else {
+              console.error("❌ Failed to create widget:", createResult.error);
+            }
+          } else {
+            console.error("❌ App instance not available for widget creation");
+          }
+          break;
+
         default:
           console.log("Unknown tool action:", result.action, result);
       }
