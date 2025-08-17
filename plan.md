@@ -135,19 +135,50 @@ const TOOLS = [
 
 **Goal**: Establish OpenRouter tool calling without implementing actual tools
 
-**Implementation:**
-- Extend `OpenRouterClient.createChatCompletion()` to accept `tools` parameter
-- Handle tool call responses from OpenRouter API
-- Create tool execution framework that can route to tool handlers
-- Update chat endpoint to manage tool calling flow
+**Task List** (Check off completed tasks with ✅):
 
-**Files to Create/Modify:**
-- `lib/openrouter-client.js` - Add tool calling support
-- `routes/chat.js` - Handle tool execution workflow  
-- `lib/tool-executor.js` - NEW: Central tool routing and execution
-- `lib/ai-system-prompt.js` - **MAJOR UPDATE**: Add tool descriptions, chart examples from `examples/`, and widget usage patterns
-- `public/components/ai-chat.js` - Add `processToolResult()` method for handling tool execution results
-- `public/app.js` - Add tool integration methods: `createWidgetFromTool()`, `updateWidgetFromTool()`, `resizeWidgetFromTool()`
+### Backend Infrastructure
+- Update `lib/openrouter-client.js`:
+  - Add `tools` parameter to `createChatCompletion()` method
+  - Handle tool call responses from OpenRouter API
+  - Add proper error handling for tool call failures
+  - Update request/response interfaces for tool calling
+- Update `routes/chat.js`:
+  - Accept tools array in request body
+  - Handle tool call responses from OpenRouter
+  - Implement tool execution workflow
+  - Send tool results back to OpenRouter for final AI response
+  - Add proper error handling for tool execution failures
+- Create `lib/tool-executor.js`:
+  - Design tool registry system for registering available tools
+  - Implement safe tool execution with parameter validation
+  - Add tool result formatting and error handling
+  - Create base tool interface/abstract class
+  - Add tool execution logging and debugging
+
+### System Prompt and AI Guidance
+- Update `lib/ai-system-prompt.js`:
+  - Add tool awareness and descriptions of all 6 tools
+  - Integrate chart function examples from `examples/simple-bar-chart.md`
+  - Integrate chart function examples from `examples/simple-pie-chart.md`
+  - Add widget creation best practices and size guidelines
+  - Add guidance on when to use each tool type
+  - Include SQL query patterns and data type recommendations
+
+### Frontend Integration
+- Update `public/components/ai-chat.js`:
+  - Add `processToolResult()` method to handle tool execution results
+  - Update `sendMessage()` to include tools array in API calls
+  - Add visual indicators for tool execution in progress
+  - Handle tool execution errors with user-friendly messages
+  - Add support for displaying tool results in chat
+- Update `public/app.js`:
+  - Add `createWidgetFromTool(widgetConfig)` method
+  - Add `updateWidgetFromTool(widgetConfig)` method  
+  - Add `resizeWidgetFromTool(widgetId, dimensions)` method
+  - Add `getWidgetListForTools()` method for widget state access
+  - Expose global `window.app` reference for tool result processing
+  - Add error handling for tool-initiated widget operations
 
 **Testing:**
 - **Manual**: Send message "What can you help me with?" - should mention tool capabilities and chart types
@@ -172,17 +203,36 @@ const TOOLS = [
 
 **Goal**: Allow AI to understand database structure and current dashboard state
 
-**Implementation:**
-- Create `get_schema_info` tool that calls existing `/api/schema` endpoint
-- Create `list_widgets` tool that returns current widget configurations
-- Format schema and widget information for AI consumption
-- Handle both full schema and specific table requests
+**Task List** (Check off completed tasks with ✅):
 
-**Files to Create/Modify:**
-- `lib/tools/schema-tool.js` - NEW: Schema information tool
-- `lib/tools/list-widgets-tool.js` - NEW: Widget listing tool
-- `lib/tool-executor.js` - Register both tools
-- Update system prompt to describe when to use these tools
+### Schema Information Tool
+- Create `lib/tools/schema-tool.js`:
+  - Implement `get_schema_info` tool class extending base tool
+  - Call existing `/api/schema` endpoint for database structure
+  - Format schema information for AI consumption (tables, columns, types)
+  - Handle optional table name parameter for specific table info
+  - Add error handling for missing database connections
+  - Include row counts and sample data where helpful
+
+### Widget Listing Tool  
+- Create `lib/tools/list-widgets-tool.js`:
+  - Implement `list_widgets` tool class extending base tool
+  - Access current widget state from frontend session
+  - Format widget information for AI (IDs, titles, types, queries, dimensions)
+  - Include widget status (showing data, in edit mode, error state)
+  - Handle empty dashboard state gracefully
+  - Return widget layout information for dashboard awareness
+
+### Tool Registration and Integration
+- Update `lib/tool-executor.js`:
+  - Register `get_schema_info` tool in tool registry
+  - Register `list_widgets` tool in tool registry
+  - Add proper error handling for both tools
+  - Test tool execution with sample parameters
+- Update system prompt in `lib/ai-system-prompt.js`:
+  - Add descriptions of when to use schema tool
+  - Add descriptions of when to use widget listing tool
+  - Include examples of how these tools inform widget creation decisions
 
 **Testing:**
 - **Manual**: Ask "What tables are in this database?" and "What widgets are already on the dashboard?"
@@ -207,16 +257,37 @@ const TOOLS = [
 
 **Goal**: Let AI run queries to answer data questions
 
-**Implementation:**
-- Create `execute_sql_query` tool using existing `/api/query` logic
-- Reuse SQL validation from `validateSql()`
-- Format query results for AI interpretation
-- Support pagination for large result sets
+**Task List** (Check off completed tasks with ✅):
 
-**Files to Create/Modify:**
-- `lib/tools/sql-query-tool.js` - NEW: Query execution tool
-- `lib/tool-executor.js` - Register SQL tool
-- Add query result formatting utilities
+### SQL Query Tool Implementation
+- Create `lib/tools/sql-query-tool.js`:
+  - Implement `execute_sql_query` tool class extending base tool
+  - Integrate with existing `/api/query` endpoint logic
+  - Reuse SQL validation from `validateSql()` for security
+  - Handle query parameters (query, explanation) 
+  - Support pagination parameters for large datasets
+  - Format query results for AI consumption (summary + sample data)
+  - Add error handling for SQL syntax errors and execution failures
+  - Include query execution statistics (row count, execution time)
+
+### Query Result Formatting
+- Add query result formatting utilities:
+  - Create concise data summaries for AI interpretation
+  - Handle different data types (strings, numbers, dates, nulls)
+  - Limit result size for AI processing while preserving meaning
+  - Format error messages to be helpful for AI understanding
+  - Include data type information and column metadata
+
+### Tool Registration and Integration  
+- Update `lib/tool-executor.js`:
+  - Register `execute_sql_query` tool in tool registry
+  - Add database context passing to SQL tool
+  - Test tool execution with various query types
+  - Add proper error propagation for SQL failures
+- Update system prompt in `lib/ai-system-prompt.js`:
+  - Add guidance on when to use SQL query tool vs widget creation
+  - Include examples of good analytical queries
+  - Add data exploration patterns and common SQL templates
 
 **Testing:**
 - **Manual**: Ask "How many users are in the database?"
@@ -240,17 +311,37 @@ const TOOLS = [
 
 **Goal**: Enable AI to create dashboard widgets
 
-**Implementation:**
-- Create `create_widget` tool that integrates with existing widget system
-- Use `App.addWidget()` or similar mechanism
-- Generate appropriate chart functions for graph widgets
-- Handle widget state persistence
+**Task List** (Check off completed tasks with ✅):
 
-**Files to Create/Modify:**
-- `lib/tools/widget-creation-tool.js` - NEW: Widget creation
-- `lib/tool-executor.js` - Register widget tool
-- `public/app.js` - Expose widget creation API for tools
-- Bridge between backend tool execution and frontend widget state
+### Widget Creation Tool Implementation
+- Create `lib/tools/widget-creation-tool.js`:
+  - Implement `create_widget` tool class extending base tool
+  - Handle all widget parameters (title, widgetType, query, width, height, chartFunction)
+  - Validate SQL queries using existing `validateSql()` 
+  - Validate chart functions for graph widgets
+  - Generate widget IDs and ensure uniqueness
+  - Execute initial query to populate widget with data
+  - Return complete widget configuration for frontend creation
+
+### Chart Function Generation
+- Add chart function generation capabilities:
+  - Generate appropriate D3.js chart functions based on data structure
+  - Use examples from `examples/simple-bar-chart.md` and `examples/simple-pie-chart.md`
+  - Handle different data types (categorical, numerical, time series)
+  - Provide fallback chart functions for common patterns
+  - Validate generated chart function syntax before returning
+
+### Widget Integration and State Management
+- Update `lib/tool-executor.js`:
+  - Register `create_widget` tool in tool registry
+  - Add widget state coordination with frontend
+  - Handle widget creation errors and rollback
+  - Add logging for widget creation events
+- Enhance frontend integration:
+  - Ensure `createWidgetFromTool()` method works with tool results
+  - Test widget persistence after tool-based creation
+  - Verify real-time widget appearance in dashboard
+  - Add error handling for widget creation failures
 
 **Testing:**
 - **Manual**: Say "Create a chart showing sales by month"
@@ -274,17 +365,39 @@ const TOOLS = [
 
 **Goal**: Allow AI to edit and resize existing widgets
 
-**Implementation:**
-- Create `edit_widget` tool to modify widget properties
-- Create `resize_widget` tool for layout management
-- Integrate with existing widget methods
-- Handle widget state synchronization
+**Task List** (Check off completed tasks with ✅):
 
-**Files to Create/Modify:**
-- `lib/tools/widget-edit-tool.js` - NEW: Widget editing
-- `lib/tools/widget-resize-tool.js` - NEW: Widget resizing
-- `lib/tool-executor.js` - Register new tools
-- Widget state management utilities
+### Widget Editing Tool
+- Create `lib/tools/widget-edit-tool.js`:
+  - Implement `edit_widget` tool class extending base tool
+  - Handle widget ID validation and lookup
+  - Support editing title, query, chartFunction, and widgetType
+  - Validate new SQL queries before applying changes
+  - Validate new chart functions for graph widgets
+  - Re-execute queries when SQL changes
+  - Return updated widget configuration
+
+### Widget Resizing Tool
+- Create `lib/tools/widget-resize-tool.js`:
+  - Implement `resize_widget` tool class extending base tool
+  - Handle widget ID validation and lookup
+  - Validate width and height constraints (1-4 for each dimension)
+  - Apply size changes and trigger frontend updates
+  - Return confirmation of resize operation
+  - Handle resize conflicts and layout optimization
+
+### Tool Registration and State Management
+- Update `lib/tool-executor.js`:
+  - Register `edit_widget` tool in tool registry
+  - Register `resize_widget` tool in tool registry
+  - Add widget state synchronization logic
+  - Handle concurrent widget modifications
+  - Add proper error handling for invalid widget IDs
+- Enhance frontend integration:
+  - Ensure `updateWidgetFromTool()` method works with edit results
+  - Ensure `resizeWidgetFromTool()` method works with resize results
+  - Test real-time widget updates in dashboard
+  - Add visual feedback for widget modifications
 
 **Testing:**
 - **Manual**: "Change widget 1 title to 'Revenue Report'" and "Make widget 2 bigger"
@@ -308,17 +421,41 @@ const TOOLS = [
 
 **Goal**: Polish tool calling UX and error handling
 
-**Implementation:**
-- Add visual indicators for tool execution in chat
-- Implement tool execution progress feedback
-- Enhanced error messages and recovery suggestions
-- Multi-tool coordination and conflict resolution
+**Task List** (Check off completed tasks with ✅):
 
-**Files to Create/Modify:**
-- `public/components/ai-chat.js` - Enhanced UI for tool calls
-- `lib/tools/response-formatter.js` - NEW: Tool result formatting
-- Enhanced error handling across all tools
-- Tool execution analytics and logging
+### Enhanced Chat UI
+- Update `public/components/ai-chat.js`:
+  - Add visual indicators for tool execution in progress (spinner, status text)
+  - Show which specific tool is being executed
+  - Display tool execution results in chat with clear formatting
+  - Add tool execution progress feedback for multi-step operations
+  - Handle tool execution timeouts with user-friendly messages
+  - Add "cancel tool execution" functionality if needed
+
+### Response Formatting and Error Handling
+- Create `lib/tools/response-formatter.js`:
+  - Format tool results for optimal AI and user understanding
+  - Create consistent error message formats across all tools
+  - Add helpful recovery suggestions for common tool failures
+  - Format complex data structures for chat display
+  - Add success confirmations with actionable next steps
+- Enhance error handling across all tools:
+  - Add detailed error logging for debugging tool issues
+  - Create user-friendly error messages for each tool type
+  - Add automatic retry logic for transient failures
+  - Implement graceful degradation when tools fail
+
+### Multi-Tool Coordination and Analytics
+- Add multi-tool coordination capabilities:
+  - Handle tool execution conflicts and dependencies
+  - Optimize tool execution order for efficiency
+  - Add tool execution caching where appropriate
+  - Handle concurrent tool requests gracefully
+- Add tool execution analytics and logging:
+  - Track tool usage patterns and performance metrics
+  - Log tool execution times and success rates
+  - Add debugging information for tool failures
+  - Create tool execution reports for optimization
 
 **Testing:**
 - **Manual**: Complex requests like "Create a sales chart and make it larger, then show me the top customers"
