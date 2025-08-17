@@ -100,13 +100,11 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Create `tests/unit/lib/tool-executor.test.js` - Test tool registry and execution
   - Create `tests/unit/lib/tools/schema-tool.test.js` - Test schema tool functionality
   - Create `tests/unit/routes/chat.test.js` - Test chat endpoint with tool calling
-- Write integration tests:
-  - Create `tests/integration/tool-calling-basic.test.js` - End-to-end tool calling with schema tool
-  - Create `tests/integration/schema-tool-integration.test.js` - Schema tool with real database
-  - Create `tests/integration/ai-chat-tool-ui.test.js` - Frontend tool result processing
+- Write integration tests (using Playwright mocks like `ai-chat-basic.test.js`):
+  - Create `tests/integration/tool-calling-basic.test.js` - End-to-end tool calling with mocked AI responses
+  - Create `tests/integration/schema-tool-integration.test.js` - Schema tool with real database, mocked AI
+  - Create `tests/integration/ai-chat-tool-ui.test.js` - Frontend tool result processing with mocked responses
 - Run code quality checks:
-  - Run `make format` to format all code
-  - Run `make lint` to check code quality
   - Run `make check` to verify formatting and linting
 - Run test suites:
   - Run `make test-unit` to execute unit tests
@@ -169,13 +167,11 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Create `tests/unit/lib/tools/list-widgets-tool.test.js` - Test widget listing tool functionality
   - Update `tests/unit/lib/tool-executor.test.js` - Add multi-tool registry tests
   - Update `tests/unit/routes/chat.test.js` - Test chat endpoint with multiple tools
-- Write integration tests:
-  - Create `tests/integration/multi-tool-selection.test.js` - Test AI choosing between tools
-  - Create `tests/integration/widget-listing-integration.test.js` - Widget listing with real dashboard state
-  - Update `tests/integration/tool-calling-basic.test.js` - Add widget listing scenarios
+- Write integration tests (using Playwright mocks like `ai-chat-basic.test.js`):
+  - Create `tests/integration/multi-tool-selection.test.js` - Test mocked AI choosing between tools
+  - Create `tests/integration/widget-listing-integration.test.js` - Widget listing with real dashboard state, mocked AI
+  - Update `tests/integration/tool-calling-basic.test.js` - Add widget listing scenarios with mocked responses
 - Run code quality checks:
-  - Run `make format` to format all code
-  - Run `make lint` to check code quality
   - Run `make check` to verify formatting and linting
 - Run test suites:
   - Run `make test-unit` to execute unit tests
@@ -244,13 +240,11 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Create `tests/unit/lib/tools/sql-query-tool.test.js` - Test SQL query tool functionality
   - Create `tests/unit/lib/query-result-formatter.test.js` - Test query result formatting utilities
   - Update `tests/unit/lib/tool-executor.test.js` - Add SQL tool execution tests
-- Write integration tests:
-  - Create `tests/integration/sql-query-integration.test.js` - SQL tool with real database queries
-  - Create `tests/integration/three-tool-selection.test.js` - Test AI choosing among 3 tools
-  - Update `tests/integration/tool-calling-basic.test.js` - Add SQL query scenarios
+- Write integration tests (using Playwright mocks like `ai-chat-basic.test.js`):
+  - Create `tests/integration/sql-query-integration.test.js` - SQL tool with real database queries, mocked AI
+  - Create `tests/integration/three-tool-selection.test.js` - Test mocked AI choosing among 3 tools
+  - Update `tests/integration/tool-calling-basic.test.js` - Add SQL query scenarios with mocked responses
 - Run code quality checks:
-  - Run `make format` to format all code
-  - Run `make lint` to check code quality
   - Run `make check` to verify formatting and linting
 - Run test suites:
   - Run `make test-unit` to execute unit tests
@@ -328,14 +322,12 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Create `tests/unit/lib/tools/widget-creation-tool.test.js` - Test widget creation tool functionality
   - Create `tests/unit/lib/chart-function-generator.test.js` - Test chart function generation
   - Update `tests/unit/public/app.test.js` - Add `createWidgetFromTool()` method tests
-- Write integration tests:
-  - Create `tests/integration/widget-creation-integration.test.js` - Widget creation with real DOM and data
-  - Create `tests/integration/chart-widget-creation.test.js` - Graph widget creation with D3.js functions
-  - Create `tests/integration/four-tool-workflow.test.js` - Test AI using all 4 tools in combination
-  - Update `tests/integration/ai-chat-tool-ui.test.js` - Add widget creation UI interactions
+- Write integration tests (using Playwright mocks like `ai-chat-basic.test.js`):
+  - Create `tests/integration/widget-creation-integration.test.js` - Widget creation with real DOM and data, mocked AI
+  - Create `tests/integration/chart-widget-creation.test.js` - Graph widget creation with D3.js functions, mocked AI
+  - Create `tests/integration/four-tool-workflow.test.js` - Test mocked AI using all 4 tools in combination
+  - Update `tests/integration/ai-chat-tool-ui.test.js` - Add widget creation UI interactions with mocked responses
 - Run code quality checks:
-  - Run `make format` to format all code
-  - Run `make lint` to check code quality
   - Run `make check` to verify formatting and linting
 - Run test suites:
   - Run `make test-unit` to execute unit tests
@@ -405,14 +397,12 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Create `tests/unit/lib/tools/widget-edit-tool.test.js` - Test widget editing tool functionality
   - Update `tests/unit/public/app.test.js` - Add `updateWidgetFromTool()` method tests
   - Test widget state synchronization and validation
-- Write integration tests:
-  - Create `tests/integration/widget-editing-integration.test.js` - Widget editing with real DOM updates
-  - Create `tests/integration/widget-query-update.test.js` - Test SQL query changes and re-execution
-  - Create `tests/integration/five-tool-workflow.test.js` - Test AI using all 5 tools in combination
-  - Update `tests/integration/ai-chat-tool-ui.test.js` - Add widget editing UI interactions
+- Write integration tests (using Playwright mocks like `ai-chat-basic.test.js`):
+  - Create `tests/integration/widget-editing-integration.test.js` - Widget editing with real DOM updates, mocked AI
+  - Create `tests/integration/widget-query-update.test.js` - Test SQL query changes and re-execution, mocked AI
+  - Create `tests/integration/five-tool-workflow.test.js` - Test mocked AI using all 5 tools in combination
+  - Update `tests/integration/ai-chat-tool-ui.test.js` - Add widget editing UI interactions with mocked responses
 - Run code quality checks:
-  - Run `make format` to format all code
-  - Run `make lint` to check code quality
   - Run `make check` to verify formatting and linting
 - Run test suites:
   - Run `make test-unit` to execute unit tests
@@ -504,20 +494,18 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Create `tests/unit/lib/tools/response-formatter.test.js` - Test response formatting utilities
   - Update `tests/unit/public/app.test.js` - Add `resizeWidgetFromTool()` method tests
   - Create `tests/unit/lib/multi-tool-coordinator.test.js` - Test multi-tool coordination logic
-- Write integration tests:
-  - Create `tests/integration/widget-resizing-integration.test.js` - Widget resizing with real DOM updates
-  - Create `tests/integration/complete-tool-suite.test.js` - Test all 6 tools working together
-  - Create `tests/integration/multi-tool-workflows.test.js` - Complex multi-step tool combinations
-  - Create `tests/integration/tool-execution-ui.test.js` - Enhanced UI indicators and error handling
-  - Update `tests/integration/ai-chat-tool-ui.test.js` - Add final UI enhancements
+- Write integration tests (using Playwright mocks like `ai-chat-basic.test.js`):
+  - Create `tests/integration/widget-resizing-integration.test.js` - Widget resizing with real DOM updates, mocked AI
+  - Create `tests/integration/complete-tool-suite.test.js` - Test all 6 tools working together with mocked AI
+  - Create `tests/integration/multi-tool-workflows.test.js` - Complex multi-step tool combinations with mocked AI
+  - Create `tests/integration/tool-execution-ui.test.js` - Enhanced UI indicators and error handling with mocked AI
+  - Update `tests/integration/ai-chat-tool-ui.test.js` - Add final UI enhancements with mocked responses
 - Write final @expensive test:
   - Create `tests/integration/ai-complete-workflow-expensive.test.js` - Real AI end-to-end workflow validation
     - Test complete user journey: "Create a sales chart showing revenue by month and make it bigger"
     - Validate AI tool selection, natural language understanding, and multi-step workflows
     - Only run this after all mocked tests pass to validate the complete experience
 - Run final code quality checks:
-  - Run `make format` to format all code
-  - Run `make lint` to check code quality
   - Run `make check` to verify formatting and linting
 - Run comprehensive test suites:
   - Run `make test-unit` to execute all unit tests
