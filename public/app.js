@@ -97,7 +97,6 @@ class App {
       if (result.success) {
         this.schema = result.schema;
         this.schemaComponent.displaySchema(this.schema);
-        this.schemaComponent.show();
 
         // Store database filename in sessionStorage
         sessionStorage.setItem("currentDatabase", filename);

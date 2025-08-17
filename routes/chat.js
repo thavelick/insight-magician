@@ -95,15 +95,73 @@ export async function handleChat(request, openRouterClientClass) {
       databasePath: databasePath || "none",
     });
 
-    const result = await client.createChatCompletion(messages, tools);
+    // Multi-tool workflow support: iterative tool calling loop
+    const MAX_TOOL_ITERATIONS = 10;
+    const MAX_WORKFLOW_TIME_MS = 5 * 60 * 1000; // 5 minutes
+    const workflowStartTime = Date.now();
+    const context = { databasePath, widgets };
+    const allToolResults = [];
+    const currentMessages = [...messages];
+    let iteration = 0;
+    const totalUsage = {
+      prompt_tokens: 0,
+      completion_tokens: 0,
+      total_tokens: 0,
+    };
 
-    if (!result.success) {
-      console.error("AI API error:", result.error);
-      return createErrorResponse("AI service temporarily unavailable", 503);
-    }
+    while (iteration < MAX_TOOL_ITERATIONS) {
+      // Check for time-based timeout
+      const elapsedTime = Date.now() - workflowStartTime;
+      if (elapsedTime > MAX_WORKFLOW_TIME_MS) {
+        console.warn(
+          `⏰ Tool workflow timed out after ${Math.round(elapsedTime / 1000)}s (max: ${MAX_WORKFLOW_TIME_MS / 1000}s)`,
+        );
+        return createErrorResponse(
+          "Request timed out - workflow took too long to complete",
+          408,
+        );
+      }
+      iteration++;
+      console.log(
+        `🔄 Tool calling iteration ${iteration}/${MAX_TOOL_ITERATIONS}`,
+      );
 
-    if (result.toolCalls && result.toolCalls.length > 0) {
+      const result = await client.createChatCompletion(currentMessages, tools);
+
+      if (!result.success) {
+        console.error("AI API error:", result.error);
+        return createErrorResponse("AI service temporarily unavailable", 503);
+      }
+
+      // Accumulate usage statistics
+      if (result.usage) {
+        totalUsage.prompt_tokens += result.usage.prompt_tokens || 0;
+        totalUsage.completion_tokens += result.usage.completion_tokens || 0;
+        totalUsage.total_tokens += result.usage.total_tokens || 0;
+      }
+
+      // If no tool calls, we're done
+      if (!result.toolCalls || result.toolCalls.length === 0) {
+        console.log("🎯 AI completed workflow without tool calls:", {
+          iteration,
+          messageLength: result.message?.length || 0,
+          messagePreview:
+            result.message?.substring(0, 100) +
+            (result.message?.length > 100 ? "..." : ""),
+          totalToolResults: allToolResults.length,
+        });
+
+        return createSuccessResponse({
+          success: true,
+          message: result.message,
+          usage: totalUsage,
+          toolResults: allToolResults,
+          iterations: iteration,
+        });
+      }
+
       console.log("🤖 AI requested tool calls:", {
+        iteration,
         count: result.toolCalls.length,
         tools: result.toolCalls.map(
           (call) => `${call.function.name}(${call.function.arguments})`,
@@ -111,15 +169,17 @@ export async function handleChat(request, openRouterClientClass) {
         aiMessage: result.message || "none",
       });
 
-      const context = { databasePath, widgets };
+      // Execute tool calls
       const toolResults = await toolExecutor.executeToolCalls(
         result.toolCalls,
         context,
       );
 
-      const toolMessages = [...messages];
+      // Add to total results
+      allToolResults.push(...toolResults);
 
-      toolMessages.push({
+      // Build conversation context for next iteration
+      currentMessages.push({
         role: "assistant",
         content: result.message || "",
         tool_calls: result.toolCalls,
@@ -128,6 +188,7 @@ export async function handleChat(request, openRouterClientClass) {
       for (const toolResult of toolResults) {
         const toolContent = JSON.stringify(toolResult.result);
         console.log("📤 Sending tool result to AI:", {
+          iteration,
           toolCallId: toolResult.toolCallId,
           contentPreview:
             toolContent.length > 200
@@ -136,44 +197,49 @@ export async function handleChat(request, openRouterClientClass) {
           contentLength: toolContent.length,
         });
 
-        toolMessages.push({
+        currentMessages.push({
           role: "tool",
           tool_call_id: toolResult.toolCallId,
           content: toolContent,
         });
       }
-
-      console.log("🔄 Making second API call to AI with tool results...");
-      const finalResult = await client.createChatCompletion(toolMessages);
-
-      if (!finalResult.success) {
-        console.error(
-          "AI API error on tool result processing:",
-          finalResult.error,
-        );
-        return createErrorResponse("AI service temporarily unavailable", 503);
-      }
-
-      console.log("🎯 AI final response after tool calls:", {
-        messageLength: finalResult.message?.length || 0,
-        messagePreview:
-          finalResult.message?.substring(0, 100) +
-          (finalResult.message?.length > 100 ? "..." : ""),
-        toolResultsCount: toolResults.length,
-      });
-
-      return createSuccessResponse({
-        success: true,
-        message: finalResult.message,
-        usage: finalResult.usage,
-        toolResults: toolResults,
-      });
     }
+
+    // If we hit the iteration limit, make one final call to get AI's response
+    console.log(
+      "⚠️  Reached maximum tool iterations, getting final response...",
+    );
+    const finalResult = await client.createChatCompletion(currentMessages);
+
+    if (!finalResult.success) {
+      console.error("AI API error on final response:", finalResult.error);
+      return createErrorResponse("AI service temporarily unavailable", 503);
+    }
+
+    // Accumulate final usage
+    if (finalResult.usage) {
+      totalUsage.prompt_tokens += finalResult.usage.prompt_tokens || 0;
+      totalUsage.completion_tokens += finalResult.usage.completion_tokens || 0;
+      totalUsage.total_tokens += finalResult.usage.total_tokens || 0;
+    }
+
+    console.log("🎯 AI final response after max iterations:", {
+      iterations: MAX_TOOL_ITERATIONS,
+      messageLength: finalResult.message?.length || 0,
+      messagePreview:
+        finalResult.message?.substring(0, 100) +
+        (finalResult.message?.length > 100 ? "..." : ""),
+      totalToolResults: allToolResults.length,
+      totalUsage,
+    });
 
     return createSuccessResponse({
       success: true,
-      message: result.message,
-      usage: result.usage,
+      message: finalResult.message,
+      usage: totalUsage,
+      toolResults: allToolResults,
+      iterations: MAX_TOOL_ITERATIONS,
+      reachedMaxIterations: true,
     });
   } catch (error) {
     if (error.name === "SyntaxError") {

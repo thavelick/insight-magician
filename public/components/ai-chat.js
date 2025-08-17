@@ -102,6 +102,18 @@ export class AIChatComponent {
         this.processToolResults(result.toolResults);
       }
 
+      if (
+        result.iterations > 1 ||
+        (result.toolResults && result.toolResults.length > 1)
+      ) {
+        const toolCount = result.toolResults ? result.toolResults.length : 0;
+        if (result.iterations > 1) {
+          console.log(
+            `🔗 Multi-step analysis: ${toolCount} tools used across ${result.iterations} iterations`,
+          );
+        }
+      }
+
       this.addMessage(MESSAGE_ROLES.ASSISTANT, result.message);
     } catch (error) {
       console.error("Chat API error:", error);
