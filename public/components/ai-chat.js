@@ -88,10 +88,19 @@ export class AIChatComponent {
     this.showTypingIndicator();
 
     try {
+      const databasePath = window.app
+        ? window.app.getCurrentDatabasePath()
+        : null;
+
       const result = await this.chatAPI.sendMessage(
         message,
         this.chatHistory.getMessages(),
+        databasePath,
       );
+
+      if (result.toolResults) {
+        this.processToolResults(result.toolResults);
+      }
 
       this.addMessage(MESSAGE_ROLES.ASSISTANT, result.message);
     } catch (error) {
@@ -208,6 +217,32 @@ export class AIChatComponent {
 
   get messages() {
     return this.chatHistory.getMessages();
+  }
+
+  /**
+   * Process tool execution results from the AI
+   * Handles different tool actions like schema fetching, widget creation/editing/resizing,
+   * and provides visual feedback for multi-step tool workflows
+   * @param {Array} toolResults - Array of tool execution results
+   */
+  processToolResults(toolResults) {
+    for (const toolResult of toolResults) {
+      const { result } = toolResult;
+
+      if (!result.success) {
+        console.warn("Tool execution failed:", result.error);
+        continue;
+      }
+
+      switch (result.action) {
+        case "schema_fetched":
+          console.log("Schema information retrieved:", result.data);
+          break;
+
+        default:
+          console.log("Unknown tool action:", result.action, result);
+      }
+    }
   }
 
   show() {

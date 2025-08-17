@@ -1,6 +1,11 @@
 import { AI_CONFIG } from "../lib/ai-config.js";
 import { SYSTEM_PROMPT } from "../lib/ai-system-prompt.js";
 import { OpenRouterClient } from "../lib/openrouter-client.js";
+import { toolExecutor } from "../lib/tool-executor.js";
+import { SchemaTool } from "../lib/tools/schema-tool.js";
+
+const schemaTool = new SchemaTool();
+toolExecutor.registerTool("get_schema_info", schemaTool);
 
 function createErrorResponse(error, status) {
   return new Response(JSON.stringify({ error }), {
@@ -17,7 +22,6 @@ function createSuccessResponse(data) {
 }
 
 export async function handleChat(request, openRouterClientClass) {
-  // Bun-compatible default parameter handling
   const ClientClass =
     typeof openRouterClientClass === "function" &&
     openRouterClientClass.name === "OpenRouterClient"
@@ -26,7 +30,7 @@ export async function handleChat(request, openRouterClientClass) {
 
   try {
     const body = await request.json();
-    const { message, chatHistory = [] } = body;
+    const { message, chatHistory = [], databasePath } = body;
 
     if (!message || typeof message !== "string") {
       return createErrorResponse("Missing required parameter: message", 400);
@@ -81,11 +85,87 @@ export async function handleChat(request, openRouterClientClass) {
 
     const client = new ClientClass();
 
-    const result = await client.createChatCompletion(messages);
+    const tools = toolExecutor.getToolDefinitions();
+
+    console.log("🛠️  Available tools for AI:", {
+      count: tools.length,
+      tools: tools.map((t) => t.function.name),
+      databasePath: databasePath || "none",
+    });
+
+    const result = await client.createChatCompletion(messages, tools);
 
     if (!result.success) {
-      console.error("OpenRouter API error:", result.error);
+      console.error("AI API error:", result.error);
       return createErrorResponse("AI service temporarily unavailable", 503);
+    }
+
+    if (result.toolCalls && result.toolCalls.length > 0) {
+      console.log("🤖 AI requested tool calls:", {
+        count: result.toolCalls.length,
+        tools: result.toolCalls.map(
+          (call) => `${call.function.name}(${call.function.arguments})`,
+        ),
+        aiMessage: result.message || "none",
+      });
+
+      const context = { databasePath };
+      const toolResults = await toolExecutor.executeToolCalls(
+        result.toolCalls,
+        context,
+      );
+
+      const toolMessages = [...messages];
+
+      toolMessages.push({
+        role: "assistant",
+        content: result.message || "",
+        tool_calls: result.toolCalls,
+      });
+
+      for (const toolResult of toolResults) {
+        const toolContent = JSON.stringify(toolResult.result);
+        console.log("📤 Sending tool result to AI:", {
+          toolCallId: toolResult.toolCallId,
+          contentPreview:
+            toolContent.length > 200
+              ? `${toolContent.substring(0, 200)}...`
+              : toolContent,
+          contentLength: toolContent.length,
+        });
+
+        toolMessages.push({
+          role: "tool",
+          tool_call_id: toolResult.toolCallId,
+          content: toolContent,
+        });
+      }
+
+      console.log("🔄 Making second API call to AI with tool results...");
+      const finalResult = await client.createChatCompletion(toolMessages);
+
+      if (!finalResult.success) {
+        console.error(
+          "AI API error on tool result processing:",
+          finalResult.error,
+        );
+        return createErrorResponse("AI service temporarily unavailable", 503);
+      }
+
+      console.log("🎯 AI final response after tool calls:", {
+        messageLength: finalResult.message?.length || 0,
+        messagePreview:
+          finalResult.message?.substring(0, 100) +
+          (finalResult.message?.length > 100 ? "..." : ""),
+        toolResultsCount: toolResults.length,
+      });
+
+      return createSuccessResponse({
+        success: true,
+        message: finalResult.message,
+        usage: finalResult.usage,
+        toolResults: toolResults,
+      });
     }
 
     return createSuccessResponse({

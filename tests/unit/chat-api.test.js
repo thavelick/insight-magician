@@ -79,6 +79,7 @@ test("ChatAPI sendMessage calls API with correct parameters", async () => {
     body: JSON.stringify({
       message: "Test message",
       chatHistory: [{ role: "user", content: "Previous message" }],
+      databasePath: null,
     }),
   });
 

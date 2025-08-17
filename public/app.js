@@ -271,6 +271,19 @@ class App {
     }
   }
 
+  /**
+   * Get the current database path for tool execution
+   * @returns {string|null} Database path or null if no database loaded
+   */
+  getCurrentDatabasePath() {
+    if (!this.currentDatabase) {
+      return null;
+    }
+
+    // Database files are stored in the uploads directory on the server
+    return `./uploads/${this.currentDatabase}`;
+  }
+
   clearWidgets() {
     // Remove all widget elements
     const container = document.getElementById("widgets-container");
@@ -292,5 +305,5 @@ class App {
 
 // Initialize app when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
-  new App();
+  window.app = new App();
 });

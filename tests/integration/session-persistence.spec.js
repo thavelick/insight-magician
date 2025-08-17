@@ -47,7 +47,7 @@ test.describe("Session Persistence", () => {
     await cleanupUploadedFile(uploadedFilename);
   });
 
-  test.skip("should restore widget states and data after reload", async ({
+  test("should restore widget states and data after reload", async ({
     page,
   }) => {
     const { uploadedFilename } = await setupDatabaseWithUpload(page);
@@ -56,13 +56,12 @@ test.describe("Session Persistence", () => {
     await addWidget(page);
     await page.fill(".widget .widget-title-input", "Test Widget");
 
-    // Type the query slowly to trigger input events properly (remove LIMIT as suggested)
-    await page
-      .locator(".widget .query-editor")
-      .pressSequentially("SELECT name, email FROM users");
-
-    // Run the query to trigger save - this is the key step!
-    await page.click(".widget .run-view-btn");
+    // Run the query using our helper with proper response filtering
+    await runQueryInWidget(
+      page,
+      "SELECT name, email FROM users",
+      uploadedFilename,
+    );
     await expect(page.locator(".widget .results-table")).toBeVisible();
 
     await reloadAndWait(page);

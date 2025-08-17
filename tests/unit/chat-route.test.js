@@ -178,7 +178,7 @@ test("handleChat succeeds with valid input and chat history", async () => {
   expect(data.message).toBe("Test AI response with history");
 });
 
-test("handleChat handles OpenRouter API failure", async () => {
+test("handleChat handles AI API failure", async () => {
   const mockResponse = {
     success: false,
     error: "Rate limit exceeded",
@@ -209,6 +209,189 @@ test("handleChat handles client construction error", async () => {
     message: "Hello",
   });
   const response = await handleChat(request, FailingClient);
+  const data = await getResponseData(response);
+
+  expect(response.status).toBe(503);
+  expect(data.error).toBe("AI service temporarily unavailable");
+});
+
+test("handleChat processes tool calls successfully", async () => {
+  const toolCalls = [
+    {
+      id: "call_123",
+      type: "function",
+      function: {
+        name: "get_schema_info",
+        arguments: "{}",
+      },
+    },
+  ];
+
+  // First response with tool calls
+  const firstMockResponse = {
+    success: true,
+    message: "I'll check your database schema.",
+    toolCalls: toolCalls,
+    usage: { prompt_tokens: 15, completion_tokens: 8, total_tokens: 23 },
+  };
+
+  // Second response after tool execution
+  const secondMockResponse = {
+    success: true,
+    message: "Your database has 2 tables: users and posts.",
+    usage: { prompt_tokens: 45, completion_tokens: 12, total_tokens: 57 },
+  };
+
+  let callCount = 0;
+  function createMockOpenRouterClientWithToolCalls() {
+    class MockOpenRouterClient {
+      constructor() {
+        this.createChatCompletion = mock(async (messages, tools) => {
+          callCount++;
+          if (callCount === 1) {
+            // First call - return tool calls
+            return firstMockResponse;
+          }
+          // Second call - process tool results
+          return secondMockResponse;
+        });
+      }
+    }
+    Object.defineProperty(MockOpenRouterClient, "name", {
+      value: "OpenRouterClient",
+    });
+    return MockOpenRouterClient;
+  }
+
+  const request = createMockRequest({
+    message: "What tables do I have?",
+    databasePath: "./uploads/test.db",
+  });
+
+  const mockClient = createMockOpenRouterClientWithToolCalls();
+  const response = await handleChat(request, mockClient);
+  const data = await getResponseData(response);
+
+  expect(response.status).toBe(200);
+  expect(data.success).toBe(true);
+  expect(data.message).toBe("Your database has 2 tables: users and posts.");
+  expect(data.toolResults).toBeDefined();
+  expect(data.toolResults).toHaveLength(1);
+  expect(data.toolResults[0].toolCallId).toBe("call_123");
+});
+
+test("handleChat handles tool execution errors", async () => {
+  const toolCalls = [
+    {
+      id: "call_123",
+      type: "function",
+      function: {
+        name: "unknown_tool",
+        arguments: "{}",
+      },
+    },
+  ];
+
+  const firstMockResponse = {
+    success: true,
+    message: "I'll use a tool to help.",
+    toolCalls: toolCalls,
+    usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+  };
+
+  const secondMockResponse = {
+    success: true,
+    message: "Sorry, I encountered an error with that tool.",
+    usage: { prompt_tokens: 25, completion_tokens: 8, total_tokens: 33 },
+  };
+
+  let callCount = 0;
+  function createMockOpenRouterClientWithFailingTool() {
+    class MockOpenRouterClient {
+      constructor() {
+        this.createChatCompletion = mock(async (messages, tools) => {
+          callCount++;
+          if (callCount === 1) {
+            return firstMockResponse;
+          }
+          return secondMockResponse;
+        });
+      }
+    }
+    Object.defineProperty(MockOpenRouterClient, "name", {
+      value: "OpenRouterClient",
+    });
+    return MockOpenRouterClient;
+  }
+
+  const request = createMockRequest({
+    message: "Use unknown tool",
+    databasePath: "./uploads/test.db",
+  });
+
+  const mockClient = createMockOpenRouterClientWithFailingTool();
+  const response = await handleChat(request, mockClient);
+  const data = await getResponseData(response);
+
+  expect(response.status).toBe(200);
+  expect(data.success).toBe(true);
+  expect(data.toolResults).toBeDefined();
+  expect(data.toolResults[0].result.success).toBe(false);
+  expect(data.toolResults[0].result.error).toContain(
+    "Tool 'unknown_tool' not found",
+  );
+});
+
+test("handleChat handles second API call failure during tool processing", async () => {
+  const toolCalls = [
+    {
+      id: "call_123",
+      type: "function",
+      function: {
+        name: "get_schema_info",
+        arguments: "{}",
+      },
+    },
+  ];
+
+  const firstMockResponse = {
+    success: true,
+    message: "I'll check your schema.",
+    toolCalls: toolCalls,
+    usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+  };
+
+  const secondMockResponse = {
+    success: false,
+    error: "Rate limit exceeded on second call",
+  };
+
+  let callCount = 0;
+  function createMockOpenRouterClientWithSecondCallFailure() {
+    class MockOpenRouterClient {
+      constructor() {
+        this.createChatCompletion = mock(async (messages, tools) => {
+          callCount++;
+          if (callCount === 1) {
+            return firstMockResponse;
+          }
+          return secondMockResponse;
+        });
+      }
+    }
+    Object.defineProperty(MockOpenRouterClient, "name", {
+      value: "OpenRouterClient",
+    });
+    return MockOpenRouterClient;
+  }
+
+  const request = createMockRequest({
+    message: "What's my schema?",
+    databasePath: "./uploads/test.db",
+  });
+
+  const mockClient = createMockOpenRouterClientWithSecondCallFailure();
+  const response = await handleChat(request, mockClient);
   const data = await getResponseData(response);
 
   expect(response.status).toBe(503);
