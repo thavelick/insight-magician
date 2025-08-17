@@ -1,7 +1,6 @@
 import { expect, mock, test } from "bun:test";
 import { WidgetCreationTool } from "../../../../lib/tools/widget-creation-tool.js";
 
-// Mock the database manager and SQL validator
 const mockDatabaseManager = {
   connect: mock(() => Promise.resolve()),
   disconnect: mock(() => Promise.resolve()),
@@ -58,7 +57,6 @@ test("WidgetCreationTool - getDefinition returns correct structure", () => {
     "query",
   ]);
 
-  // Check parameter definitions
   const props = definition.function.parameters.properties;
   expect(props.title.type).toBe("string");
   expect(props.widgetType.enum).toEqual(["data-table", "graph"]);
@@ -85,6 +83,16 @@ test("WidgetCreationTool - prompt methods", () => {
   expect(examples[0]).toContain("Create a bar chart");
 });
 
+test("WidgetCreationTool - tool use examples", () => {
+  const tool = createTool();
+  const examples = tool.getToolUseExamples();
+  expect(examples).toBeString();
+  expect(examples).toContain("Chart Function Examples");
+  expect(examples).toContain("Pie Chart");
+  expect(examples).toContain("Bar Chart");
+  expect(examples).toContain("createChart(data, svg, d3, width, height)");
+});
+
 test("WidgetCreationTool - successful data table creation", async () => {
   const tool = createTool();
   const args = {
@@ -108,12 +116,10 @@ test("WidgetCreationTool - successful data table creation", async () => {
   expect(result.widgetConfig.results).toBeDefined();
   expect(result.message).toContain("Successfully created data-table widget");
 
-  // Verify database query was called
   expect(mockDatabaseManager.db.prepare).toHaveBeenCalledWith(
     "SELECT name, email FROM customers",
   );
 
-  // Verify SQL validation was called
   expect(mockValidateSqlForWidget).toHaveBeenCalledWith(
     "SELECT name, email FROM customers",
   );
@@ -122,7 +128,6 @@ test("WidgetCreationTool - successful data table creation", async () => {
 test("WidgetCreationTool - successful graph widget creation", async () => {
   const tool = createTool();
   const chartFunction = `function createChart(data, svg, d3, width, height) {
-    // Simple bar chart implementation
     return svg;
   }`;
 
@@ -148,7 +153,6 @@ test("WidgetCreationTool - successful graph widget creation", async () => {
 test("WidgetCreationTool - missing required parameters", async () => {
   const tool = createTool();
 
-  // Missing title
   let result = await tool.execute({
     widgetType: "data-table",
     query: "SELECT * FROM users",
@@ -156,7 +160,6 @@ test("WidgetCreationTool - missing required parameters", async () => {
   expect(result.success).toBe(false);
   expect(result.error).toContain("Missing required parameters");
 
-  // Missing widgetType
   result = await tool.execute({
     title: "My Widget",
     query: "SELECT * FROM users",
@@ -164,7 +167,6 @@ test("WidgetCreationTool - missing required parameters", async () => {
   expect(result.success).toBe(false);
   expect(result.error).toContain("Missing required parameters");
 
-  // Missing query
   result = await tool.execute({
     title: "My Widget",
     widgetType: "data-table",
@@ -190,7 +192,6 @@ test("WidgetCreationTool - invalid widget type", async () => {
 test("WidgetCreationTool - invalid dimensions", async () => {
   const tool = createTool();
 
-  // Width too large
   let result = await tool.execute({
     title: "My Widget",
     widgetType: "data-table",
@@ -201,7 +202,6 @@ test("WidgetCreationTool - invalid dimensions", async () => {
   expect(result.success).toBe(false);
   expect(result.error).toContain("Width and height must be between 1 and 4");
 
-  // Height too small
   result = await tool.execute({
     title: "My Widget",
     widgetType: "data-table",
@@ -247,7 +247,6 @@ test("WidgetCreationTool - invalid chart function", async () => {
 test("WidgetCreationTool - SQL validation failure", async () => {
   const tool = createTool();
 
-  // Mock SQL validator to return invalid
   mockValidateSqlForWidget.mockReturnValueOnce({
     isValid: false,
     error: "Invalid SQL syntax",
@@ -268,7 +267,6 @@ test("WidgetCreationTool - SQL validation failure", async () => {
 test("WidgetCreationTool - database query failure", async () => {
   const tool = createTool();
 
-  // Mock database to throw error
   mockDatabaseManager.db.prepare.mockImplementationOnce(() => {
     throw new Error("Database connection failed");
   });
@@ -298,8 +296,8 @@ test("WidgetCreationTool - default width and height", async () => {
   const result = await tool.execute(args, { databasePath: "test.db" });
 
   expect(result.success).toBe(true);
-  expect(result.widgetConfig.width).toBe(2); // default
-  expect(result.widgetConfig.height).toBe(2); // default
+  expect(result.widgetConfig.width).toBe(2);
+  expect(result.widgetConfig.height).toBe(2);
 });
 
 test("WidgetCreationTool - trims whitespace from inputs", async () => {
