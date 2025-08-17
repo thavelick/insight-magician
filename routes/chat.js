@@ -17,8 +17,7 @@ function createSuccessResponse(data) {
 }
 
 export async function handleChat(request, openRouterClientClass) {
-  // Use explicit default parameter handling for Bun compatibility
-  // Check if it's actually a constructor function, not just any truthy value
+  // Bun-compatible default parameter handling
   const ClientClass =
     typeof openRouterClientClass === "function" &&
     openRouterClientClass.name === "OpenRouterClient"
@@ -66,9 +65,17 @@ export async function handleChat(request, openRouterClientClass) {
       }
     }
 
+    // Implement truncation strategy: keep only recent messages for API calls
+    // This ensures we stay within token limits while preserving recent context
+    const maxApiMessages = AI_CONFIG.STORAGE_MESSAGE_LIMIT;
+    const truncatedHistory =
+      chatHistory.length > maxApiMessages
+        ? chatHistory.slice(-maxApiMessages)
+        : chatHistory;
+
     const messages = [
       { role: "system", content: SYSTEM_PROMPT },
-      ...chatHistory,
+      ...truncatedHistory,
       { role: "user", content: message },
     ];
 
@@ -88,16 +95,12 @@ export async function handleChat(request, openRouterClientClass) {
     });
   } catch (error) {
     if (error.name === "SyntaxError") {
-      // JSON parsing error - client's fault
       return createErrorResponse("Invalid JSON in request body", 400);
     }
 
     if (error.message.includes("OPENROUTER_API_KEY")) {
-      // Service unavailable due to config - our fault, but not unexpected
       return createErrorResponse("AI service temporarily unavailable", 503);
     }
-
-    // True unexpected errors - let the framework handle them
     console.error("Unexpected error in chat handler:", error);
     throw error;
   }
