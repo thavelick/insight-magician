@@ -195,7 +195,9 @@ test("should handle authentication errors specifically", async () => {
 });
 
 test("should handle quota exceeded errors specifically", async () => {
-  const quotaError = new Error("You exceeded your current quota, please check your plan and billing details");
+  const quotaError = new Error(
+    "You exceeded your current quota, please check your plan and billing details",
+  );
   // Test quota detection based on message content (no fictional error code needed)
 
   const mockOpenAI = function (config) {
@@ -263,4 +265,106 @@ test("should handle server errors specifically", async () => {
     "AI service is temporarily unavailable. Please try again later.",
   );
   expect(result.code).toBe("SERVER_ERROR");
+});
+
+test("createChatCompletion passes tools parameter when provided", async () => {
+  const mockOpenAI = createMockOpenAI();
+  const client = new OpenRouterClient("test-api-key", mockOpenAI);
+
+  const messages = [{ role: "user", content: "Hello" }];
+  const tools = [
+    {
+      type: "function",
+      function: {
+        name: "test_tool",
+        description: "A test tool",
+        parameters: { type: "object", properties: {} },
+      },
+    },
+  ];
+
+  const result = await client.createChatCompletion(messages, tools);
+
+  expect(result.success).toBe(true);
+  expect(client.client.chat.completions.create).toHaveBeenCalledWith({
+    model: "anthropic/claude-3.5-haiku",
+    messages: messages,
+    max_tokens: 2000,
+    tools: tools,
+    tool_choice: "auto",
+  });
+});
+
+test("createChatCompletion handles tool calls in response", async () => {
+  const mockToolCalls = [
+    {
+      id: "call_123",
+      type: "function",
+      function: {
+        name: "test_tool",
+        arguments: '{"param": "value"}',
+      },
+    },
+  ];
+
+  const mockOpenAI = function (config) {
+    this.chat = {
+      completions: {
+        create: mock(() =>
+          Promise.resolve({
+            choices: [
+              {
+                message: {
+                  content: "I'll use a tool to help you.",
+                  tool_calls: mockToolCalls,
+                },
+              },
+            ],
+            usage: {
+              prompt_tokens: 10,
+              completion_tokens: 5,
+              total_tokens: 15,
+            },
+          }),
+        ),
+      },
+    };
+    return this;
+  };
+
+  const client = new OpenRouterClient("test-api-key", mockOpenAI);
+  const messages = [{ role: "user", content: "Hello" }];
+  const tools = [
+    {
+      type: "function",
+      function: {
+        name: "test_tool",
+        description: "A test tool",
+        parameters: { type: "object", properties: {} },
+      },
+    },
+  ];
+
+  const result = await client.createChatCompletion(messages, tools);
+
+  expect(result.success).toBe(true);
+  expect(result.message).toBe("I'll use a tool to help you.");
+  expect(result.toolCalls).toEqual(mockToolCalls);
+  expect(result.usage).toBeDefined();
+});
+
+test("createChatCompletion works without tools parameter", async () => {
+  const mockOpenAI = createMockOpenAI();
+  const client = new OpenRouterClient("test-api-key", mockOpenAI);
+
+  const messages = [{ role: "user", content: "Hello" }];
+
+  const result = await client.createChatCompletion(messages);
+
+  expect(result.success).toBe(true);
+  expect(client.client.chat.completions.create).toHaveBeenCalledWith({
+    model: "anthropic/claude-3.5-haiku",
+    messages: messages,
+    max_tokens: 2000,
+  });
 });

@@ -88,10 +88,21 @@ export class AIChatComponent {
     this.showTypingIndicator();
 
     try {
+      // Get current database path from the app
+      const databasePath = window.app
+        ? window.app.getCurrentDatabasePath()
+        : null;
+
       const result = await this.chatAPI.sendMessage(
         message,
         this.chatHistory.getMessages(),
+        databasePath,
       );
+
+      // Process any tool results
+      if (result.toolResults) {
+        this.processToolResults(result.toolResults);
+      }
 
       this.addMessage(MESSAGE_ROLES.ASSISTANT, result.message);
     } catch (error) {
@@ -208,6 +219,33 @@ export class AIChatComponent {
 
   get messages() {
     return this.chatHistory.getMessages();
+  }
+
+  /**
+   * Process tool execution results from the AI
+   * @param {Array} toolResults - Array of tool execution results
+   */
+  processToolResults(toolResults) {
+    for (const toolResult of toolResults) {
+      const { result } = toolResult;
+
+      if (!result.success) {
+        console.warn("Tool execution failed:", result.error);
+        continue;
+      }
+
+      // Handle different tool actions
+      switch (result.action) {
+        case "schema_fetched":
+          console.log("Schema information retrieved:", result.data);
+          // For now, just log the schema info
+          // Future phases will add more UI interactions
+          break;
+
+        default:
+          console.log("Unknown tool action:", result.action, result);
+      }
+    }
   }
 
   show() {
