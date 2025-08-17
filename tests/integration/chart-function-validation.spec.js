@@ -25,7 +25,12 @@ test.describe("Chart Function Validation", () => {
       return svg;
     }`;
 
-    await runChartFunction(page, validFunction, "SELECT 1 as test", uploadedFilename);
+    await runChartFunction(
+      page,
+      validFunction,
+      "SELECT 1 as test",
+      uploadedFilename,
+    );
 
     await expect(page.locator(".chart-container")).toBeVisible();
   });
@@ -69,7 +74,12 @@ test.describe("Chart Function Validation", () => {
       throw new Error("Custom chart error for testing");
     }`;
 
-    await runChartFunction(page, errorFunction, "SELECT 1 as test, 2 as value", uploadedFilename);
+    await runChartFunction(
+      page,
+      errorFunction,
+      "SELECT 1 as test, 2 as value",
+      uploadedFilename,
+    );
 
     await expect(page.locator(".card-inner")).not.toHaveClass("flipped");
 
@@ -151,7 +161,12 @@ test.describe("Chart Function Validation", () => {
     )`;
 
     await page.click(".edit-btn");
-    await runChartFunction(page, errorFunction, multiRowQuery, uploadedFilename);
+    await runChartFunction(
+      page,
+      errorFunction,
+      multiRowQuery,
+      uploadedFilename,
+    );
 
     await expect(page.locator(".data-preview-table tbody tr")).toHaveCount(5);
     await expect(

@@ -137,7 +137,11 @@ function createChart(data, svg, d3, width, height) {
 
     await page.fill(".widget .chart-function-editor", chartFunction);
 
-    await runQueryInWidget(page, "SELECT name, id FROM users", uploadedFilename);
+    await runQueryInWidget(
+      page,
+      "SELECT name, id FROM users",
+      uploadedFilename,
+    );
 
     // Verify chart container appears
     await expect(page.locator(".widget .chart-container")).toBeVisible();

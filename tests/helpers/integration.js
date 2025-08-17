@@ -169,7 +169,12 @@ export async function setupGraphWidget(page, fixtureName = "basic") {
  * @param {string} uploadedFilename - Database filename to filter responses
  * @returns {Promise<Response>} API response
  */
-export async function runChartFunction(page, chartFunction, query, uploadedFilename) {
+export async function runChartFunction(
+  page,
+  chartFunction,
+  query,
+  uploadedFilename,
+) {
   await page.fill(".widget .chart-function-editor", chartFunction);
   await page.fill(".widget .query-editor", query);
 

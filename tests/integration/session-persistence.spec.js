@@ -57,7 +57,11 @@ test.describe("Session Persistence", () => {
     await page.fill(".widget .widget-title-input", "Test Widget");
 
     // Run the query using our helper with proper response filtering
-    await runQueryInWidget(page, "SELECT name, email FROM users", uploadedFilename);
+    await runQueryInWidget(
+      page,
+      "SELECT name, email FROM users",
+      uploadedFilename,
+    );
     await expect(page.locator(".widget .results-table")).toBeVisible();
 
     await reloadAndWait(page);
