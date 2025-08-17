@@ -397,3 +397,158 @@ test("handleChat handles second API call failure during tool processing", async 
   expect(response.status).toBe(503);
   expect(data.error).toBe("AI service temporarily unavailable");
 });
+
+// Multi-tool workflow tests
+test("handleChat supports multi-tool workflows with multiple iterations", async () => {
+  // Mock a workflow where AI calls schema tool, then SQL tool
+  const schemaToolCall = {
+    id: "call_1",
+    function: {
+      name: "get_schema_info",
+      arguments: "{}",
+    },
+  };
+
+  const sqlToolCall = {
+    id: "call_2",
+    function: {
+      name: "execute_sql_query",
+      arguments:
+        '{"query": "SELECT COUNT(*) FROM users", "explanation": "Count users"}',
+    },
+  };
+
+  let callCount = 0;
+  function createMockMultiToolClient() {
+    class MockOpenRouterClient {
+      constructor() {
+        this.createChatCompletion = mock((messages, tools) => {
+          callCount++;
+          if (callCount === 1) {
+            // First call: AI requests schema tool
+            return Promise.resolve({
+              success: true,
+              message: "Let me check your schema first.",
+              toolCalls: [schemaToolCall],
+              usage: {
+                prompt_tokens: 10,
+                completion_tokens: 5,
+                total_tokens: 15,
+              },
+            });
+          }
+          if (callCount === 2) {
+            // Second call: AI requests SQL tool after seeing schema results
+            return Promise.resolve({
+              success: true,
+              message: "Now let me query the data.",
+              toolCalls: [sqlToolCall],
+              usage: {
+                prompt_tokens: 20,
+                completion_tokens: 8,
+                total_tokens: 28,
+              },
+            });
+          }
+          // Third call: AI provides final response
+          return Promise.resolve({
+            success: true,
+            message: "You have 150 users in your database.",
+            usage: {
+              prompt_tokens: 30,
+              completion_tokens: 12,
+              total_tokens: 42,
+            },
+          });
+        });
+      }
+    }
+    Object.defineProperty(MockOpenRouterClient, "name", {
+      value: "OpenRouterClient",
+    });
+    return MockOpenRouterClient;
+  }
+
+  const request = createMockRequest({
+    message: "How many users do I have?",
+    databasePath: "./uploads/test.db",
+  });
+
+  const mockClient = createMockMultiToolClient();
+  const response = await handleChat(request, mockClient);
+  const data = await getResponseData(response);
+
+  expect(response.status).toBe(200);
+  expect(data.success).toBe(true);
+  expect(data.message).toBe("You have 150 users in your database.");
+  expect(data.iterations).toBe(3);
+  expect(data.toolResults).toHaveLength(2);
+  expect(data.usage.total_tokens).toBe(85); // Sum of all API calls
+  expect(callCount).toBe(3);
+});
+
+test("handleChat respects maximum iteration limit", async () => {
+  // Mock AI that keeps requesting tools
+  let callCount = 0;
+  function createMockInfiniteToolClient() {
+    class MockOpenRouterClient {
+      constructor() {
+        this.createChatCompletion = mock((messages, tools) => {
+          callCount++;
+          if (callCount <= 10) {
+            // Keep requesting tools up to the limit
+            return Promise.resolve({
+              success: true,
+              message: `Call ${callCount}`,
+              toolCalls: [
+                {
+                  id: `call_${callCount}`,
+                  function: {
+                    name: "get_schema_info",
+                    arguments: "{}",
+                  },
+                },
+              ],
+              usage: {
+                prompt_tokens: 10,
+                completion_tokens: 5,
+                total_tokens: 15,
+              },
+            });
+          }
+          // Final response after hitting limit
+          return Promise.resolve({
+            success: true,
+            message: "Final response after max iterations.",
+            usage: {
+              prompt_tokens: 10,
+              completion_tokens: 5,
+              total_tokens: 15,
+            },
+          });
+        });
+      }
+    }
+    Object.defineProperty(MockOpenRouterClient, "name", {
+      value: "OpenRouterClient",
+    });
+    return MockOpenRouterClient;
+  }
+
+  const request = createMockRequest({
+    message: "Keep analyzing",
+    databasePath: "./uploads/test.db",
+  });
+
+  const mockClient = createMockInfiniteToolClient();
+  const response = await handleChat(request, mockClient);
+  const data = await getResponseData(response);
+
+  expect(response.status).toBe(200);
+  expect(data.success).toBe(true);
+  expect(data.message).toBe("Final response after max iterations.");
+  expect(data.iterations).toBe(10);
+  expect(data.reachedMaxIterations).toBe(true);
+  expect(data.toolResults).toHaveLength(10);
+  expect(callCount).toBe(11); // 10 tool iterations + 1 final call
+});
