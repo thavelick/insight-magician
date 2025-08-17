@@ -95,7 +95,7 @@ test("createChatCompletion handles empty response", async () => {
 
 test("createChatCompletion handles API errors", async () => {
   const apiError = new Error("API rate limit exceeded");
-  apiError.code = "RATE_LIMIT_EXCEEDED";
+  apiError.code = "rate_limit_exceeded"; // Use lowercase to match our enhanced error handling
 
   const mockOpenAI = function (config) {
     this.chat = {
@@ -112,8 +112,10 @@ test("createChatCompletion handles API errors", async () => {
   const result = await client.createChatCompletion(messages);
 
   expect(result.success).toBe(false);
-  expect(result.error).toBe("API rate limit exceeded");
-  expect(result.code).toBe("RATE_LIMIT_EXCEEDED");
+  expect(result.error).toBe(
+    "Too many requests. Please wait a moment and try again.",
+  ); // Enhanced error message
+  expect(result.code).toBe("RATE_LIMITED"); // Enhanced error code
 });
 
 test("createChatCompletion handles errors without code", async () => {
@@ -136,4 +138,126 @@ test("createChatCompletion handles errors without code", async () => {
   expect(result.success).toBe(false);
   expect(result.error).toBe("Network connection failed");
   expect(result.code).toBe("UNKNOWN_ERROR");
+});
+
+test("should handle rate limiting errors specifically", async () => {
+  const rateLimitError = new Error("Rate limit exceeded");
+  rateLimitError.code = "rate_limit_exceeded";
+  rateLimitError.status = 429;
+
+  const mockOpenAI = function (config) {
+    this.chat = {
+      completions: {
+        create: mock(() => Promise.reject(rateLimitError)),
+      },
+    };
+    return this;
+  };
+
+  const client = new OpenRouterClient("test-api-key", mockOpenAI);
+  const messages = [{ role: "user", content: "Hello" }];
+  const result = await client.createChatCompletion(messages);
+
+  expect(result.success).toBe(false);
+  expect(result.error).toBe(
+    "Too many requests. Please wait a moment and try again.",
+  );
+  expect(result.code).toBe("RATE_LIMITED");
+  expect(result.originalError).toBe("Rate limit exceeded");
+});
+
+test("should handle authentication errors specifically", async () => {
+  const authError = new Error("Invalid API key");
+  authError.code = "invalid_api_key";
+  authError.status = 401;
+
+  const mockOpenAI = function (config) {
+    this.chat = {
+      completions: {
+        create: mock(() => Promise.reject(authError)),
+      },
+    };
+    return this;
+  };
+
+  const client = new OpenRouterClient("test-api-key", mockOpenAI);
+  const messages = [{ role: "user", content: "Hello" }];
+  const result = await client.createChatCompletion(messages);
+
+  expect(result.success).toBe(false);
+  expect(result.error).toBe(
+    "AI service authentication failed. Please check configuration.",
+  );
+  expect(result.code).toBe("AUTH_ERROR");
+});
+
+test("should handle quota exceeded errors specifically", async () => {
+  const quotaError = new Error("Insufficient quota");
+  quotaError.code = "insufficient_quota";
+
+  const mockOpenAI = function (config) {
+    this.chat = {
+      completions: {
+        create: mock(() => Promise.reject(quotaError)),
+      },
+    };
+    return this;
+  };
+
+  const client = new OpenRouterClient("test-api-key", mockOpenAI);
+  const messages = [{ role: "user", content: "Hello" }];
+  const result = await client.createChatCompletion(messages);
+
+  expect(result.success).toBe(false);
+  expect(result.error).toBe(
+    "AI service quota exceeded. Please try again later.",
+  );
+  expect(result.code).toBe("QUOTA_EXCEEDED");
+});
+
+test("should handle network errors specifically", async () => {
+  const networkError = new TypeError("fetch failed");
+
+  const mockOpenAI = function (config) {
+    this.chat = {
+      completions: {
+        create: mock(() => Promise.reject(networkError)),
+      },
+    };
+    return this;
+  };
+
+  const client = new OpenRouterClient("test-api-key", mockOpenAI);
+  const messages = [{ role: "user", content: "Hello" }];
+  const result = await client.createChatCompletion(messages);
+
+  expect(result.success).toBe(false);
+  expect(result.error).toBe(
+    "Network connection failed. Please check your internet connection.",
+  );
+  expect(result.code).toBe("NETWORK_ERROR");
+});
+
+test("should handle server errors specifically", async () => {
+  const serverError = new Error("Internal server error");
+  serverError.status = 500;
+
+  const mockOpenAI = function (config) {
+    this.chat = {
+      completions: {
+        create: mock(() => Promise.reject(serverError)),
+      },
+    };
+    return this;
+  };
+
+  const client = new OpenRouterClient("test-api-key", mockOpenAI);
+  const messages = [{ role: "user", content: "Hello" }];
+  const result = await client.createChatCompletion(messages);
+
+  expect(result.success).toBe(false);
+  expect(result.error).toBe(
+    "AI service is temporarily unavailable. Please try again later.",
+  );
+  expect(result.code).toBe("SERVER_ERROR");
 });

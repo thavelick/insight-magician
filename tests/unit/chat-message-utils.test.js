@@ -4,6 +4,7 @@ import {
   countWords,
   createEchoResponse,
   formatContent,
+  formatTimestamp,
   getMessageClasses,
   getPreview,
   getRoleClass,
@@ -215,6 +216,66 @@ describe("Chat Message Functions", () => {
       const veryLong = "word ".repeat(1000);
       expect(isValidContent(veryLong)).toBe(true);
       expect(formatContent(veryLong)).toBe(veryLong.trim());
+    });
+  });
+
+  describe("Timestamp Formatting", () => {
+    test("should format recent timestamps as 'just now'", () => {
+      const now = Date.now();
+      const thirtySecondsAgo = now - 30 * 1000;
+
+      expect(formatTimestamp(now)).toBe("just now");
+      expect(formatTimestamp(thirtySecondsAgo)).toBe("just now");
+    });
+
+    test("should format timestamps within an hour as minutes ago", () => {
+      const now = Date.now();
+      const fiveMinutesAgo = now - 5 * 60 * 1000;
+      const thirtyMinutesAgo = now - 30 * 60 * 1000;
+
+      expect(formatTimestamp(fiveMinutesAgo)).toBe("5m ago");
+      expect(formatTimestamp(thirtyMinutesAgo)).toBe("30m ago");
+    });
+
+    test("should format timestamps within a day as hours ago", () => {
+      const now = Date.now();
+      const twoHoursAgo = now - 2 * 60 * 60 * 1000;
+      const twelveHoursAgo = now - 12 * 60 * 60 * 1000;
+
+      expect(formatTimestamp(twoHoursAgo)).toBe("2h ago");
+      expect(formatTimestamp(twelveHoursAgo)).toBe("12h ago");
+    });
+
+    test("should format timestamps within a week as days ago", () => {
+      const now = Date.now();
+      const twoDaysAgo = now - 2 * 24 * 60 * 60 * 1000;
+      const sixDaysAgo = now - 6 * 24 * 60 * 60 * 1000;
+
+      expect(formatTimestamp(twoDaysAgo)).toBe("2d ago");
+      expect(formatTimestamp(sixDaysAgo)).toBe("6d ago");
+    });
+
+    test("should format old timestamps as date strings", () => {
+      const now = Date.now();
+      const twoWeeksAgo = now - 14 * 24 * 60 * 60 * 1000;
+      const oneMonthAgo = now - 30 * 24 * 60 * 60 * 1000;
+
+      const twoWeeksDate = new Date(twoWeeksAgo).toLocaleDateString();
+      const oneMonthDate = new Date(oneMonthAgo).toLocaleDateString();
+
+      expect(formatTimestamp(twoWeeksAgo)).toBe(twoWeeksDate);
+      expect(formatTimestamp(oneMonthAgo)).toBe(oneMonthDate);
+    });
+
+    test("should handle edge cases", () => {
+      const now = Date.now();
+      const exactlyOneMinute = now - 60 * 1000;
+      const exactlyOneHour = now - 60 * 60 * 1000;
+      const exactlyOneDay = now - 24 * 60 * 60 * 1000;
+
+      expect(formatTimestamp(exactlyOneMinute)).toBe("1m ago");
+      expect(formatTimestamp(exactlyOneHour)).toBe("1h ago");
+      expect(formatTimestamp(exactlyOneDay)).toBe("1d ago");
     });
   });
 });

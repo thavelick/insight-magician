@@ -266,4 +266,103 @@ test.describe("AI Chat Basic Functionality", () => {
       "assistant",
     );
   });
+
+  test("should display message timestamps", async ({ page }) => {
+    const testMessage = "Timestamp test";
+    await sendChatMessage(page, testMessage);
+
+    // Check that timestamp elements are present (should have 2: user + AI response)
+    await expect(page.locator(".ai-chat-timestamp")).toHaveCount(2);
+
+    // Should show "just now" for recent messages
+    await expect(page.locator(".ai-chat-timestamp").first()).toContainText(
+      "just now",
+    );
+  });
+
+  test("should provide clear chat functionality", async ({ page }) => {
+    // Send a couple messages first
+    await sendChatMessage(page, "First message");
+    await sendChatMessage(page, "Second message");
+
+    // Verify messages are there
+    await verifyMessageInChat(page, "First message", "user");
+    await verifyMessageInChat(page, "Second message", "user");
+
+    // Set up dialog handler before clicking
+    page.on("dialog", (dialog) => dialog.accept());
+
+    // Click the clear button
+    await page.locator(".clear-ai-chat").click();
+
+    // Wait for messages to be cleared
+    await expect(page.locator(".ai-chat-message")).toHaveCount(0);
+
+    // Verify chat history is cleared in storage
+    const historyAfterClear = await page.evaluate(() => {
+      return sessionStorage.getItem("ai-chat-history");
+    });
+    expect(historyAfterClear).toBe("[]");
+  });
+
+  test("should show enhanced error messages for specific error types", async ({
+    page,
+  }) => {
+    // Test rate limiting error
+    await page.route("/api/chat", async (route) => {
+      await route.fulfill({
+        status: 429,
+        contentType: "application/json",
+        body: JSON.stringify({
+          error: "Too many requests. Please wait a moment and try again.",
+        }),
+      });
+    });
+
+    await sendChatMessage(page, "Rate limit test");
+    await verifyMessageInChat(
+      page,
+      "⏳ Too many requests. Please wait a moment and try again.",
+      "assistant",
+    );
+
+    // Test network error
+    await page.route("/api/chat", async (route) => {
+      await route.abort("failed");
+    });
+
+    await sendChatMessage(page, "Network test");
+    await verifyMessageInChat(
+      page,
+      "⚠️ Network connection failed. Please check your internet connection and try again.",
+      "assistant",
+    );
+  });
+
+  test("should show proper message structure with wrappers", async ({
+    page,
+  }) => {
+    const testMessage = "Structure test";
+    await sendChatMessage(page, testMessage);
+
+    // Check that messages are wrapped properly for timestamps (there will be multiple)
+    await expect(page.locator(".ai-chat-message-wrapper")).toHaveCount(2); // User + AI response
+    await expect(
+      page.locator(".ai-chat-message-wrapper .ai-chat-message"),
+    ).toHaveCount(2);
+    await expect(
+      page.locator(".ai-chat-message-wrapper .ai-chat-timestamp"),
+    ).toHaveCount(2);
+
+    // Check that specific elements are visible
+    await expect(
+      page.locator(".ai-chat-message-wrapper").first(),
+    ).toBeVisible();
+    await expect(
+      page.locator(".ai-chat-message-wrapper .ai-chat-message").first(),
+    ).toBeVisible();
+    await expect(
+      page.locator(".ai-chat-message-wrapper .ai-chat-timestamp").first(),
+    ).toBeVisible();
+  });
 });

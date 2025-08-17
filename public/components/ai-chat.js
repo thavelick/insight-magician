@@ -4,6 +4,7 @@ import { ChatHistory } from "../../lib/chat-history.js";
 import {
   MESSAGE_ROLES,
   formatContent,
+  formatTimestamp,
   getMessageClasses,
   isEmpty,
 } from "../../lib/chat-message-utils.js";
@@ -25,7 +26,10 @@ export class AIChatComponent {
     this.sidebar.innerHTML = `
       <div class="ai-chat-header">
         <h3>AI Chat</h3>
-        <button class="close-ai-chat">×</button>
+        <div class="ai-chat-header-buttons">
+          <button class="clear-ai-chat" title="Clear chat history">🗑️</button>
+          <button class="close-ai-chat" title="Close chat">×</button>
+        </div>
       </div>
       <div class="ai-chat-content">
         <div class="ai-chat-messages">
@@ -45,6 +49,12 @@ export class AIChatComponent {
       .querySelector(".close-ai-chat")
       .addEventListener("click", () => {
         this.hide();
+      });
+
+    this.sidebar
+      .querySelector(".clear-ai-chat")
+      .addEventListener("click", () => {
+        this.clearChat();
       });
 
     this.sidebar
@@ -86,10 +96,27 @@ export class AIChatComponent {
       this.addMessage(MESSAGE_ROLES.ASSISTANT, result.message);
     } catch (error) {
       console.error("Chat API error:", error);
-      this.addMessage(
-        MESSAGE_ROLES.ASSISTANT,
-        "Sorry, I'm having trouble connecting right now. Please try again.",
-      );
+
+      let errorMessage =
+        "Sorry, I'm having trouble connecting right now. Please try again.";
+
+      if (error.message?.includes("Network connection failed")) {
+        errorMessage =
+          "⚠️ Network connection failed. Please check your internet connection and try again.";
+      } else if (error.message?.includes("Too many requests")) {
+        errorMessage =
+          "⏳ Too many requests. Please wait a moment and try again.";
+      } else if (error.message?.includes("temporarily unavailable")) {
+        errorMessage =
+          "🔧 AI service is temporarily unavailable. Please try again in a few minutes.";
+      } else if (error.message?.includes("Authentication failed")) {
+        errorMessage =
+          "🔑 Authentication error. Please contact support if this continues.";
+      } else if (error.message?.includes("quota exceeded")) {
+        errorMessage = "📊 AI service quota exceeded. Please try again later.";
+      }
+
+      this.addMessage(MESSAGE_ROLES.ASSISTANT, errorMessage);
     } finally {
       this.hideTypingIndicator();
       this.setInputEnabled(true);
@@ -99,19 +126,26 @@ export class AIChatComponent {
 
   addMessage(role, content) {
     const message = this.chatHistory.addMessage(role, content);
-    this.renderMessage(message);
-    this.scrollToBottom();
+    this.renderAllMessages();
     this.saveChatHistory();
   }
 
   renderMessage(message) {
     const messagesContainer = this.sidebar.querySelector(".ai-chat-messages");
+    const messageWrapper = document.createElement("div");
+    messageWrapper.className = "ai-chat-message-wrapper";
+
     const messageDiv = document.createElement("div");
     messageDiv.className = getMessageClasses(message.role);
-
     messageDiv.textContent = formatContent(message.content);
 
-    messagesContainer.appendChild(messageDiv);
+    const timestampDiv = document.createElement("div");
+    timestampDiv.className = "ai-chat-timestamp";
+    timestampDiv.textContent = formatTimestamp(message.timestamp);
+
+    messageWrapper.appendChild(messageDiv);
+    messageWrapper.appendChild(timestampDiv);
+    messagesContainer.appendChild(messageWrapper);
   }
 
   scrollToBottom() {
@@ -188,5 +222,19 @@ export class AIChatComponent {
   hide() {
     this.sidebar.classList.remove("visible");
     document.body.classList.remove("ai-chat-open");
+  }
+
+  clearChat() {
+    const confirmed = confirm(
+      "Are you sure you want to clear all chat history? This action cannot be undone.",
+    );
+
+    if (confirmed) {
+      this.chatHistory.clear();
+      const messagesContainer = this.sidebar.querySelector(".ai-chat-messages");
+      messagesContainer.innerHTML = "";
+      this.saveChatHistory();
+      this.sidebar.querySelector(".ai-chat-input").focus();
+    }
   }
 }
