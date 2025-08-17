@@ -337,14 +337,14 @@ class App {
         widgetType,
       );
 
-      // Set the query and results
+      // Set the query and results BEFORE adding to DOM
       widget.query = query;
       if (results) {
         widget.results = results;
         widget.hasResults = !!(results.rows && results.rows.length > 0);
       }
 
-      // For graph widgets, set the chart function
+      // For graph widgets, set the chart function BEFORE adding to DOM
       if (widgetType === "graph" && chartFunction) {
         widget.chartFunction = chartFunction;
       }
@@ -357,6 +357,9 @@ class App {
       if (container) {
         container.appendChild(widget.getElement());
       }
+
+      // Update form fields to reflect the properties set after widget creation
+      widget.updateFormFields();
 
       // If widget has results, display them immediately
       if (results?.rows && results.rows.length > 0) {

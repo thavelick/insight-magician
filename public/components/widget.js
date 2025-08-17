@@ -787,6 +787,24 @@ export class WidgetComponent {
     return this.element;
   }
 
+  /**
+   * Update form field values to match current widget properties
+   * Useful when properties are set after widget creation (e.g., from AI tools)
+   */
+  updateFormFields() {
+    const queryTextarea = this.element?.querySelector(".query-editor");
+    if (queryTextarea) {
+      queryTextarea.value = this.query;
+    }
+
+    const chartFunctionTextarea = this.element?.querySelector(
+      ".chart-function-editor",
+    );
+    if (chartFunctionTextarea) {
+      chartFunctionTextarea.value = this.chartFunction;
+    }
+  }
+
   // Serialization methods for persistence
   serialize() {
     return {
