@@ -1,5 +1,6 @@
-import { ChatHistory } from "../../lib/chat-history.js";
+import { AI_CONFIG } from "../../lib/ai-config.js";
 import { ChatAPI } from "../../lib/chat-api.js";
+import { ChatHistory } from "../../lib/chat-history.js";
 import {
   MESSAGE_ROLES,
   formatContent,
@@ -9,7 +10,10 @@ import {
 
 export class AIChatComponent {
   constructor(chatAPI = new ChatAPI()) {
-    this.chatHistory = new ChatHistory("ai-chat-history", 200);
+    this.chatHistory = new ChatHistory(
+      "ai-chat-history",
+      AI_CONFIG.STORAGE_MESSAGE_LIMIT,
+    );
     this.chatAPI = chatAPI;
     this.createSidebar();
     this.loadChatHistory();
@@ -67,24 +71,25 @@ export class AIChatComponent {
 
     if (isEmpty(message)) return;
 
-    // Disable input while processing
     this.setInputEnabled(false);
     this.addMessage(MESSAGE_ROLES.USER, message);
     input.value = "";
 
-    // Add loading indicator
     this.showTypingIndicator();
 
     try {
-      // Call the chat API
-      const result = await this.chatAPI.sendMessage(message, this.chatHistory.getMessages());
+      const result = await this.chatAPI.sendMessage(
+        message,
+        this.chatHistory.getMessages(),
+      );
 
-      // Add AI response
       this.addMessage(MESSAGE_ROLES.ASSISTANT, result.message);
     } catch (error) {
-      console.error('Chat API error:', error);
-      this.addMessage(MESSAGE_ROLES.ASSISTANT, 
-        "Sorry, I'm having trouble connecting right now. Please try again.");
+      console.error("Chat API error:", error);
+      this.addMessage(
+        MESSAGE_ROLES.ASSISTANT,
+        "Sorry, I'm having trouble connecting right now. Please try again.",
+      );
     } finally {
       this.hideTypingIndicator();
       this.setInputEnabled(true);
@@ -134,14 +139,13 @@ export class AIChatComponent {
     this.scrollToBottom();
   }
 
-
   setInputEnabled(enabled) {
     const input = this.sidebar.querySelector(".ai-chat-input");
     const sendButton = this.sidebar.querySelector(".ai-chat-send");
-    
+
     input.disabled = !enabled;
     sendButton.disabled = !enabled;
-    
+
     if (enabled) {
       input.classList.remove("disabled");
       sendButton.classList.remove("disabled");
