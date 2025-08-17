@@ -104,8 +104,6 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Create `tests/integration/tool-calling-basic.test.js` - End-to-end tool calling with schema tool
   - Create `tests/integration/schema-tool-integration.test.js` - Schema tool with real database
   - Create `tests/integration/ai-chat-tool-ui.test.js` - Frontend tool result processing
-- Write @expensive tests:
-  - Create `tests/integration/ai-schema-expensive.test.js` - Real AI using schema tool
 - Run code quality checks:
   - Run `make format` to format all code
   - Run `make lint` to check code quality
@@ -175,8 +173,6 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Create `tests/integration/multi-tool-selection.test.js` - Test AI choosing between tools
   - Create `tests/integration/widget-listing-integration.test.js` - Widget listing with real dashboard state
   - Update `tests/integration/tool-calling-basic.test.js` - Add widget listing scenarios
-- Write @expensive tests:
-  - Create `tests/integration/ai-multi-tool-expensive.test.js` - Real AI choosing between schema and widget tools
 - Run code quality checks:
   - Run `make format` to format all code
   - Run `make lint` to check code quality
@@ -252,8 +248,6 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Create `tests/integration/sql-query-integration.test.js` - SQL tool with real database queries
   - Create `tests/integration/three-tool-selection.test.js` - Test AI choosing among 3 tools
   - Update `tests/integration/tool-calling-basic.test.js` - Add SQL query scenarios
-- Write @expensive tests:
-  - Create `tests/integration/ai-data-analysis-expensive.test.js` - Real AI generating and executing SQL queries
 - Run code quality checks:
   - Run `make format` to format all code
   - Run `make lint` to check code quality
@@ -339,8 +333,6 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Create `tests/integration/chart-widget-creation.test.js` - Graph widget creation with D3.js functions
   - Create `tests/integration/four-tool-workflow.test.js` - Test AI using all 4 tools in combination
   - Update `tests/integration/ai-chat-tool-ui.test.js` - Add widget creation UI interactions
-- Write @expensive tests:
-  - Create `tests/integration/ai-widget-creation-expensive.test.js` - Real AI creating widgets from natural language
 - Run code quality checks:
   - Run `make format` to format all code
   - Run `make lint` to check code quality
@@ -418,8 +410,6 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Create `tests/integration/widget-query-update.test.js` - Test SQL query changes and re-execution
   - Create `tests/integration/five-tool-workflow.test.js` - Test AI using all 5 tools in combination
   - Update `tests/integration/ai-chat-tool-ui.test.js` - Add widget editing UI interactions
-- Write @expensive tests:
-  - Create `tests/integration/ai-widget-editing-expensive.test.js` - Real AI modifying widgets from natural language
 - Run code quality checks:
   - Run `make format` to format all code
   - Run `make lint` to check code quality
@@ -520,9 +510,11 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Create `tests/integration/multi-tool-workflows.test.js` - Complex multi-step tool combinations
   - Create `tests/integration/tool-execution-ui.test.js` - Enhanced UI indicators and error handling
   - Update `tests/integration/ai-chat-tool-ui.test.js` - Add final UI enhancements
-- Write @expensive tests:
-  - Create `tests/integration/ai-complete-workflow-expensive.test.js` - Real AI managing complex dashboard workflows
-  - Update existing @expensive tests to verify complete tool suite functionality
+- Write final @expensive test:
+  - Create `tests/integration/ai-complete-workflow-expensive.test.js` - Real AI end-to-end workflow validation
+    - Test complete user journey: "Create a sales chart showing revenue by month and make it bigger"
+    - Validate AI tool selection, natural language understanding, and multi-step workflows
+    - Only run this after all mocked tests pass to validate the complete experience
 - Run final code quality checks:
   - Run `make format` to format all code
   - Run `make lint` to check code quality
@@ -630,15 +622,21 @@ You have access to these tools:
 
 ### Quality Assurance Strategy
 
-**Incremental Testing:**
-- Each phase thoroughly tested before proceeding
-- Manual testing ensures user experience works
-- Integration tests verify tool functionality
-- @expensive tests validate real AI reasoning
+**Mock-First Testing Approach:**
+- **Mocked Integration Tests**: Test all tool calling mechanics using `page.route()` to mock `/api/chat` responses
+- **Real Component Testing**: Use actual databases, DOM manipulation, and widget systems with mocked AI responses
+- **Progressive Validation**: Each phase builds on previous mocked test suite
+- **Single @expensive Test**: One comprehensive end-to-end test with real AI after all mocked tests pass
+
+**Benefits of Mock-First:**
+- **Fast Feedback**: Tests run quickly without API costs during development
+- **Reliable**: No dependency on external AI service availability
+- **Comprehensive**: Can test edge cases and error scenarios easily
+- **Cost Effective**: Only one expensive test validates the complete user experience
 
 **Error Handling:**
 - Each tool has comprehensive error handling
-- Frontend gracefully handles tool failures
+- Frontend gracefully handles tool failures  
 - AI conversations continue even when tools fail
 - Clear error messages guide users
 
