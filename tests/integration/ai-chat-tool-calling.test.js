@@ -40,7 +40,9 @@ test.describe("AI Chat Tool Calling Functionality", () => {
 
     // Wait for API call to complete
     await expect(
-      page.locator('.ai-chat-message-assistant:has-text("Database path received")'),
+      page.locator(
+        '.ai-chat-message-assistant:has-text("Database path received")',
+      ),
     ).toBeVisible();
 
     expect(apiCallData.databasePath).toBe(`./uploads/${uploadedFilename}`);
@@ -83,7 +85,6 @@ test.describe("AI Chat Tool Calling Functionality", () => {
   });
 
   test("should handle API errors gracefully", async ({ page }) => {
-    // Mock API error response
     await page.route("/api/chat", async (route) => {
       await route.fulfill({
         status: 500,
@@ -98,7 +99,9 @@ test.describe("AI Chat Tool Calling Functionality", () => {
     await page.fill(".ai-chat-input", "Test message");
     await page.click(".ai-chat-send");
 
-    await expect(page.locator('.ai-chat-message-user:has-text("Test message")')).toBeVisible();
+    await expect(
+      page.locator('.ai-chat-message-user:has-text("Test message")'),
+    ).toBeVisible();
     await expect(
       page.locator(
         '.ai-chat-message-assistant:has-text("Sorry, I\'m having trouble connecting right now")',
@@ -109,7 +112,6 @@ test.describe("AI Chat Tool Calling Functionality", () => {
   test("should process tool results correctly", async ({ page }) => {
     const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
-    // Mock API response with tool results
     await page.route("/api/chat", async (route) => {
       const mockResponse = {
         success: true,
@@ -131,7 +133,7 @@ test.describe("AI Chat Tool Calling Functionality", () => {
                     rowCount: 100,
                   },
                 },
-                summary: "Database contains 1 table with 100 rows.",
+                tableNames: ["users"],
               },
             },
           },
@@ -149,7 +151,9 @@ test.describe("AI Chat Tool Calling Functionality", () => {
     await page.click(".ai-chat-send");
 
     await expect(
-      page.locator('.ai-chat-message-assistant:has-text("I\'ve retrieved your database schema")'),
+      page.locator(
+        '.ai-chat-message-assistant:has-text("I\'ve retrieved your database schema")',
+      ),
     ).toBeVisible();
 
     // The fact that the assistant message appeared with tool results means
@@ -178,18 +182,18 @@ test.describe("AI Chat Tool Calling Functionality", () => {
     await page.fill(".ai-chat-input", testMessage);
     await page.click(".ai-chat-send");
 
-    // Verify user message appears
-    await expect(page.locator('.ai-chat-message-user:has-text("Hello AI")')).toBeVisible();
-
-    // Verify assistant response appears
     await expect(
-      page.locator('.ai-chat-message-assistant:has-text("Hello! How can I help you")')
+      page.locator('.ai-chat-message-user:has-text("Hello AI")'),
     ).toBeVisible();
 
-    // Verify message structure includes timestamps
+    await expect(
+      page.locator(
+        '.ai-chat-message-assistant:has-text("Hello! How can I help you")',
+      ),
+    ).toBeVisible();
+
     await expect(page.locator(".ai-chat-timestamp")).toHaveCount(2);
 
-    // Verify input is cleared after sending
     await expect(page.locator(".ai-chat-input")).toHaveValue("");
   });
 });

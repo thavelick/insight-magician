@@ -122,9 +122,9 @@ This plan implements AI tool calling functionality one tool at a time. Each phas
 - Frontend displays tool execution and results clearly
 
 **Manual Testing:**
-- "What tables are in this database?"
-- "Tell me about the users table"
-- "What's the structure of this database?"
+- ✅ "What tables are in this database?"
+- ✅ "Tell me about the users table"
+- ✅ "What's the structure of this database?"
 
 ---
 
