@@ -284,6 +284,28 @@ class App {
     return `./uploads/${this.currentDatabase}`;
   }
 
+  /**
+   * Get widget state information for tool execution
+   * @returns {Array} Array of widget information objects
+   */
+  getWidgetListForTools() {
+    const widgetInfo = Array.from(this.widgets.values()).map((widget) => ({
+      id: widget.id,
+      title: widget.title || `Widget ${widget.id}`,
+      type: widget.widgetType || "data-table",
+      query: widget.query || "",
+      dimensions: {
+        width: widget.width || 2,
+        height: widget.height || 2,
+      },
+      hasResults: !!(widget.results?.rows && widget.results.rows.length > 0),
+      resultCount: widget.results?.rows ? widget.results.rows.length : 0,
+      isInEditMode: widget.isFlipped || false,
+    }));
+
+    return widgetInfo;
+  }
+
   clearWidgets() {
     // Remove all widget elements
     const container = document.getElementById("widgets-container");

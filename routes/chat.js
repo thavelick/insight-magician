@@ -2,10 +2,12 @@ import { AI_CONFIG } from "../lib/ai-config.js";
 import { SYSTEM_PROMPT } from "../lib/ai-system-prompt.js";
 import { OpenRouterClient } from "../lib/openrouter-client.js";
 import { toolExecutor } from "../lib/tool-executor.js";
-import { SchemaTool } from "../lib/tools/schema-tool.js";
+import { toolRegistry } from "../lib/tool-registry.js";
 
-const schemaTool = new SchemaTool();
-toolExecutor.registerTool("get_schema_info", schemaTool);
+// Register all tools from the registry with the executor
+for (const tool of toolRegistry.getAllTools()) {
+  toolExecutor.registerTool(tool.name, tool);
+}
 
 function createErrorResponse(error, status) {
   return new Response(JSON.stringify({ error }), {
@@ -30,7 +32,7 @@ export async function handleChat(request, openRouterClientClass) {
 
   try {
     const body = await request.json();
-    const { message, chatHistory = [], databasePath } = body;
+    const { message, chatHistory = [], databasePath, widgets = [] } = body;
 
     if (!message || typeof message !== "string") {
       return createErrorResponse("Missing required parameter: message", 400);
@@ -109,7 +111,7 @@ export async function handleChat(request, openRouterClientClass) {
         aiMessage: result.message || "none",
       });
 
-      const context = { databasePath };
+      const context = { databasePath, widgets };
       const toolResults = await toolExecutor.executeToolCalls(
         result.toolCalls,
         context,
