@@ -102,7 +102,6 @@ export class AIChatComponent {
         this.processToolResults(result.toolResults);
       }
 
-      // Show subtle indicator for multi-tool workflows
       if (
         result.iterations > 1 ||
         (result.toolResults && result.toolResults.length > 1)
