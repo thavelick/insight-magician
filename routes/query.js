@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { DatabaseManager } from "../lib/database.js";
-import { validateSql } from "../lib/sqlValidator.js";
+import { validateSqlForWidget } from "../lib/sqlValidator.js";
 
 const UPLOADS_DIR = "./uploads";
 const DEFAULT_PAGE_SIZE = 50;
@@ -62,8 +62,8 @@ export async function handleQuery(request) {
     await dbManager.connect();
 
     try {
-      // Validate SQL query using centralized validator
-      const validation = validateSql(query);
+      // Validate SQL query using widget-specific validator (no LIMIT/OFFSET allowed)
+      const validation = validateSqlForWidget(query);
       if (!validation.isValid) {
         return new Response(JSON.stringify({ error: validation.error }), {
           status: 400,
