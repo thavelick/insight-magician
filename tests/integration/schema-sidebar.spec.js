@@ -45,7 +45,7 @@ test.describe("Schema Sidebar", () => {
     }
   }
 
-  test("should show schema sidebar after database upload", async ({ page }) => {
+  test("should show view schema button after database upload", async ({ page }) => {
     // Initially no view schema button should be visible
     await verifyViewSchemaButton(page, false);
 
@@ -54,7 +54,11 @@ test.describe("Schema Sidebar", () => {
     // View schema button should appear after database load
     await verifyViewSchemaButton(page, true);
 
-    // Schema sidebar should be visible automatically
+    // Schema sidebar should NOT be visible automatically - user must click button
+    await verifySchemaSidebar(page, false);
+
+    // Click view schema button to show schema
+    await page.click("#view-schema");
     await verifySchemaSidebar(page, true);
     await verifySchemaContent(page);
 
@@ -66,7 +70,9 @@ test.describe("Schema Sidebar", () => {
   }) => {
     const { uploadedFilename } = await setupDatabaseWithUpload(page);
 
-    // Schema should be visible initially
+    // Schema should NOT be visible initially - click to show it
+    await verifySchemaSidebar(page, false);
+    await page.click("#view-schema");
     await verifySchemaSidebar(page, true);
 
     await page.click(".schema-sidebar .close-schema");
