@@ -305,6 +305,90 @@ class App {
     return widgetInfo;
   }
 
+  /**
+   * Create a new widget from tool execution result
+   * @param {Object} widgetConfig - Widget configuration from tool
+   */
+  createWidgetFromTool(widgetConfig) {
+    try {
+      const {
+        id,
+        title,
+        widgetType,
+        query,
+        width = 2,
+        height = 2,
+        chartFunction,
+        results,
+      } = widgetConfig;
+
+      // Generate numeric ID from string ID for compatibility
+      const numericId = this.nextWidgetId++;
+
+      // Create widget with the provided configuration
+      const widget = new WidgetComponent(
+        numericId,
+        (id) => this.removeWidget(id),
+        () => this.saveWidgets(),
+        width,
+        height,
+        this.currentDatabase,
+        title,
+        widgetType,
+      );
+
+      // Set the query and results
+      widget.query = query;
+      if (results) {
+        widget.results = results;
+        widget.hasResults = !!(results.rows && results.rows.length > 0);
+      }
+
+      // For graph widgets, set the chart function
+      if (widgetType === "graph" && chartFunction) {
+        widget.chartFunction = chartFunction;
+      }
+
+      // Add to widgets map
+      this.widgets.set(numericId, widget);
+
+      // Add to DOM
+      const container = document.getElementById("widgets-container");
+      if (container) {
+        container.appendChild(widget.getElement());
+      }
+
+      // If widget has results, display them immediately
+      if (results?.rows && results.rows.length > 0) {
+        widget.displayResults(results);
+      }
+
+      // Save state
+      this.saveWidgets();
+
+      // Hide upload area after adding widget if it was visible
+      this.hideUploadArea();
+
+      console.log(`Created widget ${numericId} from tool:`, {
+        title,
+        type: widgetType,
+        rowCount: results?.rows?.length || 0,
+      });
+
+      return {
+        success: true,
+        widgetId: numericId,
+        message: `Widget "${title}" created successfully`,
+      };
+    } catch (error) {
+      console.error("Error creating widget from tool:", error);
+      return {
+        success: false,
+        error: `Failed to create widget: ${error.message}`,
+      };
+    }
+  }
+
   clearWidgets() {
     // Remove all widget elements
     const container = document.getElementById("widgets-container");

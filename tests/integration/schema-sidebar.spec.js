@@ -45,7 +45,9 @@ test.describe("Schema Sidebar", () => {
     }
   }
 
-  test("should show view schema button after database upload", async ({ page }) => {
+  test("should show view schema button after database upload", async ({
+    page,
+  }) => {
     // Initially no view schema button should be visible
     await verifyViewSchemaButton(page, false);
 

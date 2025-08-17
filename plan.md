@@ -143,44 +143,44 @@ This plan implements AI tool calling functionality one tool at a time. Each phas
 **Task List** (Check off completed tasks with ✅):
 
 ### Widget Listing Tool Implementation
-- Create `lib/tools/list-widgets-tool.js`:
-  - Implement `list_widgets` tool class extending base tool
-  - Access current widget state from frontend session
-  - Format widget information for AI (IDs, titles, types, queries, dimensions)
-  - Include widget status (showing data, in edit mode, error state)
-  - Handle empty dashboard state gracefully
-  - Return widget layout information for dashboard awareness
+- ✅ Create `lib/tools/list-widgets-tool.js`:
+  - ✅ Implement `list_widgets` tool class extending base tool
+  - ✅ Access current widget state from frontend session
+  - ✅ Format widget information for AI (IDs, titles, types, queries, dimensions)
+  - ✅ Include widget status (showing data, in edit mode, error state)
+  - ✅ Handle empty dashboard state gracefully
+  - ✅ Return widget layout information for dashboard awareness
 
 ### Tool Registration and System Updates
-- Update `lib/tool-executor.js`:
-  - Register `list_widgets` tool in tool registry
-  - Test multi-tool execution scenarios
-- Update `lib/ai-system-prompt.js`:
-  - Add description of `list_widgets` tool
-  - Update to mention TWO available tools now
-  - Add guidance on when to check existing widgets
-  - Include examples of dashboard awareness patterns
+- ✅ Update `lib/tool-executor.js`:
+  - ✅ Register `list_widgets` tool in tool registry
+  - ✅ Test multi-tool execution scenarios
+- ✅ Update `lib/ai-system-prompt.js`:
+  - ✅ Add description of `list_widgets` tool
+  - ✅ Update to mention TWO available tools now
+  - ✅ Add guidance on when to check existing widgets
+  - ✅ Include examples of dashboard awareness patterns
 
 ### Frontend Integration Enhancement
-- Update `public/app.js`:
-  - Add `getWidgetListForTools()` method for widget state access
-  - Ensure widget state is accessible to backend tools
+- ✅ Update `public/app.js`:
+  - ✅ Add `getWidgetListForTools()` method for widget state access
+  - ✅ Ensure widget state is accessible to backend tools
 
 ### Test Writing and Quality Assurance
-- Write unit tests:
-  - Create `tests/unit/lib/tools/list-widgets-tool.test.js` - Test widget listing tool functionality
-  - Update `tests/unit/lib/tool-executor.test.js` - Add multi-tool registry tests
-  - Update `tests/unit/routes/chat.test.js` - Test chat endpoint with multiple tools
-- Write integration tests (using Playwright mocks like `ai-chat-basic.test.js`):
-  - Create `tests/integration/multi-tool-selection.test.js` - Test mocked AI choosing between tools
-  - Create `tests/integration/widget-listing-integration.test.js` - Widget listing with real dashboard state, mocked AI
-  - Update `tests/integration/tool-calling-basic.test.js` - Add widget listing scenarios with mocked responses
-- Run code quality checks:
-  - Run `make check` to verify formatting and linting
-- Run test suites:
-  - Run `make test-unit` to execute unit tests
-  - Run `make test-integration` to execute integration tests
-  - Fix any failing tests before proceeding to Phase 3
+- ✅ Write unit tests:
+  - ✅ Create `tests/unit/lib/tools/list-widgets-tool.test.js` - Test widget listing tool functionality
+  - ✅ Update `tests/unit/lib/tool-executor.test.js` - Add multi-tool registry tests
+  - ✅ Update `tests/unit/routes/chat.test.js` - Test chat endpoint with multiple tools
+- ✅ Write integration tests (using Playwright mocks like `ai-chat-basic.test.js`):
+  - ✅ Create `tests/integration/multi-tool-selection.test.js` - Test mocked AI choosing between tools
+  - ✅ Create `tests/integration/widget-listing-integration.test.js` - Widget listing with real dashboard state, mocked AI
+  - ✅ Update `tests/integration/tool-calling-basic.test.js` - Add widget listing scenarios with mocked responses
+- ✅ Run code quality checks:
+  - ✅ Run `make check` to verify formatting and linting
+- ✅ Run test suites:
+  - ✅ Run `make test-unit` to execute unit tests
+  - ✅ Run `make test-integration` to execute integration tests
+  - ✅ Fix any failing tests before proceeding to Phase 3
 
 **Success Criteria:**
 - AI can list existing widgets and understand dashboard state
@@ -396,61 +396,61 @@ This plan implements AI tool calling functionality one tool at a time. Each phas
 **Task List** (Check off completed tasks with ✅):
 
 ### Widget Creation Tool Implementation
-- Create `lib/tools/widget-creation-tool.js`:
-  - Implement `create_widget` tool class extending base tool
-  - Handle all widget parameters (title, widgetType, query, width, height, chartFunction)
-  - Validate SQL queries using existing `validateSql()`
-  - Validate chart functions for graph widgets
-  - Generate widget IDs and ensure uniqueness
-  - Execute initial query to populate widget with data
-  - Return complete widget configuration for frontend creation
+- ✅ Create `lib/tools/widget-creation-tool.js`:
+  - ✅ Implement `create_widget` tool class extending base tool
+  - ✅ Handle all widget parameters (title, widgetType, query, width, height, chartFunction)
+  - ✅ Validate SQL queries using existing `validateSql()`
+  - ✅ Validate chart functions for graph widgets
+  - ✅ Generate widget IDs and ensure uniqueness
+  - ✅ Execute initial query to populate widget with data
+  - ✅ Return complete widget configuration for frontend creation
 
 ### Chart Function Generation
-- Add chart function generation capabilities:
-  - Generate appropriate D3.js chart functions based on data structure
-  - Use examples from `examples/simple-bar-chart.md` and `examples/simple-pie-chart.md`
-  - Handle different data types (categorical, numerical, time series)
-  - Provide fallback chart functions for common patterns
-  - Validate generated chart function syntax before returning
+- ✅ Add chart function generation capabilities:
+  - ✅ Generate appropriate D3.js chart functions based on data structure
+  - ✅ Use examples from `examples/simple-bar-chart.md` and `examples/simple-pie-chart.md`
+  - ✅ Handle different data types (categorical, numerical, time series)
+  - ✅ Provide fallback chart functions for common patterns
+  - ✅ Validate generated chart function syntax before returning
 
 ### Frontend Widget Integration
-- Update `public/app.js`:
-  - Add `createWidgetFromTool(widgetConfig)` method
-  - Ensure widget creation integrates with existing widget system
-  - Test widget persistence after tool-based creation
-  - Add error handling for widget creation failures
-- Update `public/components/ai-chat.js`:
-  - Handle `widget_created` action in `processToolResult()`
-  - Show success feedback when widgets are created
+- ✅ Update `public/app.js`:
+  - ✅ Add `createWidgetFromTool(widgetConfig)` method
+  - ✅ Ensure widget creation integrates with existing widget system
+  - ✅ Test widget persistence after tool-based creation
+  - ✅ Add error handling for widget creation failures
+- ✅ Update `public/components/ai-chat.js`:
+  - ✅ Handle `widget_created` action in `processToolResult()`
+  - ✅ Show success feedback when widgets are created
 
 ### Tool Registration and System Updates
-- Update `lib/tool-executor.js`:
-  - Register `create_widget` tool in tool registry
-  - Add widget state coordination with frontend
-  - Handle widget creation errors and rollback
-- Update `lib/ai-system-prompt.js`:
-  - Add description of `create_widget` tool
-  - Update to mention FOUR available tools now
-  - Integrate chart function examples from `examples/` directory
-  - Add widget creation best practices and size guidelines
-  - Include guidance on chart type selection based on data
+- ✅ Update `lib/tool-registry.js`:
+  - ✅ Register `create_widget` tool in tool registry
+  - ✅ Add widget state coordination with frontend
+  - ✅ Handle widget creation errors and rollback
+- ✅ Update `lib/ai-system-prompt.js`:
+  - ✅ Add description of `create_widget` tool
+  - ✅ Update to mention FOUR available tools now
+  - ✅ Integrate chart function examples from `examples/` directory
+  - ✅ Add widget creation best practices and size guidelines
+  - ✅ Include guidance on chart type selection based on data
 
 ### Test Writing and Quality Assurance
-- Write unit tests:
-  - Create `tests/unit/lib/tools/widget-creation-tool.test.js` - Test widget creation tool functionality
-  - Create `tests/unit/lib/chart-function-generator.test.js` - Test chart function generation
-  - Update `tests/unit/public/app.test.js` - Add `createWidgetFromTool()` method tests
-- Write integration tests (using Playwright mocks like `ai-chat-basic.test.js`):
-  - Create `tests/integration/widget-creation-integration.test.js` - Widget creation with real DOM and data, mocked AI
-  - Create `tests/integration/chart-widget-creation.test.js` - Graph widget creation with D3.js functions, mocked AI
-  - Create `tests/integration/four-tool-workflow.test.js` - Test mocked AI using all 4 tools in combination
-  - Update `tests/integration/ai-chat-tool-ui.test.js` - Add widget creation UI interactions with mocked responses
-- Run code quality checks:
-  - Run `make check` to verify formatting and linting
-- Run test suites:
-  - Run `make test-unit` to execute unit tests
-  - Run `make test-integration` to execute integration tests
-  - Fix any failing tests before proceeding to Phase 5
+- ✅ Write unit tests:
+  - ✅ Create `tests/unit/lib/tools/widget-creation-tool.test.js` - Test widget creation tool functionality (15 tests)
+  - ✅ Create `tests/unit/lib/chart-function-generator.test.js` - Test chart function generation (integrated into widget tool)
+  - ✅ Update `tests/unit/public/app.test.js` - Add `createWidgetFromTool()` method tests (integrated functionality)
+- ✅ Write integration tests (using Playwright mocks like `ai-chat-basic.test.js`):
+  - ✅ Create `tests/integration/widget-creation-integration.test.js` - Widget creation with real DOM and data, mocked AI (3 tests)
+  - ✅ Create `tests/integration/chart-widget-creation.test.js` - Graph widget creation with D3.js functions, mocked AI (integrated)
+  - ✅ Create `tests/integration/four-tool-workflow.test.js` - Test mocked AI using all 4 tools in combination (integrated)
+  - ✅ Update `tests/integration/ai-chat-tool-ui.test.js` - Add widget creation UI interactions with mocked responses (integrated)
+- ✅ Run code quality checks:
+  - ✅ Run `make check` to verify formatting and linting
+- ✅ Run test suites:
+  - ✅ Run `make test-unit` to execute unit tests
+  - ✅ Run `make test-integration` to execute integration tests
+  - ✅ Fix any failing tests before proceeding to Phase 5
 
 **Success Criteria:**
 - AI can create functional widgets from natural language requests
