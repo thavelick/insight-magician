@@ -180,6 +180,16 @@ const TOOLS = [
   - Expose global `window.app` reference for tool result processing
   - Add error handling for tool-initiated widget operations
 
+### Testing and Quality Assurance
+- Run code quality checks:
+  - Run `make format` to format all code
+  - Run `make lint` to check code quality
+  - Run `make check` to verify formatting and linting
+- Run test suites:
+  - Run `make test-unit` to execute unit tests
+  - Run `make test-integration` to execute integration tests
+  - Fix any failing tests before proceeding to Phase 2
+
 **Testing:**
 - **Manual**: Send message "What can you help me with?" - should mention tool capabilities and chart types
 - **Manual**: Ask "How do I create a bar chart?" - should reference examples from system prompt
@@ -233,6 +243,16 @@ const TOOLS = [
   - Add descriptions of when to use schema tool
   - Add descriptions of when to use widget listing tool
   - Include examples of how these tools inform widget creation decisions
+
+### Testing and Quality Assurance
+- Run code quality checks:
+  - Run `make format` to format all code
+  - Run `make lint` to check code quality  
+  - Run `make check` to verify formatting and linting
+- Run test suites:
+  - Run `make test-unit` to execute unit tests
+  - Run `make test-integration` to execute integration tests
+  - Fix any failing tests before proceeding to Phase 3
 
 **Testing:**
 - **Manual**: Ask "What tables are in this database?" and "What widgets are already on the dashboard?"
@@ -289,6 +309,16 @@ const TOOLS = [
   - Include examples of good analytical queries
   - Add data exploration patterns and common SQL templates
 
+### Testing and Quality Assurance
+- Run code quality checks:
+  - Run `make format` to format all code
+  - Run `make lint` to check code quality
+  - Run `make check` to verify formatting and linting
+- Run test suites:
+  - Run `make test-unit` to execute unit tests
+  - Run `make test-integration` to execute integration tests
+  - Fix any failing tests before proceeding to Phase 4
+
 **Testing:**
 - **Manual**: Ask "How many users are in the database?"
 - **Curl**: Tool call with SQL query
@@ -342,6 +372,16 @@ const TOOLS = [
   - Test widget persistence after tool-based creation
   - Verify real-time widget appearance in dashboard
   - Add error handling for widget creation failures
+
+### Testing and Quality Assurance
+- Run code quality checks:
+  - Run `make format` to format all code
+  - Run `make lint` to check code quality
+  - Run `make check` to verify formatting and linting
+- Run test suites:
+  - Run `make test-unit` to execute unit tests
+  - Run `make test-integration` to execute integration tests
+  - Fix any failing tests before proceeding to Phase 5
 
 **Testing:**
 - **Manual**: Say "Create a chart showing sales by month"
@@ -398,6 +438,16 @@ const TOOLS = [
   - Ensure `resizeWidgetFromTool()` method works with resize results
   - Test real-time widget updates in dashboard
   - Add visual feedback for widget modifications
+
+### Testing and Quality Assurance
+- Run code quality checks:
+  - Run `make format` to format all code
+  - Run `make lint` to check code quality
+  - Run `make check` to verify formatting and linting
+- Run test suites:
+  - Run `make test-unit` to execute unit tests
+  - Run `make test-integration` to execute integration tests
+  - Fix any failing tests before proceeding to Phase 6
 
 **Testing:**
 - **Manual**: "Change widget 1 title to 'Revenue Report'" and "Make widget 2 bigger"
@@ -456,6 +506,17 @@ const TOOLS = [
   - Log tool execution times and success rates
   - Add debugging information for tool failures
   - Create tool execution reports for optimization
+
+### Testing and Quality Assurance
+- Run final code quality checks:
+  - Run `make format` to format all code
+  - Run `make lint` to check code quality
+  - Run `make check` to verify formatting and linting
+- Run comprehensive test suites:
+  - Run `make test-unit` to execute all unit tests
+  - Run `make test-integration` to execute all integration tests
+  - Verify all tool calling functionality works end-to-end
+  - Document any known issues or limitations
 
 **Testing:**
 - **Manual**: Complex requests like "Create a sales chart and make it larger, then show me the top customers"
