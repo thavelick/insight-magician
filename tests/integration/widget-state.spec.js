@@ -67,6 +67,7 @@ test.describe("Widget State Management", () => {
     await runQueryInWidget(
       page,
       "SELECT name, email FROM users WHERE name LIKE 'A%'",
+      uploadedFilename,
     );
 
     // Should now be in view mode showing results
@@ -101,6 +102,7 @@ test.describe("Widget State Management", () => {
     const queryResponse = await runQueryInWidget(
       page,
       "SELECT name, email FROM users WHERE name LIKE 'A%'",
+      uploadedFilename,
     );
 
     // Verify query executed successfully
@@ -135,7 +137,7 @@ function createChart(data, svg, d3, width, height) {
 
     await page.fill(".widget .chart-function-editor", chartFunction);
 
-    await runQueryInWidget(page, "SELECT name, id FROM users");
+    await runQueryInWidget(page, "SELECT name, id FROM users", uploadedFilename);
 
     // Verify chart container appears
     await expect(page.locator(".widget .chart-container")).toBeVisible();

@@ -6,8 +6,11 @@ import {
 } from "../helpers/integration.js";
 
 test.describe("Chart Function Validation", () => {
+  let uploadedFilename;
+
   test.beforeEach(async ({ page }) => {
-    await setupGraphWidget(page, "basic");
+    const result = await setupGraphWidget(page, "basic");
+    uploadedFilename = result.uploadedFilename;
   });
 
   test("should accept valid chart functions with proper syntax and safe patterns", async ({
@@ -22,7 +25,7 @@ test.describe("Chart Function Validation", () => {
       return svg;
     }`;
 
-    await runChartFunction(page, validFunction, "SELECT 1 as test");
+    await runChartFunction(page, validFunction, "SELECT 1 as test", uploadedFilename);
 
     await expect(page.locator(".chart-container")).toBeVisible();
   });
@@ -66,7 +69,7 @@ test.describe("Chart Function Validation", () => {
       throw new Error("Custom chart error for testing");
     }`;
 
-    await runChartFunction(page, errorFunction, "SELECT 1 as test, 2 as value");
+    await runChartFunction(page, errorFunction, "SELECT 1 as test, 2 as value", uploadedFilename);
 
     await expect(page.locator(".card-inner")).not.toHaveClass("flipped");
 
@@ -94,6 +97,7 @@ test.describe("Chart Function Validation", () => {
       page,
       invalidReturnFunction,
       "SELECT 1 as test, 2 as value",
+      uploadedFilename,
     );
 
     await expect(
@@ -114,6 +118,7 @@ test.describe("Chart Function Validation", () => {
       page,
       errorFunction,
       "SELECT 1 as id, 'test' as name, 42 as value",
+      uploadedFilename,
     );
 
     await expect(page.locator(".error-state")).toBeVisible();
@@ -146,7 +151,7 @@ test.describe("Chart Function Validation", () => {
     )`;
 
     await page.click(".edit-btn");
-    await runChartFunction(page, errorFunction, multiRowQuery);
+    await runChartFunction(page, errorFunction, multiRowQuery, uploadedFilename);
 
     await expect(page.locator(".data-preview-table tbody tr")).toHaveCount(5);
     await expect(

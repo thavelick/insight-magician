@@ -51,9 +51,10 @@ else
 	bun run playwright test --grep "@expensive"
 endif
 
-test-all: # Run both unit and integration tests
-	@echo "Running all tests.."
-	bun run test:all
+test-all: # Run both unit and integration tests (excludes expensive tests)
+	@echo "Running all tests (excluding expensive tests).."
+	$(MAKE) test-unit
+	$(MAKE) test-integration
 
 tail-logs: # Show last 20 lines of development server logs
 	@echo "Last 20 lines of development server logs:"

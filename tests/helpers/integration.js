@@ -86,14 +86,23 @@ export async function addWidget(page) {
  *
  * @param {object} page - Playwright page object
  * @param {string} query - SQL query to execute
+ * @param {string} uploadedFilename - Database filename to filter responses
  * @returns {Promise<Response>} API response
  */
-export async function runQueryInWidget(page, query) {
+export async function runQueryInWidget(page, query, uploadedFilename) {
   await page.fill(".widget .query-editor", query);
 
-  const queryResponsePromise = page.waitForResponse((response) =>
-    response.url().includes("/api/query"),
-  );
+  const queryResponsePromise = page.waitForResponse(async (response) => {
+    if (!response.url().includes("/api/query")) return false;
+    try {
+      const requestBody = response.request().postData();
+      if (!requestBody) return false;
+      const parsedBody = JSON.parse(requestBody);
+      return parsedBody.filename === uploadedFilename;
+    } catch {
+      return false;
+    }
+  });
 
   await page.click(".widget .run-view-btn");
   return await queryResponsePromise;
@@ -138,16 +147,17 @@ export async function openSchemaSidebar(page) {
  *
  * @param {object} page - Playwright page object
  * @param {string} fixtureName - Name of SQL fixture (defaults to "basic")
- * @returns {Promise<void>}
+ * @returns {Promise<{uploadedFilename: string}>}
  */
 export async function setupGraphWidget(page, fixtureName = "basic") {
   await page.goto("/");
-  await setupDatabaseWithUpload(page, fixtureName);
+  const { uploadedFilename } = await setupDatabaseWithUpload(page, fixtureName);
   await addWidget(page);
 
   // Switch to graph widget type to enable chart function
   await page.selectOption(".widget-type-select", "graph");
   await expect(page.locator(".chart-function-group")).toBeVisible();
+  return { uploadedFilename };
 }
 
 /**
@@ -156,15 +166,24 @@ export async function setupGraphWidget(page, fixtureName = "basic") {
  * @param {object} page - Playwright page object
  * @param {string} chartFunction - JavaScript chart function code
  * @param {string} query - SQL query to execute
+ * @param {string} uploadedFilename - Database filename to filter responses
  * @returns {Promise<Response>} API response
  */
-export async function runChartFunction(page, chartFunction, query) {
+export async function runChartFunction(page, chartFunction, query, uploadedFilename) {
   await page.fill(".widget .chart-function-editor", chartFunction);
   await page.fill(".widget .query-editor", query);
 
-  const queryResponsePromise = page.waitForResponse((response) =>
-    response.url().includes("/api/query"),
-  );
+  const queryResponsePromise = page.waitForResponse(async (response) => {
+    if (!response.url().includes("/api/query")) return false;
+    try {
+      const requestBody = response.request().postData();
+      if (!requestBody) return false;
+      const parsedBody = JSON.parse(requestBody);
+      return parsedBody.filename === uploadedFilename;
+    } catch {
+      return false;
+    }
+  });
 
   await page.click(".widget .run-view-btn");
   return await queryResponsePromise;
