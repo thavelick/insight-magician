@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
 import { ListWidgetsTool } from "../../lib/tools/list-widgets-tool.js";
 
-// Mock sessionStorage for testing
 const mockSessionStorage = {
   getItem: (key) => mockSessionStorage.data[key] || null,
   setItem: (key, value) => {
@@ -15,8 +14,6 @@ const mockSessionStorage = {
   },
   data: {},
 };
-
-// Mock global sessionStorage
 beforeEach(() => {
   global.sessionStorage = mockSessionStorage;
   mockSessionStorage.clear();
@@ -72,7 +69,6 @@ test("ListWidgetsTool - execute with no widgets returns empty dashboard", async 
 test("ListWidgetsTool - execute with sample widgets returns formatted data", async () => {
   const tool = new ListWidgetsTool();
 
-  // Set up mock widget data in sessionStorage
   const mockWidgets = [
     {
       id: 1,
@@ -105,7 +101,6 @@ test("ListWidgetsTool - execute with sample widgets returns formatted data", asy
   expect(result.data.totalWidgets).toBe(2);
   expect(result.data.widgets).toHaveLength(2);
 
-  // Check first widget
   const widget1 = result.data.widgets[0];
   expect(widget1.id).toBe(1);
   expect(widget1.title).toBe("Sales Chart");
@@ -117,7 +112,6 @@ test("ListWidgetsTool - execute with sample widgets returns formatted data", asy
   expect(widget1.isInEditMode).toBe(false);
   expect(widget1.status).toBe("showing data");
 
-  // Check second widget
   const widget2 = result.data.widgets[1];
   expect(widget2.id).toBe(2);
   expect(widget2.title).toBe("Widget 2"); // Default title
@@ -133,12 +127,10 @@ test("ListWidgetsTool - execute with sample widgets returns formatted data", asy
 test("ListWidgetsTool - getWidgetStatus returns correct status", () => {
   const tool = new ListWidgetsTool();
 
-  // Empty query
   expect(tool.getWidgetStatus({ query: "" })).toBe("empty (no query set)");
   expect(tool.getWidgetStatus({ query: null })).toBe("empty (no query set)");
   expect(tool.getWidgetStatus({})).toBe("empty (no query set)");
 
-  // With query but no results
   expect(
     tool.getWidgetStatus({
       query: "SELECT * FROM table",
@@ -146,7 +138,6 @@ test("ListWidgetsTool - getWidgetStatus returns correct status", () => {
     }),
   ).toBe("configured but not run");
 
-  // With query and empty results
   expect(
     tool.getWidgetStatus({
       query: "SELECT * FROM table",
@@ -154,7 +145,6 @@ test("ListWidgetsTool - getWidgetStatus returns correct status", () => {
     }),
   ).toBe("no results (query returned empty)");
 
-  // With query and data
   expect(
     tool.getWidgetStatus({
       query: "SELECT * FROM table",
@@ -166,12 +156,10 @@ test("ListWidgetsTool - getWidgetStatus returns correct status", () => {
 test("ListWidgetsTool - generateWidgetSummary creates correct summaries", () => {
   const tool = new ListWidgetsTool();
 
-  // Empty dashboard
   expect(tool.generateWidgetSummary([])).toBe(
     "Dashboard is empty - no widgets created yet",
   );
 
-  // Single widget
   const singleWidget = [
     { type: "data-table", hasResults: true, query: "SELECT * FROM test" },
   ];
@@ -179,7 +167,6 @@ test("ListWidgetsTool - generateWidgetSummary creates correct summaries", () => 
     "Dashboard has 1 widget: 1 data-table. 1 showing data, 0 need queries.",
   );
 
-  // Multiple widgets
   const multipleWidgets = [
     { type: "data-table", hasResults: true, query: "SELECT * FROM test" },
     { type: "graph", hasResults: false, query: "SELECT * FROM sales" },
@@ -194,15 +181,12 @@ test("ListWidgetsTool - generateWidgetSummary creates correct summaries", () => 
 test("ListWidgetsTool - getWidgetDataFromStorage handles invalid JSON", () => {
   const tool = new ListWidgetsTool();
 
-  // Invalid JSON
   sessionStorage.setItem("widgets", "invalid json");
   expect(tool.getWidgetDataFromStorage()).toEqual([]);
 
-  // No data
   sessionStorage.removeItem("widgets");
   expect(tool.getWidgetDataFromStorage()).toEqual([]);
 
-  // Valid JSON
   sessionStorage.setItem("widgets", JSON.stringify([{ id: 1 }]));
   expect(tool.getWidgetDataFromStorage()).toEqual([{ id: 1 }]);
 });
@@ -210,7 +194,6 @@ test("ListWidgetsTool - getWidgetDataFromStorage handles invalid JSON", () => {
 test("ListWidgetsTool - execute handles storage errors gracefully", async () => {
   const tool = new ListWidgetsTool();
 
-  // Mock sessionStorage to throw an error
   const originalGetItem = sessionStorage.getItem;
   sessionStorage.getItem = () => {
     throw new Error("Storage error");
@@ -218,25 +201,21 @@ test("ListWidgetsTool - execute handles storage errors gracefully", async () => 
 
   const result = await tool.execute({}, {});
 
-  // The tool should succeed but return empty widgets due to error handling
   expect(result.success).toBe(true);
   expect(result.action).toBe("widgets_listed");
   expect(result.data.widgets).toEqual([]);
   expect(result.data.totalWidgets).toBe(0);
 
-  // Restore original function
   sessionStorage.getItem = originalGetItem;
 });
 
 test("ListWidgetsTool - handles widgets with missing properties gracefully", async () => {
   const tool = new ListWidgetsTool();
 
-  // Clear any existing data first
   sessionStorage.clear();
 
-  // Widget with minimal properties
   const mockWidgets = [
-    { id: 1 }, // Missing most properties
+    { id: 1 },
     {
       id: 2,
       title: "Complete Widget",
@@ -256,7 +235,6 @@ test("ListWidgetsTool - handles widgets with missing properties gracefully", asy
   expect(result.success).toBe(true);
   expect(result.data.widgets).toHaveLength(2);
 
-  // Check widget with missing properties uses defaults
   const widget1 = result.data.widgets[0];
   expect(widget1.id).toBe(1);
   expect(widget1.title).toBe("Widget 1");
