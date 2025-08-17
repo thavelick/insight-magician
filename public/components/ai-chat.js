@@ -243,6 +243,10 @@ export class AIChatComponent {
           console.log("Widget information retrieved:", result.data);
           break;
 
+        case "sql_query_executed":
+          console.log("SQL query executed successfully:", result.data);
+          break;
+
         default:
           console.log("Unknown tool action:", result.action, result);
       }
