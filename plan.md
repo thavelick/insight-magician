@@ -46,70 +46,74 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
 **Task List** (Check off completed tasks with ✅):
 
 ### Core Infrastructure
-- Update `lib/openrouter-client.js`:
-  - Add `tools` parameter to `createChatCompletion()` method
-  - Handle tool call responses from OpenRouter API
-  - Add proper error handling for tool call failures
-  - Update request/response interfaces for tool calling
-- Update `routes/chat.js`:
-  - Accept tools array in request body
-  - Handle tool call responses from OpenRouter
-  - Implement tool execution workflow
-  - Send tool results back to OpenRouter for final AI response
-  - Add proper error handling for tool execution failures
-- Create `lib/tool-executor.js`:
-  - Design tool registry system for registering available tools
-  - Implement safe tool execution with parameter validation
-  - Add tool result formatting and error handling
-  - Create base tool interface/abstract class
-  - Add tool execution logging and debugging
+- ✅ Update `lib/openrouter-client.js`:
+  - ✅ Add `tools` parameter to `createChatCompletion()` method
+  - ✅ Handle tool call responses from OpenRouter API
+  - ✅ Add proper error handling for tool call failures
+  - ✅ Update request/response interfaces for tool calling
+  - ✅ Add comprehensive API request/response logging
+- ✅ Update `routes/chat.js`:
+  - ✅ Accept tools array in request body
+  - ✅ Handle tool call responses from OpenRouter
+  - ✅ Implement tool execution workflow
+  - ✅ Send tool results back to OpenRouter for final AI response
+  - ✅ Add proper error handling for tool execution failures
+  - ✅ Add detailed tool calling flow logging
+- ✅ Create `lib/tool-executor.js`:
+  - ✅ Design tool registry system for registering available tools
+  - ✅ Implement safe tool execution with parameter validation
+  - ✅ Add tool result formatting and error handling
+  - ✅ Create base tool interface/abstract class
+  - ✅ Add tool execution logging and debugging
+  - ✅ Handle empty arguments from AI (fix JSON parsing issue)
 
 ### Schema Tool Implementation
-- Create `lib/tools/schema-tool.js`:
-  - Implement `get_schema_info` tool class extending base tool
-  - Call existing `/api/schema` endpoint for database structure
-  - Format schema information for AI consumption (tables, columns, types)
-  - Handle optional table name parameter for specific table info
-  - Add error handling for missing database connections
-  - Include row counts and sample data where helpful
-- Update `lib/tool-executor.js`:
-  - Register `get_schema_info` tool in tool registry
-  - Test tool execution with sample parameters
+- ✅ Create `lib/tools/schema-tool.js`:
+  - ✅ Implement `get_schema_info` tool class extending base tool
+  - ✅ Call existing `/api/schema` endpoint for database structure
+  - ✅ Format schema information for AI consumption (tables, columns, types)
+  - ✅ Handle optional table name parameter for specific table info
+  - ✅ Add error handling for missing database connections
+  - ✅ Include row counts and sample data where helpful
+- ✅ Update `lib/tool-executor.js`:
+  - ✅ Register `get_schema_info` tool in tool registry
+  - ✅ Test tool execution with sample parameters
 
 ### System Prompt Updates
-- Update `lib/ai-system-prompt.js`:
-  - Add tool calling awareness
-  - Describe the ONE available tool: `get_schema_info`
-  - Include guidance on when to use the schema tool
-  - Add examples of schema exploration patterns
-  - Keep it simple - don't mention tools that don't exist yet
+- ✅ Update `lib/ai-system-prompt.js`:
+  - ✅ Add tool calling awareness
+  - ✅ Describe the ONE available tool: `get_schema_info`
+  - ✅ Include guidance on when to use the schema tool
+  - ✅ Add examples of schema exploration patterns
+  - ✅ Keep it simple - don't mention tools that don't exist yet
 
 ### Frontend Integration
-- Update `public/components/ai-chat.js`:
-  - Add `processToolResult()` method to handle tool execution results
-  - Update `sendMessage()` to include tools array in API calls (with just schema tool)
-  - Add basic visual indicators for tool execution
-  - Handle tool execution errors with user-friendly messages
-- Update `public/app.js`:
-  - Expose global `window.app` reference for tool result processing
-  - Add basic error handling for tool-initiated operations
+- ✅ Update `public/components/ai-chat.js`:
+  - ✅ Add `processToolResult()` method to handle tool execution results
+  - ✅ Update `sendMessage()` to include tools array in API calls (with just schema tool)
+  - ✅ Add basic visual indicators for tool execution
+  - ✅ Handle tool execution errors with user-friendly messages
+- ✅ Update `public/app.js`:
+  - ✅ Expose global `window.app` reference for tool result processing
+  - ✅ Add basic error handling for tool-initiated operations
 
 ### Test Writing and Quality Assurance
-- Write unit tests:
-  - Create `tests/unit/lib/openrouter-client.test.js` - Test tool calling extensions
-  - Create `tests/unit/lib/tool-executor.test.js` - Test tool registry and execution
-  - Create `tests/unit/lib/tools/schema-tool.test.js` - Test schema tool functionality
-  - Create `tests/unit/routes/chat.test.js` - Test chat endpoint with tool calling
-- Write integration tests (using Playwright mocks like `ai-chat-basic.test.js`):
-  - Create `tests/integration/tool-calling-basic.test.js` - End-to-end tool calling with mocked AI responses
-  - Create `tests/integration/schema-tool-integration.test.js` - Schema tool with real database, mocked AI
-  - Create `tests/integration/ai-chat-tool-ui.test.js` - Frontend tool result processing with mocked responses
-- Run code quality checks:
-  - Run `make check` to verify formatting and linting
-- Run test suites:
-  - Run `make test-unit` to execute unit tests
-  - Run `make test-integration` to execute integration tests
-  - Fix any failing tests before proceeding to Phase 2
+- ✅ Write unit tests:
+  - ✅ Create `tests/unit/lib/openrouter-client.test.js` - Test tool calling extensions
+  - ✅ Create `tests/unit/lib/tool-executor.test.js` - Test tool registry and execution
+  - ✅ Create `tests/unit/lib/tools/schema-tool.test.js` - Test schema tool functionality
+  - ✅ Create `tests/unit/routes/chat.test.js` - Test chat endpoint with tool calling
+- ✅ Write integration tests (using Playwright mocks like `ai-chat-basic.test.js`):
+  - ✅ Create `tests/integration/ai-chat-tool-calling.test.js` - End-to-end tool calling with mocked AI responses
+  - ✅ Schema tool with real database, mocked AI (integrated into main test)
+  - ✅ Frontend tool result processing with mocked responses (integrated into main test)
+- ✅ Run code quality checks:
+  - ✅ Run `make check` to verify formatting and linting
+- ✅ Run test suites:
+  - ✅ Run `make test-unit` to execute unit tests
+  - ✅ Run `make test-integration` to execute integration tests
+  - ✅ Fix race condition issues and flaky tests
+  - ✅ All tests passing (229 total)
 
 **Success Criteria:**
 - AI can successfully call `get_schema_info` tool
@@ -260,6 +264,109 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
 - "How many users are in the database?"
 - "What are the top 5 selling products?"
 - "Show me sales data for the last month"
+
+---
+
+## Phase 3.5: Multi-Tool Workflow Capabilities
+
+**Goal**: Enable AI to chain multiple tool calls in a single user request for sophisticated data analysis
+
+**Enhancement Added**: Multi-tool looping infrastructure to allow AI to use schema + query tools together
+
+**Why Phase 3.5**: 
+- Unlocks the true potential of existing tools by combining them intelligently
+- AI can explore schema first, then craft contextually-aware SQL queries
+- Enables complex data analysis without adding new tools
+- Natural progression: simple tool calling → intelligent tool chaining
+- Foundation for even more sophisticated workflows in later phases
+
+**Key Capabilities Unlocked**:
+- **Schema-Informed Queries**: AI explores database structure, then writes optimized SQL
+- **Complex Analysis**: Multi-step data exploration in single user requests  
+- **Error Recovery**: AI can retry queries with schema context if initial attempts fail
+- **Intelligent Joins**: AI understands relationships and crafts appropriate JOIN queries
+
+**Task List** (Check off completed tasks with ✅):
+
+### Multi-Tool Loop Infrastructure
+- Update `routes/chat.js`:
+  - Add iterative tool calling loop with configurable max iterations (default: 10)
+  - Continue processing as long as AI requests more tool calls
+  - Track conversation state across multiple tool call rounds
+  - Add safety limits to prevent infinite loops
+  - Include tool execution history in AI context
+  - Handle errors gracefully without breaking the loop
+
+### Enhanced Tool Coordination  
+- Update `lib/tool-executor.js`:
+  - Add tool execution history tracking
+  - Optimize tool result formatting for multi-step workflows
+  - Add context preservation between tool calls
+  - Include execution timing and performance metrics
+- Update `lib/openrouter-client.js`:
+  - Add conversation state management for longer tool sequences
+  - Optimize token usage for multi-tool conversations
+  - Add request deduplication for repeated tool calls
+
+### AI Workflow Optimization
+- Update `lib/ai-system-prompt.js`:
+  - Add guidance for multi-tool workflows and tool chaining
+  - Include examples of schema exploration followed by targeted queries
+  - Encourage AI to explain its analysis process
+  - Add patterns for common analytical workflows
+  - Include guidance on when to stop vs continue tool calling
+
+### Frontend Progress Indicators
+- Update `public/components/ai-chat.js`:
+  - Add multi-step progress indicators for tool chains
+  - Show "AI is analyzing schema..." → "AI is querying data..." flow
+  - Handle longer response times gracefully with progress feedback
+  - Display intermediate results when beneficial
+
+### Test Multi-Tool Workflows
+- Write integration tests:
+  - Create `tests/integration/multi-tool-workflows.test.js` - Test schema→query chains with mocked AI
+  - Create `tests/integration/complex-analysis.test.js` - Multi-step data analysis scenarios with mocked AI  
+  - Update `tests/integration/ai-chat-tool-calling.test.js` - Add multi-tool workflow test cases
+- Write unit tests:
+  - Update `tests/unit/chat-route.test.js` - Add multi-tool loop logic tests
+  - Create `tests/unit/tool-chain-executor.test.js` - Test tool chaining coordination
+- Create @expensive validation test:
+  - Create `tests/integration/ai-multi-tool-expensive.test.js` - Real AI multi-tool workflow validation
+- Run code quality checks:
+  - Run `make check` to verify formatting and linting
+- Run test suites:
+  - Run `make test-unit` and `make test-integration`
+  - Verify all multi-tool scenarios work correctly
+
+**Success Criteria:**
+- AI can chain schema exploration with targeted SQL queries in single requests
+- Tool loops terminate properly without hitting safety limits
+- Performance remains acceptable with multi-tool workflows (< 5 minutes total)
+- Error handling works correctly if any tool in the chain fails
+- Frontend provides clear feedback during multi-step operations
+
+**Example Workflows Enabled:**
+- **"Show me the biggest customers by total order value"**
+  1. AI calls `get_schema_info` → learns about Customers, Orders, Order_Details tables
+  2. AI calls `execute_sql_query` → runs complex JOIN to calculate totals
+  3. AI responds with formatted results and insights
+
+- **"Find products that are selling poorly"**  
+  1. AI calls `get_schema_info` → understands Products and sales relationship
+  2. AI calls `execute_sql_query` → queries for low-selling products with context
+  3. AI provides analysis with specific product recommendations
+
+- **"What's the trend in our monthly revenue?"**
+  1. AI calls `get_schema_info` → identifies date and revenue columns
+  2. AI calls `execute_sql_query` → builds time-based aggregation query
+  3. AI responds with trend analysis and insights
+
+**Performance Considerations:**
+- Maximum 10 tool call rounds per request - enough for sophisticated analysis workflows
+- Tool execution history included in context for AI learning
+- Graceful degradation if any tool in the chain fails
+- Clear timeout handling for long-running multi-tool sequences
 
 ---
 

@@ -89,6 +89,12 @@ export async function handleChat(request, openRouterClientClass) {
 
     // Get available tools
     const tools = toolExecutor.getToolDefinitions();
+    
+    console.log(`🛠️  Available tools for AI:`, {
+      count: tools.length,
+      tools: tools.map(t => t.function.name),
+      databasePath: databasePath || 'none'
+    });
 
     // First API call - potentially with tool calls
     const result = await client.createChatCompletion(messages, tools);
@@ -100,7 +106,11 @@ export async function handleChat(request, openRouterClientClass) {
 
     // Check if AI wants to use tools
     if (result.toolCalls && result.toolCalls.length > 0) {
-      console.log("Processing tool calls:", result.toolCalls);
+      console.log("🤖 AI requested tool calls:", { 
+        count: result.toolCalls.length,
+        tools: result.toolCalls.map(call => `${call.function.name}(${call.function.arguments})`),
+        aiMessage: result.message || 'none'
+      });
 
       // Execute the tool calls
       const context = { databasePath };
@@ -121,14 +131,22 @@ export async function handleChat(request, openRouterClientClass) {
 
       // Add tool results as tool messages
       for (const toolResult of toolResults) {
+        const toolContent = JSON.stringify(toolResult.result);
+        console.log(`📤 Sending tool result to AI:`, {
+          toolCallId: toolResult.toolCallId,
+          contentPreview: toolContent.length > 200 ? toolContent.substring(0, 200) + '...' : toolContent,
+          contentLength: toolContent.length
+        });
+        
         toolMessages.push({
           role: "tool",
           tool_call_id: toolResult.toolCallId,
-          content: JSON.stringify(toolResult.result),
+          content: toolContent,
         });
       }
 
       // Second API call to get final response
+      console.log(`🔄 Making second API call to AI with tool results...`);
       const finalResult = await client.createChatCompletion(toolMessages);
 
       if (!finalResult.success) {
@@ -138,6 +156,12 @@ export async function handleChat(request, openRouterClientClass) {
         );
         return createErrorResponse("AI service temporarily unavailable", 503);
       }
+
+      console.log(`🎯 AI final response after tool calls:`, {
+        messageLength: finalResult.message?.length || 0,
+        messagePreview: finalResult.message?.substring(0, 100) + (finalResult.message?.length > 100 ? '...' : ''),
+        toolResultsCount: toolResults.length
+      });
 
       return createSuccessResponse({
         success: true,
