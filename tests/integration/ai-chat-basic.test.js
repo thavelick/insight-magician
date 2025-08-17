@@ -337,6 +337,24 @@ test.describe("AI Chat Basic Functionality", () => {
       "⚠️ Network connection failed. Please check your internet connection and try again.",
       "assistant",
     );
+
+    // Test authentication error (API key issue)
+    await page.route("/api/chat", async (route) => {
+      await route.fulfill({
+        status: 401,
+        contentType: "application/json",
+        body: JSON.stringify({
+          error: "Authentication failed. Please check your configuration.",
+        }),
+      });
+    });
+
+    await sendChatMessage(page, "Auth test");
+    await verifyMessageInChat(
+      page,
+      "🔧 AI service configuration issue. Please try again later.",
+      "assistant",
+    );
   });
 
   test("should show proper message structure with wrappers", async ({

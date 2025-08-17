@@ -111,7 +111,7 @@ export class AIChatComponent {
           "🔧 AI service is temporarily unavailable. Please try again in a few minutes.";
       } else if (error.message?.includes("Authentication failed")) {
         errorMessage =
-          "🔑 Authentication error. Please contact support if this continues.";
+          "🔧 AI service configuration issue. Please try again later.";
       } else if (error.message?.includes("quota exceeded")) {
         errorMessage = "📊 AI service quota exceeded. Please try again later.";
       }

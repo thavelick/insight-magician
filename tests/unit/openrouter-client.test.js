@@ -95,7 +95,8 @@ test("createChatCompletion handles empty response", async () => {
 
 test("createChatCompletion handles API errors", async () => {
   const apiError = new Error("API rate limit exceeded");
-  apiError.code = "rate_limit_exceeded"; // Use lowercase to match our enhanced error handling
+  // Test with HTTP status code 429 (rate limiting)
+  apiError.status = 429;
 
   const mockOpenAI = function (config) {
     this.chat = {
@@ -114,8 +115,9 @@ test("createChatCompletion handles API errors", async () => {
   expect(result.success).toBe(false);
   expect(result.error).toBe(
     "Too many requests. Please wait a moment and try again.",
-  ); // Enhanced error message
-  expect(result.code).toBe("RATE_LIMITED"); // Enhanced error code
+  );
+  // Our client converts API error codes to standardized uppercase format
+  expect(result.code).toBe("RATE_LIMITED");
 });
 
 test("createChatCompletion handles errors without code", async () => {
@@ -142,7 +144,7 @@ test("createChatCompletion handles errors without code", async () => {
 
 test("should handle rate limiting errors specifically", async () => {
   const rateLimitError = new Error("Rate limit exceeded");
-  rateLimitError.code = "rate_limit_exceeded";
+  // Test with HTTP status code 429 for rate limiting
   rateLimitError.status = 429;
 
   const mockOpenAI = function (config) {
@@ -162,13 +164,14 @@ test("should handle rate limiting errors specifically", async () => {
   expect(result.error).toBe(
     "Too many requests. Please wait a moment and try again.",
   );
+  // We standardize API error codes to uppercase format for consistency
   expect(result.code).toBe("RATE_LIMITED");
   expect(result.originalError).toBe("Rate limit exceeded");
 });
 
 test("should handle authentication errors specifically", async () => {
   const authError = new Error("Invalid API key");
-  authError.code = "invalid_api_key";
+  // Test with HTTP status code 401 for authentication errors
   authError.status = 401;
 
   const mockOpenAI = function (config) {
@@ -192,8 +195,8 @@ test("should handle authentication errors specifically", async () => {
 });
 
 test("should handle quota exceeded errors specifically", async () => {
-  const quotaError = new Error("Insufficient quota");
-  quotaError.code = "insufficient_quota";
+  const quotaError = new Error("You exceeded your current quota, please check your plan and billing details");
+  // Test quota detection based on message content (no fictional error code needed)
 
   const mockOpenAI = function (config) {
     this.chat = {
