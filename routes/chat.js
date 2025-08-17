@@ -3,9 +3,12 @@ import { SYSTEM_PROMPT } from "../lib/ai-system-prompt.js";
 import { OpenRouterClient } from "../lib/openrouter-client.js";
 import { toolExecutor } from "../lib/tool-executor.js";
 import { SchemaTool } from "../lib/tools/schema-tool.js";
+import { ListWidgetsTool } from "../lib/tools/list-widgets-tool.js";
 
 const schemaTool = new SchemaTool();
+const listWidgetsTool = new ListWidgetsTool();
 toolExecutor.registerTool("get_schema_info", schemaTool);
+toolExecutor.registerTool("list_widgets", listWidgetsTool);
 
 function createErrorResponse(error, status) {
   return new Response(JSON.stringify({ error }), {
