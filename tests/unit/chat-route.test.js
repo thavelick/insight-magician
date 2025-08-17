@@ -178,7 +178,7 @@ test("handleChat succeeds with valid input and chat history", async () => {
   expect(data.message).toBe("Test AI response with history");
 });
 
-test("handleChat handles OpenRouter API failure", async () => {
+test("handleChat handles AI API failure", async () => {
   const mockResponse = {
     success: false,
     error: "Rate limit exceeded",

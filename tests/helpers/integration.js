@@ -63,6 +63,26 @@ export async function executeQueryAPI(
 }
 
 /**
+ * Wait for a query API response matching the given filename
+ * @param {object} page - Playwright page object
+ * @param {string} uploadedFilename - Database filename to filter by
+ * @returns {Promise<Response>} Query API response promise
+ */
+export async function waitForQueryResponse(page, uploadedFilename) {
+  return page.waitForResponse(async (response) => {
+    if (!response.url().includes("/api/query")) return false;
+    try {
+      const requestBody = response.request().postData();
+      if (!requestBody) return false;
+      const parsedBody = JSON.parse(requestBody);
+      return parsedBody.filename === uploadedFilename;
+    } catch {
+      return false;
+    }
+  });
+}
+
+/**
  * Add a widget to the dashboard and wait for it to be ready
  *
  * @param {object} page - Playwright page object
@@ -92,17 +112,7 @@ export async function addWidget(page) {
 export async function runQueryInWidget(page, query, uploadedFilename) {
   await page.fill(".widget .query-editor", query);
 
-  const queryResponsePromise = page.waitForResponse(async (response) => {
-    if (!response.url().includes("/api/query")) return false;
-    try {
-      const requestBody = response.request().postData();
-      if (!requestBody) return false;
-      const parsedBody = JSON.parse(requestBody);
-      return parsedBody.filename === uploadedFilename;
-    } catch {
-      return false;
-    }
-  });
+  const queryResponsePromise = waitForQueryResponse(page, uploadedFilename);
 
   await page.click(".widget .run-view-btn");
   return await queryResponsePromise;
@@ -178,17 +188,7 @@ export async function runChartFunction(
   await page.fill(".widget .chart-function-editor", chartFunction);
   await page.fill(".widget .query-editor", query);
 
-  const queryResponsePromise = page.waitForResponse(async (response) => {
-    if (!response.url().includes("/api/query")) return false;
-    try {
-      const requestBody = response.request().postData();
-      if (!requestBody) return false;
-      const parsedBody = JSON.parse(requestBody);
-      return parsedBody.filename === uploadedFilename;
-    } catch {
-      return false;
-    }
-  });
+  const queryResponsePromise = waitForQueryResponse(page, uploadedFilename);
 
   await page.click(".widget .run-view-btn");
   return await queryResponsePromise;

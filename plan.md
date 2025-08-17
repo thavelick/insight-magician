@@ -2,7 +2,7 @@
 
 ## Overview
 
-This plan implements OpenRouter tool calling functionality one tool at a time. Each phase adds exactly one new tool and is independently testable and demoable. We start with simple read-only tools and progress to complex write operations.
+This plan implements AI tool calling functionality one tool at a time. Each phase adds exactly one new tool and is independently testable and demoable. We start with simple read-only tools and progress to complex write operations.
 
 **Total Tools**: 6 tools implemented across 6 phases  
 **Approach**: Incremental - each phase adds one tool and updates the system prompt accordingly
@@ -11,7 +11,7 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
 
 **AI Chat System:**
 - `AIChatComponent` handles UI, sends messages via `ChatAPI`
-- `/api/chat` route uses `OpenRouterClient` with system prompt
+- `/api/chat` route uses AI client with system prompt
 - Simple text-only conversation flow currently
 
 **Widget System:**
@@ -33,7 +33,7 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
 
 ## Phase 1: Infrastructure + Schema Tool
 
-**Goal**: Build OpenRouter tool calling infrastructure and implement one simple tool
+**Goal**: Build AI tool calling infrastructure and implement one simple tool
 
 **Tool Added**: `get_schema_info` - Get database table structure and information
 
@@ -48,15 +48,15 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
 ### Core Infrastructure
 - ✅ Update `lib/openrouter-client.js`:
   - ✅ Add `tools` parameter to `createChatCompletion()` method
-  - ✅ Handle tool call responses from OpenRouter API
+  - ✅ Handle tool call responses from AI API
   - ✅ Add proper error handling for tool call failures
   - ✅ Update request/response interfaces for tool calling
   - ✅ Add comprehensive API request/response logging
 - ✅ Update `routes/chat.js`:
   - ✅ Accept tools array in request body
-  - ✅ Handle tool call responses from OpenRouter
+  - ✅ Handle tool call responses from AI API
   - ✅ Implement tool execution workflow
-  - ✅ Send tool results back to OpenRouter for final AI response
+  - ✅ Send tool results back to AI API for final response
   - ✅ Add proper error handling for tool execution failures
   - ✅ Add detailed tool calling flow logging
 - ✅ Create `lib/tool-executor.js`:
@@ -648,7 +648,7 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
    }
    ```
 
-2. **OpenRouter API** → Returns tool call request
+2. **AI API** → Returns tool call request
    ```json
    {
      "tool_calls": [{

@@ -88,7 +88,6 @@ export class AIChatComponent {
     this.showTypingIndicator();
 
     try {
-      // Get current database path from the app
       const databasePath = window.app
         ? window.app.getCurrentDatabasePath()
         : null;
@@ -99,7 +98,6 @@ export class AIChatComponent {
         databasePath,
       );
 
-      // Process any tool results
       if (result.toolResults) {
         this.processToolResults(result.toolResults);
       }
@@ -223,6 +221,8 @@ export class AIChatComponent {
 
   /**
    * Process tool execution results from the AI
+   * Handles different tool actions like schema fetching, widget creation/editing/resizing,
+   * and provides visual feedback for multi-step tool workflows
    * @param {Array} toolResults - Array of tool execution results
    */
   processToolResults(toolResults) {
@@ -234,12 +234,9 @@ export class AIChatComponent {
         continue;
       }
 
-      // Handle different tool actions
       switch (result.action) {
         case "schema_fetched":
           console.log("Schema information retrieved:", result.data);
-          // For now, just log the schema info
-          // Future phases will add more UI interactions
           break;
 
         default:

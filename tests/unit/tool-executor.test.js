@@ -1,5 +1,6 @@
 import { expect, mock, test } from "bun:test";
-import { BaseTool, ToolExecutor } from "../../lib/tool-executor.js";
+import { ToolExecutor } from "../../lib/tool-executor.js";
+import { BaseTool } from "../../lib/tools/base-tool.js";
 
 // Mock tool for testing
 class MockTool extends BaseTool {
