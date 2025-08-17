@@ -38,7 +38,7 @@ ifdef FILE
 	@echo "Running specific test file: $(FILE)"
 	bun run playwright test tests/integration/$(FILE)
 else
-	bun run test:integration
+	bun run playwright test tests/integration --grep-invert "@expensive"
 endif
 
 test-integration-expensive: # Run expensive integration tests that use real APIs (tagged with @expensive)
