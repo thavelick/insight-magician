@@ -563,7 +563,7 @@ test("handleChat respects time-based timeout", async () => {
           callCount++;
           // Simulate slow AI response
           await new Promise((resolve) => setTimeout(resolve, 100));
-          
+
           return {
             success: true,
             message: `Slow call ${callCount}`,
@@ -611,7 +611,9 @@ test("handleChat respects time-based timeout", async () => {
     const data = await getResponseData(response);
 
     expect(response.status).toBe(408);
-    expect(data.error).toBe("Request timed out - workflow took too long to complete");
+    expect(data.error).toBe(
+      "Request timed out - workflow took too long to complete",
+    );
   } finally {
     // Restore original Date.now
     Date.now = originalDateNow;

@@ -114,11 +114,11 @@ export async function handleChat(request, openRouterClientClass) {
       const elapsedTime = Date.now() - workflowStartTime;
       if (elapsedTime > MAX_WORKFLOW_TIME_MS) {
         console.warn(
-          `⏰ Tool workflow timed out after ${Math.round(elapsedTime / 1000)}s (max: ${MAX_WORKFLOW_TIME_MS / 1000}s)`
+          `⏰ Tool workflow timed out after ${Math.round(elapsedTime / 1000)}s (max: ${MAX_WORKFLOW_TIME_MS / 1000}s)`,
         );
         return createErrorResponse(
           "Request timed out - workflow took too long to complete",
-          408
+          408,
         );
       }
       iteration++;
