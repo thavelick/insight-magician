@@ -2,13 +2,12 @@ import { AI_CONFIG } from "../lib/ai-config.js";
 import { SYSTEM_PROMPT } from "../lib/ai-system-prompt.js";
 import { OpenRouterClient } from "../lib/openrouter-client.js";
 import { toolExecutor } from "../lib/tool-executor.js";
-import { ListWidgetsTool } from "../lib/tools/list-widgets-tool.js";
-import { SchemaTool } from "../lib/tools/schema-tool.js";
+import { toolRegistry } from "../lib/tool-registry.js";
 
-const schemaTool = new SchemaTool();
-const listWidgetsTool = new ListWidgetsTool();
-toolExecutor.registerTool("get_schema_info", schemaTool);
-toolExecutor.registerTool("list_widgets", listWidgetsTool);
+// Register all tools from the registry with the executor
+for (const tool of toolRegistry.getAllTools()) {
+  toolExecutor.registerTool(tool.name, tool);
+}
 
 function createErrorResponse(error, status) {
   return new Response(JSON.stringify({ error }), {
