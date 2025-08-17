@@ -97,6 +97,8 @@ export async function handleChat(request, openRouterClientClass) {
 
     // Multi-tool workflow support: iterative tool calling loop
     const MAX_TOOL_ITERATIONS = 10;
+    const MAX_WORKFLOW_TIME_MS = 5 * 60 * 1000; // 5 minutes
+    const workflowStartTime = Date.now();
     const context = { databasePath, widgets };
     const allToolResults = [];
     const currentMessages = [...messages];
@@ -108,6 +110,17 @@ export async function handleChat(request, openRouterClientClass) {
     };
 
     while (iteration < MAX_TOOL_ITERATIONS) {
+      // Check for time-based timeout
+      const elapsedTime = Date.now() - workflowStartTime;
+      if (elapsedTime > MAX_WORKFLOW_TIME_MS) {
+        console.warn(
+          `⏰ Tool workflow timed out after ${Math.round(elapsedTime / 1000)}s (max: ${MAX_WORKFLOW_TIME_MS / 1000}s)`
+        );
+        return createErrorResponse(
+          "Request timed out - workflow took too long to complete",
+          408
+        );
+      }
       iteration++;
       console.log(
         `🔄 Tool calling iteration ${iteration}/${MAX_TOOL_ITERATIONS}`,

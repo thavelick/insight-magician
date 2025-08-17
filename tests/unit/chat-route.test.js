@@ -552,3 +552,68 @@ test("handleChat respects maximum iteration limit", async () => {
   expect(data.toolResults).toHaveLength(10);
   expect(callCount).toBe(11); // 10 tool iterations + 1 final call
 });
+
+test("handleChat respects time-based timeout", async () => {
+  // Mock AI that takes a long time for each call
+  let callCount = 0;
+  function createMockSlowClient() {
+    class MockOpenRouterClient {
+      constructor() {
+        this.createChatCompletion = mock(async (messages, tools) => {
+          callCount++;
+          // Simulate slow AI response
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          
+          return {
+            success: true,
+            message: `Slow call ${callCount}`,
+            toolCalls: [
+              {
+                id: `call_${callCount}`,
+                function: {
+                  name: "get_schema_info",
+                  arguments: "{}",
+                },
+              },
+            ],
+            usage: {
+              prompt_tokens: 10,
+              completion_tokens: 5,
+              total_tokens: 15,
+            },
+          };
+        });
+      }
+    }
+    Object.defineProperty(MockOpenRouterClient, "name", {
+      value: "OpenRouterClient",
+    });
+    return MockOpenRouterClient;
+  }
+
+  // Mock Date.now to simulate time progression
+  const originalDateNow = Date.now;
+  let mockTime = 1000000;
+  Date.now = mock(() => {
+    // Advance time by 2 minutes on each call to exceed 5 minute limit quickly
+    mockTime += 2 * 60 * 1000;
+    return mockTime;
+  });
+
+  const request = createMockRequest({
+    message: "Tell me about my data",
+    databasePath: "./uploads/test.db",
+  });
+
+  try {
+    const mockClient = createMockSlowClient();
+    const response = await handleChat(request, mockClient);
+    const data = await getResponseData(response);
+
+    expect(response.status).toBe(408);
+    expect(data.error).toBe("Request timed out - workflow took too long to complete");
+  } finally {
+    // Restore original Date.now
+    Date.now = originalDateNow;
+  }
+});
