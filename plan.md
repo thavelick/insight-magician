@@ -94,7 +94,18 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Expose global `window.app` reference for tool result processing
   - Add basic error handling for tool-initiated operations
 
-### Testing and Quality Assurance
+### Test Writing and Quality Assurance
+- Write unit tests:
+  - Create `tests/unit/lib/openrouter-client.test.js` - Test tool calling extensions
+  - Create `tests/unit/lib/tool-executor.test.js` - Test tool registry and execution
+  - Create `tests/unit/lib/tools/schema-tool.test.js` - Test schema tool functionality
+  - Create `tests/unit/routes/chat.test.js` - Test chat endpoint with tool calling
+- Write integration tests:
+  - Create `tests/integration/tool-calling-basic.test.js` - End-to-end tool calling with schema tool
+  - Create `tests/integration/schema-tool-integration.test.js` - Schema tool with real database
+  - Create `tests/integration/ai-chat-tool-ui.test.js` - Frontend tool result processing
+- Write @expensive tests:
+  - Create `tests/integration/ai-schema-expensive.test.js` - Real AI using schema tool
 - Run code quality checks:
   - Run `make format` to format all code
   - Run `make lint` to check code quality
@@ -155,7 +166,17 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Add `getWidgetListForTools()` method for widget state access
   - Ensure widget state is accessible to backend tools
 
-### Testing and Quality Assurance
+### Test Writing and Quality Assurance
+- Write unit tests:
+  - Create `tests/unit/lib/tools/list-widgets-tool.test.js` - Test widget listing tool functionality
+  - Update `tests/unit/lib/tool-executor.test.js` - Add multi-tool registry tests
+  - Update `tests/unit/routes/chat.test.js` - Test chat endpoint with multiple tools
+- Write integration tests:
+  - Create `tests/integration/multi-tool-selection.test.js` - Test AI choosing between tools
+  - Create `tests/integration/widget-listing-integration.test.js` - Widget listing with real dashboard state
+  - Update `tests/integration/tool-calling-basic.test.js` - Add widget listing scenarios
+- Write @expensive tests:
+  - Create `tests/integration/ai-multi-tool-expensive.test.js` - Real AI choosing between schema and widget tools
 - Run code quality checks:
   - Run `make format` to format all code
   - Run `make lint` to check code quality
@@ -222,7 +243,17 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Include examples of good analytical queries
   - Add data exploration patterns and common SQL templates
 
-### Testing and Quality Assurance
+### Test Writing and Quality Assurance
+- Write unit tests:
+  - Create `tests/unit/lib/tools/sql-query-tool.test.js` - Test SQL query tool functionality
+  - Create `tests/unit/lib/query-result-formatter.test.js` - Test query result formatting utilities
+  - Update `tests/unit/lib/tool-executor.test.js` - Add SQL tool execution tests
+- Write integration tests:
+  - Create `tests/integration/sql-query-integration.test.js` - SQL tool with real database queries
+  - Create `tests/integration/three-tool-selection.test.js` - Test AI choosing among 3 tools
+  - Update `tests/integration/tool-calling-basic.test.js` - Add SQL query scenarios
+- Write @expensive tests:
+  - Create `tests/integration/ai-data-analysis-expensive.test.js` - Real AI generating and executing SQL queries
 - Run code quality checks:
   - Run `make format` to format all code
   - Run `make lint` to check code quality
@@ -298,7 +329,18 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Add widget creation best practices and size guidelines
   - Include guidance on chart type selection based on data
 
-### Testing and Quality Assurance
+### Test Writing and Quality Assurance
+- Write unit tests:
+  - Create `tests/unit/lib/tools/widget-creation-tool.test.js` - Test widget creation tool functionality
+  - Create `tests/unit/lib/chart-function-generator.test.js` - Test chart function generation
+  - Update `tests/unit/public/app.test.js` - Add `createWidgetFromTool()` method tests
+- Write integration tests:
+  - Create `tests/integration/widget-creation-integration.test.js` - Widget creation with real DOM and data
+  - Create `tests/integration/chart-widget-creation.test.js` - Graph widget creation with D3.js functions
+  - Create `tests/integration/four-tool-workflow.test.js` - Test AI using all 4 tools in combination
+  - Update `tests/integration/ai-chat-tool-ui.test.js` - Add widget creation UI interactions
+- Write @expensive tests:
+  - Create `tests/integration/ai-widget-creation-expensive.test.js` - Real AI creating widgets from natural language
 - Run code quality checks:
   - Run `make format` to format all code
   - Run `make lint` to check code quality
@@ -366,7 +408,18 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Add guidance on when to edit vs create new widgets
   - Include examples of widget modification patterns
 
-### Testing and Quality Assurance
+### Test Writing and Quality Assurance
+- Write unit tests:
+  - Create `tests/unit/lib/tools/widget-edit-tool.test.js` - Test widget editing tool functionality
+  - Update `tests/unit/public/app.test.js` - Add `updateWidgetFromTool()` method tests
+  - Test widget state synchronization and validation
+- Write integration tests:
+  - Create `tests/integration/widget-editing-integration.test.js` - Widget editing with real DOM updates
+  - Create `tests/integration/widget-query-update.test.js` - Test SQL query changes and re-execution
+  - Create `tests/integration/five-tool-workflow.test.js` - Test AI using all 5 tools in combination
+  - Update `tests/integration/ai-chat-tool-ui.test.js` - Add widget editing UI interactions
+- Write @expensive tests:
+  - Create `tests/integration/ai-widget-editing-expensive.test.js` - Real AI modifying widgets from natural language
 - Run code quality checks:
   - Run `make format` to format all code
   - Run `make lint` to check code quality
@@ -455,7 +508,21 @@ This plan implements OpenRouter tool calling functionality one tool at a time. E
   - Add comprehensive widget management guidance
   - Include complex multi-tool workflow examples
 
-### Testing and Quality Assurance
+### Test Writing and Quality Assurance
+- Write unit tests:
+  - Create `tests/unit/lib/tools/widget-resize-tool.test.js` - Test widget resizing tool functionality
+  - Create `tests/unit/lib/tools/response-formatter.test.js` - Test response formatting utilities
+  - Update `tests/unit/public/app.test.js` - Add `resizeWidgetFromTool()` method tests
+  - Create `tests/unit/lib/multi-tool-coordinator.test.js` - Test multi-tool coordination logic
+- Write integration tests:
+  - Create `tests/integration/widget-resizing-integration.test.js` - Widget resizing with real DOM updates
+  - Create `tests/integration/complete-tool-suite.test.js` - Test all 6 tools working together
+  - Create `tests/integration/multi-tool-workflows.test.js` - Complex multi-step tool combinations
+  - Create `tests/integration/tool-execution-ui.test.js` - Enhanced UI indicators and error handling
+  - Update `tests/integration/ai-chat-tool-ui.test.js` - Add final UI enhancements
+- Write @expensive tests:
+  - Create `tests/integration/ai-complete-workflow-expensive.test.js` - Real AI managing complex dashboard workflows
+  - Update existing @expensive tests to verify complete tool suite functionality
 - Run final code quality checks:
   - Run `make format` to format all code
   - Run `make lint` to check code quality
