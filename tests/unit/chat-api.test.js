@@ -80,6 +80,7 @@ test("ChatAPI sendMessage calls API with correct parameters", async () => {
       message: "Test message",
       chatHistory: [{ role: "user", content: "Previous message" }],
       databasePath: null,
+      widgets: [], // New field added for widget context
     }),
   });
 

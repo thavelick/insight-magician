@@ -298,13 +298,8 @@ class App {
         width: widget.width || 2,
         height: widget.height || 2,
       },
-      hasResults: !!(
-        widget.results &&
-        widget.results.rows &&
-        widget.results.rows.length > 0
-      ),
-      resultCount:
-        widget.results && widget.results.rows ? widget.results.rows.length : 0,
+      hasResults: !!(widget.results?.rows && widget.results.rows.length > 0),
+      resultCount: widget.results?.rows ? widget.results.rows.length : 0,
       isInEditMode: widget.isFlipped || false,
     }));
 

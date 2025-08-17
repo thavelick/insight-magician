@@ -239,6 +239,10 @@ export class AIChatComponent {
           console.log("Schema information retrieved:", result.data);
           break;
 
+        case "widgets_listed":
+          console.log("Widget information retrieved:", result.data);
+          break;
+
         default:
           console.log("Unknown tool action:", result.action, result);
       }
