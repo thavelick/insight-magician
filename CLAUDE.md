@@ -16,6 +16,7 @@ Prefer using make commands when available:
 - Use `make test-unit` instead of `bun run test:unit`
 - Use `make test-integration` instead of `bun run test:integration`
 - Use `make test-all` instead of `bun run test:all`
+- **DO NOT run `make test-integration-expensive`** - This runs real API tests that cost money
 - Use `make tail-logs` to view last 20 lines of development server logs
 - Use `make install` instead of `bun install`
 
