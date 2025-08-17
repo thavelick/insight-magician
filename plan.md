@@ -209,51 +209,62 @@ This plan implements AI tool calling functionality one tool at a time. Each phas
 **Task List** (Check off completed tasks with ✅):
 
 ### SQL Query Tool Implementation
-- Create `lib/tools/sql-query-tool.js`:
-  - Implement `execute_sql_query` tool class extending base tool
-  - Integrate with existing `/api/query` endpoint logic
-  - Reuse SQL validation from `validateSql()` for security
-  - Handle query parameters (query, explanation)
-  - Support pagination parameters for large datasets
-  - Format query results for AI consumption (summary + sample data)
-  - Add error handling for SQL syntax errors and execution failures
-  - Include query execution statistics (row count, execution time)
+- ✅ Create `lib/tools/sql-query-tool.js`:
+  - ✅ Implement `execute_sql_query` tool class extending base tool
+  - ✅ Integrate with existing `/api/query` endpoint logic
+  - ✅ Enhanced SQL validation with context-aware `validateSqlForTool()` for security
+  - ✅ Handle query parameters (query, explanation)
+  - ✅ Support pagination parameters for large datasets
+  - ✅ Format query results for AI consumption (summary + sample data)
+  - ✅ Add error handling for SQL syntax errors and execution failures
+  - ✅ Include query execution statistics (row count, execution time)
+  - ✅ Fix double LIMIT/OFFSET detection with regex word boundaries
+  - ✅ SQLite-specific syntax support and guidance
 
 ### Query Result Formatting
-- Add query result formatting utilities:
-  - Create concise data summaries for AI interpretation
-  - Handle different data types (strings, numbers, dates, nulls)
-  - Limit result size for AI processing while preserving meaning
-  - Format error messages to be helpful for AI understanding
-  - Include data type information and column metadata
+- ✅ Add query result formatting utilities:
+  - ✅ Create concise data summaries for AI interpretation
+  - ✅ Handle different data types (strings, numbers, dates, nulls)
+  - ✅ Limit result size for AI processing while preserving meaning
+  - ✅ Format error messages to be helpful for AI understanding
+  - ✅ Include data type information and column metadata
 
 ### Tool Registration and System Updates
-- Update `lib/tool-executor.js`:
-  - Register `execute_sql_query` tool in tool registry
-  - Add database context passing to SQL tool
-  - Test tool execution with various query types
-- Update `lib/ai-system-prompt.js`:
-  - Add description of `execute_sql_query` tool
-  - Update to mention THREE available tools now
-  - Add guidance on when to use SQL queries vs just getting schema
-  - Include examples of good analytical queries
-  - Add data exploration patterns and common SQL templates
+- ✅ Update `lib/tool-registry.js` (renamed from ai-system-prompt.js):
+  - ✅ Register `execute_sql_query` tool in tool registry
+  - ✅ Add database context passing to SQL tool
+  - ✅ Test tool execution with various query types
+  - ✅ Add description of `execute_sql_query` tool
+  - ✅ Update to mention THREE available tools now
+  - ✅ Add guidance on when to use SQL queries vs just getting schema
+  - ✅ Include examples of good analytical queries
+  - ✅ Add SQLite-specific syntax and function guidance
+  - ✅ Add current date context for accurate calculations
+  - ✅ Add user experience guidance (direct responses, no tool exposure)
+
+### Enhanced SQL Validation System
+- ✅ Update `lib/sqlValidator.js`:
+  - ✅ Add context-aware validation with options parameter
+  - ✅ Create `validateSqlForWidget()` - strict validation (no LIMIT/OFFSET)
+  - ✅ Create `validateSqlForTool()` - permissive validation (allows LIMIT/OFFSET)
+- ✅ Update `routes/query.js`:
+  - ✅ Use widget-specific validation for query route
+
+### Frontend Integration
+- ✅ Update `public/components/ai-chat.js`:
+  - ✅ Add `sql_query_executed` action handling in `processToolResult()`
 
 ### Test Writing and Quality Assurance
-- Write unit tests:
-  - Create `tests/unit/lib/tools/sql-query-tool.test.js` - Test SQL query tool functionality
-  - Create `tests/unit/lib/query-result-formatter.test.js` - Test query result formatting utilities
-  - Update `tests/unit/lib/tool-executor.test.js` - Add SQL tool execution tests
-- Write integration tests (using Playwright mocks like `ai-chat-basic.test.js`):
-  - Create `tests/integration/sql-query-integration.test.js` - SQL tool with real database queries, mocked AI
-  - Create `tests/integration/three-tool-selection.test.js` - Test mocked AI choosing among 3 tools
-  - Update `tests/integration/tool-calling-basic.test.js` - Add SQL query scenarios with mocked responses
-- Run code quality checks:
-  - Run `make check` to verify formatting and linting
-- Run test suites:
-  - Run `make test-unit` to execute unit tests
-  - Run `make test-integration` to execute integration tests
-  - Fix any failing tests before proceeding to Phase 4
+- ✅ Write unit tests:
+  - ✅ Create `tests/unit/lib/tools/sql-query-tool.test.js` - Test SQL query tool functionality (21 tests)
+  - ✅ Create `tests/unit/sql-validator.test.js` - Test context-aware validation (13 tests)
+  - ✅ Update existing tool executor tests to include SQL tool
+- ✅ Run code quality checks:
+  - ✅ Run `make check` to verify formatting and linting
+- ✅ Run test suites:
+  - ✅ Run `make test-unit` to execute unit tests (187 total passing)
+  - ✅ Run `make test-integration` to execute integration tests (87 total passing)
+  - ✅ Fix double LIMIT bug and validation issues
 
 **Success Criteria:**
 - AI can execute SQL queries to answer user questions

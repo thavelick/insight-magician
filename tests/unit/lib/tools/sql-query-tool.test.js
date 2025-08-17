@@ -18,7 +18,6 @@ const mockDatabaseManager = {
 
 const mockValidateSqlForTool = mock((query) => ({ isValid: true }));
 
-// Mock the imports
 mock.module("../../../../lib/database.js", () => ({
   DatabaseManager: mock(() => mockDatabaseManager),
 }));
@@ -28,7 +27,6 @@ mock.module("../../../../lib/sqlValidator.js", () => ({
 }));
 
 function createTool() {
-  // Reset mocks
   mockDatabaseManager.connect.mockClear();
   mockDatabaseManager.disconnect.mockClear();
   mockDatabaseManager.db.prepare.mockClear();
@@ -50,13 +48,14 @@ test("SqlQueryTool should return proper tool definition", () => {
 
   expect(definition.type).toBe("function");
   expect(definition.function.name).toBe("execute_sql_query");
-  expect(definition.function.description).toContain("Execute SQLite SELECT queries");
+  expect(definition.function.description).toContain(
+    "Execute SQLite SELECT queries",
+  );
   expect(definition.function.parameters.required).toEqual([
     "query",
     "explanation",
   ]);
 
-  // Check parameter properties
   const props = definition.function.parameters.properties;
   expect(props.query).toBeDefined();
   expect(props.explanation).toBeDefined();
@@ -203,7 +202,6 @@ test("SqlQueryTool should handle missing database path", async () => {
 });
 
 test("SqlQueryTool should handle table not found errors", async () => {
-  // Create a separate mock for this test
   const errorDbManager = {
     connect: mock(() => Promise.resolve()),
     disconnect: mock(() => Promise.resolve()),
@@ -214,7 +212,6 @@ test("SqlQueryTool should handle table not found errors", async () => {
     },
   };
 
-  // Mock the DatabaseManager constructor for this test
   const originalDbManager = mockDatabaseManager;
   mock.module("../../../../lib/database.js", () => ({
     DatabaseManager: mock(() => errorDbManager),
@@ -236,14 +233,12 @@ test("SqlQueryTool should handle table not found errors", async () => {
   );
   expect(result.action).toBe("sql_error");
 
-  // Restore original mock
   mock.module("../../../../lib/database.js", () => ({
     DatabaseManager: mock(() => originalDbManager),
   }));
 });
 
 test("SqlQueryTool should handle column not found errors", async () => {
-  // Create a separate mock for this test
   const errorDbManager = {
     connect: mock(() => Promise.resolve()),
     disconnect: mock(() => Promise.resolve()),
@@ -254,7 +249,6 @@ test("SqlQueryTool should handle column not found errors", async () => {
     },
   };
 
-  // Mock the DatabaseManager constructor for this test
   const originalDbManager = mockDatabaseManager;
   mock.module("../../../../lib/database.js", () => ({
     DatabaseManager: mock(() => errorDbManager),
@@ -276,14 +270,12 @@ test("SqlQueryTool should handle column not found errors", async () => {
   );
   expect(result.action).toBe("sql_error");
 
-  // Restore original mock
   mock.module("../../../../lib/database.js", () => ({
     DatabaseManager: mock(() => originalDbManager),
   }));
 });
 
 test("SqlQueryTool should handle SQL syntax errors", async () => {
-  // Create a separate mock for this test
   const errorDbManager = {
     connect: mock(() => Promise.resolve()),
     disconnect: mock(() => Promise.resolve()),
@@ -294,7 +286,6 @@ test("SqlQueryTool should handle SQL syntax errors", async () => {
     },
   };
 
-  // Mock the DatabaseManager constructor for this test
   const originalDbManager = mockDatabaseManager;
   mock.module("../../../../lib/database.js", () => ({
     DatabaseManager: mock(() => errorDbManager),
@@ -314,7 +305,6 @@ test("SqlQueryTool should handle SQL syntax errors", async () => {
   expect(result.error).toContain("SQL syntax error");
   expect(result.action).toBe("sql_error");
 
-  // Restore original mock
   mock.module("../../../../lib/database.js", () => ({
     DatabaseManager: mock(() => originalDbManager),
   }));
