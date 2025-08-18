@@ -271,7 +271,6 @@ export class WidgetComponent {
   }
 
   updateWidgetHeader() {
-    // Update front panel header
     const frontHeader = this.element.querySelector(
       ".card-front .widget-header h4",
     );
@@ -283,7 +282,6 @@ export class WidgetComponent {
       }
     }
 
-    // Update back panel header
     const backHeader = this.element.querySelector(
       ".card-back .back-panel-title",
     );
@@ -361,7 +359,6 @@ export class WidgetComponent {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        // Clear any previous errors
         this.clearError();
 
         this.displayResults(result);

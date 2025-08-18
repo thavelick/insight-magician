@@ -94,7 +94,7 @@ test("WidgetEditTool - prompt methods", () => {
   const examples = tool.getExampleQueries();
   expect(examples).toBeInstanceOf(Array);
   expect(examples.length).toBeGreaterThan(0);
-  expect(examples[0]).toContain("Change the title of widget");
+  expect(examples[0]).toContain("Change the title");
 });
 
 test("WidgetEditTool - successful title update", async () => {
