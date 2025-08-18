@@ -392,6 +392,96 @@ class App {
     }
   }
 
+  /**
+   * Update an existing widget from tool execution result
+   * @param {Object} widgetConfig - Updated widget configuration from tool
+   */
+  updateWidgetFromTool(widgetConfig) {
+    try {
+      const {
+        id,
+        title,
+        widgetType,
+        query,
+        width,
+        height,
+        chartFunction,
+        results,
+      } = widgetConfig;
+
+      // Find existing widget by ID
+      const existingWidget = this.widgets.get(id);
+      if (!existingWidget) {
+        return {
+          success: false,
+          error: `Widget with ID ${id} not found`,
+        };
+      }
+
+      // Update widget properties
+      if (title !== undefined) {
+        existingWidget.title = title;
+      }
+      if (widgetType !== undefined) {
+        existingWidget.widgetType = widgetType;
+      }
+      if (query !== undefined) {
+        existingWidget.query = query;
+      }
+      if (width !== undefined) {
+        existingWidget.width = width;
+      }
+      if (height !== undefined) {
+        existingWidget.height = height;
+      }
+      if (chartFunction !== undefined) {
+        existingWidget.chartFunction = chartFunction;
+      }
+
+      // Update results if provided
+      if (results) {
+        existingWidget.results = results;
+        existingWidget.hasResults = !!(results.rows && results.rows.length > 0);
+      }
+
+      // Update form fields to reflect the new properties
+      existingWidget.updateFormFields();
+
+      // Always refresh the display if there are any results (new or existing)
+      const resultsToDisplay = results || existingWidget.results;
+      if (resultsToDisplay?.rows && resultsToDisplay.rows.length > 0) {
+        existingWidget.displayResults(resultsToDisplay);
+
+        // Ensure widget is showing the front (results) side
+        if (existingWidget.isFlipped) {
+          existingWidget.flip();
+        }
+      }
+
+      // Save updated state
+      this.saveWidgets();
+
+      console.log(`Updated widget ${id} from tool:`, {
+        title: title || existingWidget.title,
+        type: widgetType || existingWidget.widgetType,
+        rowCount:
+          results?.rows?.length || existingWidget.results?.rows?.length || 0,
+      });
+
+      return {
+        success: true,
+        widgetId: id,
+        message: `Widget "${title || existingWidget.title}" updated successfully`,
+      };
+    } catch (error) {
+      console.error("Error updating widget from tool:", error);
+      return {
+        success: false,
+        error: `Failed to update widget: ${error.message}`,
+      };
+    }
+  }
+
   clearWidgets() {
     // Remove all widget elements
     const container = document.getElementById("widgets-container");

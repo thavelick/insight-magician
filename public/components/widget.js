@@ -792,17 +792,40 @@ export class WidgetComponent {
    * Useful when properties are set after widget creation (e.g., from AI tools)
    */
   updateFormFields() {
+    // Update title input field
+    const titleInput = this.element?.querySelector(".widget-title-input");
+    if (titleInput) {
+      titleInput.value = this.title;
+    }
+
+    // Update widget type dropdown
+    const typeSelect = this.element?.querySelector(".widget-type-select");
+    if (typeSelect) {
+      typeSelect.value = this.widgetType;
+    }
+
+    // Update query textarea
     const queryTextarea = this.element?.querySelector(".query-editor");
     if (queryTextarea) {
       queryTextarea.value = this.query;
     }
 
+    // Update chart function textarea
     const chartFunctionTextarea = this.element?.querySelector(
       ".chart-function-editor",
     );
     if (chartFunctionTextarea) {
       chartFunctionTextarea.value = this.chartFunction;
     }
+
+    // Update header titles to reflect the current title
+    this.updateWidgetHeader();
+
+    // Show/hide chart function based on widget type
+    this.updateChartFunctionVisibility();
+
+    // Update visual size if dimensions changed
+    this.applySize();
   }
 
   // Serialization methods for persistence
