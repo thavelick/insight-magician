@@ -275,6 +275,22 @@ export class AIChatComponent {
           }
           break;
 
+        case "widget_updated":
+          console.log("Widget updated successfully:", result.widgetConfig);
+          if (window.app?.updateWidgetFromTool) {
+            const updateResult = window.app.updateWidgetFromTool(
+              result.widgetConfig,
+            );
+            if (updateResult.success) {
+              console.log(`✅ Widget updated: ${updateResult.message}`);
+            } else {
+              console.error("❌ Failed to update widget:", updateResult.error);
+            }
+          } else {
+            console.error("❌ App instance not available for widget updating");
+          }
+          break;
+
         default:
           console.log("Unknown tool action:", result.action, result);
       }
