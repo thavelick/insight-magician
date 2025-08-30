@@ -52,7 +52,7 @@ test("AppDatabase: should initialize database and create tables", async () => {
 test("AppDatabase: should create user successfully", async () => {
   const testEmail = "test@example.com";
 
-  const user = await appDb.createUser(testEmail);
+  const user = await appDb.users.create(testEmail);
 
   expect(user).toBeTruthy();
   expect(user.id).toBeTruthy();
@@ -64,10 +64,10 @@ test("AppDatabase: should prevent duplicate email addresses", async () => {
   const testEmail = "duplicate@example.com";
 
   // Create first user
-  await appDb.createUser(testEmail);
+  await appDb.users.create(testEmail);
 
   // Try to create duplicate - should throw error
-  await expect(appDb.createUser(testEmail)).rejects.toThrow(
+  await expect(appDb.users.create(testEmail)).rejects.toThrow(
     "User with email duplicate@example.com already exists",
   );
 });
@@ -76,10 +76,10 @@ test("AppDatabase: should get user by email", async () => {
   const testEmail = "getuser@example.com";
 
   // Create user first
-  const createdUser = await appDb.createUser(testEmail);
+  const createdUser = await appDb.users.create(testEmail);
 
   // Get user by email
-  const foundUser = await appDb.getUserByEmail(testEmail);
+  const foundUser = await appDb.users.getByEmail(testEmail);
 
   expect(foundUser).toBeTruthy();
   expect(foundUser.id).toBe(createdUser.id);
@@ -87,7 +87,7 @@ test("AppDatabase: should get user by email", async () => {
 });
 
 test("AppDatabase: should return null for non-existent email", async () => {
-  const foundUser = await appDb.getUserByEmail("nonexistent@example.com");
+  const foundUser = await appDb.users.getByEmail("nonexistent@example.com");
   expect(foundUser).toBeNull();
 });
 
@@ -95,10 +95,10 @@ test("AppDatabase: should get user by ID", async () => {
   const testEmail = "getuserbyid@example.com";
 
   // Create user first
-  const createdUser = await appDb.createUser(testEmail);
+  const createdUser = await appDb.users.create(testEmail);
 
   // Get user by ID
-  const foundUser = await appDb.getUserById(createdUser.id);
+  const foundUser = await appDb.users.getById(createdUser.id);
 
   expect(foundUser).toBeTruthy();
   expect(foundUser.id).toBe(createdUser.id);
@@ -106,7 +106,7 @@ test("AppDatabase: should get user by ID", async () => {
 });
 
 test("AppDatabase: should return null for non-existent user ID", async () => {
-  const foundUser = await appDb.getUserById(99999);
+  const foundUser = await appDb.users.getById(99999);
   expect(foundUser).toBeNull();
 });
 
@@ -114,19 +114,19 @@ test("AppDatabase: should update last login", async () => {
   const testEmail = "lastlogin@example.com";
 
   // Create user first
-  const user = await appDb.createUser(testEmail);
+  const user = await appDb.users.create(testEmail);
   expect(user.last_login_at).toBeUndefined();
 
   // Update last login
-  await appDb.updateLastLogin(user.id);
+  await appDb.users.updateLastLogin(user.id);
 
   // Get user again to check last_login_at was updated
-  const updatedUser = await appDb.getUserById(user.id);
+  const updatedUser = await appDb.users.getById(user.id);
   expect(updatedUser.last_login_at).toBeTruthy();
 });
 
 test("AppDatabase: should throw error when updating last login for non-existent user", async () => {
-  await expect(appDb.updateLastLogin(99999)).rejects.toThrow(
+  await expect(appDb.users.updateLastLogin(99999)).rejects.toThrow(
     "User with ID 99999 not found",
   );
 });
@@ -137,10 +137,10 @@ test("AppDatabase: should create auth token", async () => {
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours from now
 
   // Create user first
-  const user = await appDb.createUser(testEmail);
+  const user = await appDb.users.create(testEmail);
 
   // Create auth token
-  const token = await appDb.createAuthToken(user.id, testToken, expiresAt);
+  const token = await appDb.authTokens.create(user.id, testToken, expiresAt);
 
   expect(token).toBeTruthy();
   expect(token.token).toBe(testToken);
@@ -153,11 +153,11 @@ test("AppDatabase: should get auth token with user info", async () => {
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
   // Create user and token
-  const user = await appDb.createUser(testEmail);
-  await appDb.createAuthToken(user.id, testToken, expiresAt);
+  const user = await appDb.users.create(testEmail);
+  await appDb.authTokens.create(user.id, testToken, expiresAt);
 
   // Get token
-  const foundToken = await appDb.getAuthToken(testToken);
+  const foundToken = await appDb.authTokens.getByToken(testToken);
 
   expect(foundToken).toBeTruthy();
   expect(foundToken.token).toBe(testToken);
@@ -174,10 +174,10 @@ test("AppDatabase: should create session", async () => {
   ).toISOString(); // 30 days from now
 
   // Create user first
-  const user = await appDb.createUser(testEmail);
+  const user = await appDb.users.create(testEmail);
 
   // Create session
-  const session = await appDb.createSession(sessionId, user.id, expiresAt);
+  const session = await appDb.sessions.create(sessionId, user.id, expiresAt);
 
   expect(session).toBeTruthy();
   expect(session.id).toBe(sessionId);
@@ -193,11 +193,11 @@ test("AppDatabase: should get session with user info", async () => {
   ).toISOString();
 
   // Create user and session
-  const user = await appDb.createUser(testEmail);
-  await appDb.createSession(sessionId, user.id, expiresAt);
+  const user = await appDb.users.create(testEmail);
+  await appDb.sessions.create(sessionId, user.id, expiresAt);
 
   // Get session
-  const foundSession = await appDb.getSession(sessionId);
+  const foundSession = await appDb.sessions.getById(sessionId);
 
   expect(foundSession).toBeTruthy();
   expect(foundSession.id).toBe(sessionId);
@@ -211,11 +211,11 @@ test("AppDatabase: should not return expired sessions", async () => {
   const expiresAt = new Date(Date.now() - 1000).toISOString(); // 1 second ago (expired)
 
   // Create user and expired session
-  const user = await appDb.createUser(testEmail);
-  await appDb.createSession(sessionId, user.id, expiresAt);
+  const user = await appDb.users.create(testEmail);
+  await appDb.sessions.create(sessionId, user.id, expiresAt);
 
   // Try to get expired session
-  const foundSession = await appDb.getSession(sessionId);
+  const foundSession = await appDb.sessions.getById(sessionId);
 
   expect(foundSession).toBeNull();
 });
