@@ -2,7 +2,6 @@
 -- This file contains the schema for the application database (app.db)
 -- which is separate from user-uploaded databases in ./uploads/
 
--- Users table for authentication
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT UNIQUE NOT NULL,
@@ -10,7 +9,6 @@ CREATE TABLE users (
     last_login_at DATETIME
 );
 
--- Magic link tokens table
 CREATE TABLE auth_tokens (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     token TEXT UNIQUE NOT NULL,
@@ -21,7 +19,6 @@ CREATE TABLE auth_tokens (
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
--- Sessions table for server-side session management
 -- Note: id is cryptographically secure random string (not auto-increment)
 -- Generated using crypto.randomBytes(32).toString('hex') for security
 CREATE TABLE sessions (
