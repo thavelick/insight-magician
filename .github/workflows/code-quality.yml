@@ -49,5 +49,7 @@ jobs:
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: bun run playwright install --with-deps
+      - name: Setup app database
+        run: bun scripts/setup-db.js
       - name: Run integration tests
         run: bun run test:integration
