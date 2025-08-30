@@ -63,3 +63,29 @@ test("AuthTokens: should get auth token with user info", async () => {
   expect(foundToken.email).toBe(testEmail);
   expect(foundToken.used_at).toBeNull();
 });
+
+test("AuthTokens: should mark token as used", async () => {
+  const testEmail = "markused@example.com";
+  const testToken = "mark-used-123";
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+  // Create user and token
+  const user = await appDb.users.create(testEmail);
+  await appDb.authTokens.create(user.id, testToken, expiresAt);
+
+  // Mark token as used
+  const result = await appDb.authTokens.markAsUsed(testToken);
+  expect(result.changes).toBe(1);
+
+  // Verify token is no longer available (getByToken only returns unused tokens)
+  const foundToken = await appDb.authTokens.getByToken(testToken);
+  expect(foundToken).toBeNull();
+});
+
+test("AuthTokens: should throw error when marking non-existent token as used", async () => {
+  const nonExistentToken = "non-existent-token";
+
+  await expect(appDb.authTokens.markAsUsed(nonExistentToken)).rejects.toThrow(
+    `Auth token ${nonExistentToken} not found`,
+  );
+});

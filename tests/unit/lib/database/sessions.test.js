@@ -82,3 +82,35 @@ test("Sessions: should not return expired sessions", async () => {
 
   expect(foundSession).toBeNull();
 });
+
+test("Sessions: should delete session", async () => {
+  const testEmail = "delete@example.com";
+  const sessionId = "delete-session-123";
+  const expiresAt = new Date(
+    Date.now() + 30 * 24 * 60 * 60 * 1000,
+  ).toISOString();
+
+  // Create user and session
+  const user = await appDb.users.create(testEmail);
+  await appDb.sessions.create(sessionId, user.id, expiresAt);
+
+  // Verify session exists
+  let session = await appDb.sessions.getById(sessionId);
+  expect(session).toBeTruthy();
+
+  // Delete session
+  const result = await appDb.sessions.delete(sessionId);
+  expect(result.changes).toBe(1);
+
+  // Verify session is deleted
+  session = await appDb.sessions.getById(sessionId);
+  expect(session).toBeNull();
+});
+
+test("Sessions: should throw error when deleting non-existent session", async () => {
+  const nonExistentSessionId = "non-existent-session";
+
+  await expect(appDb.sessions.delete(nonExistentSessionId)).rejects.toThrow(
+    `Session ${nonExistentSessionId} not found`,
+  );
+});
