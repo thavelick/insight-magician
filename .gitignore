@@ -11,3 +11,7 @@ worktrees/
 .claude/
 logs/
 summary.md
+
+# Application database
+app.db
+*.db
