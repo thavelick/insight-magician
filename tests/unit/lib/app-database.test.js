@@ -115,14 +115,14 @@ test("AppDatabase: should update last login", async () => {
 
   // Create user first
   const user = await appDb.createUser(testEmail);
-  expect(user.last_login).toBeUndefined();
+  expect(user.last_login_at).toBeUndefined();
 
   // Update last login
   await appDb.updateLastLogin(user.id);
 
-  // Get user again to check last_login was updated
+  // Get user again to check last_login_at was updated
   const updatedUser = await appDb.getUserById(user.id);
-  expect(updatedUser.last_login).toBeTruthy();
+  expect(updatedUser.last_login_at).toBeTruthy();
 });
 
 test("AppDatabase: should throw error when updating last login for non-existent user", async () => {
