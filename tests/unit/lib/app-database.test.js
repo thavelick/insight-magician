@@ -53,7 +53,7 @@ test("AppDatabase: should initialize repository interfaces", async () => {
   expect(appDb.users).toBeTruthy();
   expect(appDb.sessions).toBeTruthy();
   expect(appDb.authTokens).toBeTruthy();
-  
+
   // Check that repository methods exist
   expect(typeof appDb.users.create).toBe("function");
   expect(typeof appDb.users.getByEmail).toBe("function");
@@ -91,7 +91,7 @@ test("AppDatabase: should detect when database is already initialized", async ()
 
 test("AppDatabase: should handle disconnect gracefully when no connection", async () => {
   const disconnectedDb = new AppDatabase("./disconnected-test.db");
-  
+
   // Should not throw error when disconnecting without connection
   await expect(disconnectedDb.disconnect()).resolves.toBeUndefined();
 });
