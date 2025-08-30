@@ -8,6 +8,7 @@
     "format": "biome format --write .",
     "lint": "biome check .",
     "check": "biome check .",
+    "setup-db": "bun scripts/setup-db.js",
     "test": "bun test tests/unit",
     "test:unit": "bun test tests/unit",
     "test:coverage": "bun test tests/unit --coverage",

@@ -66,7 +66,7 @@ install: # Install dependencies
 
 setup-db: # Initialize app database (required before starting server)
 	@echo "Setting up app database.."
-	bun scripts/setup-db.js
+	bun run setup-db
 
 # -----------------------------------------------------------
 # CAUTION: If you have a file with the same name as make
