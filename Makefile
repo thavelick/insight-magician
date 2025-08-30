@@ -64,12 +64,16 @@ install: # Install dependencies
 	@echo "Installing dependencies.."
 	bun install
 
+setup-db: # Initialize app database (required before starting server)
+	@echo "Setting up app database.."
+	bun scripts/setup-db.js
+
 # -----------------------------------------------------------
 # CAUTION: If you have a file with the same name as make
 # command, you need to add it to .PHONY below, otherwise it
 # won't work. E.g. `make run` wouldn't work if you have
 # `run` file in pwd.
-.PHONY: help dev format lint check test-unit test-coverage test-integration test-integration-expensive test-all tail-logs install
+.PHONY: help dev format lint check test-unit test-coverage test-integration test-integration-expensive test-all tail-logs install setup-db
 
 # -----------------------------------------------------------
 # -----       (Makefile helpers and decoration)      --------

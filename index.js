@@ -1,8 +1,16 @@
 import indexHtml from "./index.html";
+import { AppDatabase } from "./lib/app-database.js";
 import { handleChat } from "./routes/chat.js";
 import { handleQuery } from "./routes/query.js";
 import { handleSchema } from "./routes/schema.js";
 import { handleUpload } from "./routes/upload.js";
+
+// Connect to existing app database (must be created with 'make setup-db')
+const appDatabase = new AppDatabase();
+await appDatabase.connect();
+
+// Make app database available globally for routes
+global.appDatabase = appDatabase;
 
 Bun.serve({
   port: process.env.PORT || 3000,
