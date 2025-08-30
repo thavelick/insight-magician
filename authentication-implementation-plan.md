@@ -67,6 +67,7 @@
 - [ ] Test database schema creation from SQL file
 - [ ] Test database initialization on fresh install
 - [ ] Verify isolation from user upload system
+- [ ] Run `make test-unit` to ensure all unit tests pass
 - [ ] Run `make check` for code quality validation
 
 **Success Criteria:**
@@ -123,6 +124,7 @@
 - [ ] Test email service with mocked SMTP
 - [ ] Test token generation, validation, and expiration
 - [ ] Test session lifecycle (create, validate, expire, logout)
+- [ ] Run `make test-unit` to ensure all unit tests pass
 - [ ] Run `make check` for code quality validation
 
 **Success Criteria:**
@@ -181,6 +183,8 @@
 - [ ] Test each authentication endpoint independently
 - [ ] Test route protection with valid and invalid sessions
 - [ ] Verify existing functionality works with authentication
+- [ ] Run `make test-unit` to ensure all unit tests pass
+- [ ] Run `make test-integration` to verify end-to-end auth flow
 - [ ] Run `make check` for code quality validation
 
 **Success Criteria:**
@@ -246,6 +250,8 @@
 - [ ] Test user status component integration with header
 - [ ] Write integration tests for complete auth flow (login → dashboard → logout)
 - [ ] Test multi-tab authentication synchronization
+- [ ] Run `make test-unit` to ensure all unit tests pass
+- [ ] Run `make test-integration` to verify complete frontend auth flow
 - [ ] Run `make check` for code quality validation
 
 **Success Criteria:**
@@ -302,6 +308,8 @@
 - [ ] Verify color contrast and accessibility standards
 - [ ] Test keyboard navigation and screen reader compatibility
 - [ ] Validate visual consistency with existing design system
+- [ ] Run `make test-integration` to verify UI components work correctly
+- [ ] Run `make check` for code quality validation
 
 **Success Criteria:**
 - Login screen is visually appealing and professional
@@ -355,6 +363,8 @@
 - [ ] Document environment variable requirements
 - [ ] Add deployment considerations
 - [ ] Create troubleshooting guide
+- [ ] Run `make test-all` to ensure complete system works
+- [ ] Run `make check` for final code quality validation
 
 **Success Criteria:**
 - Application can be configured for different environments
@@ -408,7 +418,8 @@
 
 #### Quality Gates
 - [ ] All unit tests pass (`make test-unit`)
-- [ ] All integration tests pass (`make test-integration`)
+- [ ] All integration tests pass (`make test-integration`) 
+- [ ] Complete test suite passes (`make test-all`)
 - [ ] Code quality checks pass (`make check`)
 - [ ] Manual testing checklist completed
 - [ ] Security review completed
@@ -467,6 +478,9 @@
 - [ ] Test concurrent session limits and cleanup
 - [ ] Test token invalidation scenarios
 - [ ] Write integration tests for security controls
+- [ ] Run `make test-unit` to ensure all unit tests pass
+- [ ] Run `make test-integration` to verify security controls
+- [ ] Run `make test-all` for comprehensive validation
 - [ ] Run `make check` for code quality validation
 
 **Success Criteria:**
