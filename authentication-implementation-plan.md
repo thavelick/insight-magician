@@ -115,8 +115,9 @@
 #### Security Implementation
 - [ ] Implement cryptographically secure token generation using built-in `crypto.randomBytes(32).toString('hex')`
 - [ ] Add single-use token validation (mark as used)
-- [ ] Create session token security with HTTP-only cookies
-- [ ] Add token expiration validation and cleanup
+- [ ] Create cryptographically secure session IDs using `crypto.randomBytes(32).toString('hex')` (not auto-increment)
+- [ ] Implement HTTP-only session cookies with Secure and SameSite flags
+- [ ] Add token and session expiration validation and cleanup
 - [ ] Implement proper error handling for auth failures
 
 #### Quality Assurance

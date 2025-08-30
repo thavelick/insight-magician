@@ -22,8 +22,10 @@ CREATE TABLE auth_tokens (
 );
 
 -- Sessions table for server-side session management
+-- Note: id is cryptographically secure random string (not auto-increment)
+-- Generated using crypto.randomBytes(32).toString('hex') for security
 CREATE TABLE sessions (
-    id TEXT PRIMARY KEY,
+    id TEXT PRIMARY KEY,  -- Cryptographically secure session ID stored in cookies
     user_id INTEGER NOT NULL,
     expires_at DATETIME NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
