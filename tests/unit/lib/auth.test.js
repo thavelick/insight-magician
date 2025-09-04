@@ -8,7 +8,6 @@ const TEST_DB_PATH = "./test-auth.db";
 let appDb;
 let authManager;
 
-// Mock environment variables
 process.env.APP_URL = "http://localhost:3000";
 process.env.NODE_ENV = "test";
 process.env.EMAIL_FROM_ADDRESS = "test@example.com";
@@ -19,26 +18,21 @@ process.env.SMTP_AUTH_USER = "test@example.com";
 process.env.SMTP_AUTH_PASS = "testpass";
 
 beforeEach(async () => {
-  // Clean up any existing test database
   try {
     unlinkSync(TEST_DB_PATH);
   } catch {
-    // File doesn't exist, that's fine
+    // Ignore - file doesn't exist
   }
 
-  // Create fresh database for each test
   appDb = new AppDatabase(TEST_DB_PATH);
   await appDb.initialize();
 
-  // Create AuthManager instance
   authManager = new AuthManager(appDb);
 
-  // Mock email service to prevent actual emails
   authManager.emailService.sendMagicLink = mock(() => Promise.resolve());
 });
 
 afterEach(async () => {
-  // Clean up after each test
   if (appDb) {
     await appDb.disconnect();
   }
@@ -46,7 +40,7 @@ afterEach(async () => {
   try {
     unlinkSync(TEST_DB_PATH);
   } catch {
-    // File doesn't exist, that's fine
+    // Ignore - file doesn't exist
   }
 });
 
@@ -58,7 +52,7 @@ describe("AuthManager - Token Generation", () => {
     expect(token1).toBeTruthy();
     expect(token2).toBeTruthy();
     expect(token1).not.toBe(token2);
-    expect(token1.length).toBe(64); // 32 bytes * 2 (hex)
+    expect(token1.length).toBe(64);
     expect(typeof token1).toBe("string");
   });
 
@@ -69,7 +63,7 @@ describe("AuthManager - Token Generation", () => {
     expect(sessionId1).toBeTruthy();
     expect(sessionId2).toBeTruthy();
     expect(sessionId1).not.toBe(sessionId2);
-    expect(sessionId1.length).toBe(64); // 32 bytes * 2 (hex)
+    expect(sessionId1.length).toBe(64);
     expect(typeof sessionId1).toBe("string");
   });
 });
@@ -100,7 +94,6 @@ describe("AuthManager - Magic Link Workflow", () => {
     expect(result.message).toBe("Magic link sent to your email");
     expect(authManager.emailService.sendMagicLink).toHaveBeenCalledTimes(1);
 
-    // Verify user was created
     const user = await appDb.users.getByEmail(email);
     expect(user).toBeTruthy();
     expect(user.email).toBe(email);
@@ -109,7 +102,6 @@ describe("AuthManager - Magic Link Workflow", () => {
   test("should send magic link for existing user", async () => {
     const email = "existing@example.com";
 
-    // Create user first
     await appDb.users.create(email);
 
     const result = await authManager.sendMagicLink(email);
@@ -123,7 +115,6 @@ describe("AuthManager - Magic Link Workflow", () => {
 
     await authManager.sendMagicLink(email);
 
-    // Verify user was created with lowercase email
     const user = await appDb.users.getByEmail("test@example.com");
     expect(user).toBeTruthy();
     expect(user.email).toBe("test@example.com");
@@ -142,10 +133,8 @@ describe("AuthManager - Token Verification", () => {
   test("should verify valid token and create session", async () => {
     const email = "verify@example.com";
 
-    // Send magic link to create token
     await authManager.sendMagicLink(email);
 
-    // Get the created token from database
     const user = await appDb.users.getByEmail(email);
     const tokens = await appDb.db
       .prepare(`
@@ -156,7 +145,6 @@ describe("AuthManager - Token Verification", () => {
     expect(tokens.length).toBe(1);
     const token = tokens[0].token;
 
-    // Verify the token
     const result = await authManager.verifyToken(token);
 
     expect(result.success).toBe(true);
@@ -177,7 +165,6 @@ describe("AuthManager - Token Verification", () => {
   test("should reject used token", async () => {
     const email = "used@example.com";
 
-    // Send magic link and verify once
     await authManager.sendMagicLink(email);
     const user = await appDb.users.getByEmail(email);
     const tokens = await appDb.db
@@ -187,10 +174,8 @@ describe("AuthManager - Token Verification", () => {
       .all(user.id);
     const token = tokens[0].token;
 
-    // Use the token once
     await authManager.verifyToken(token);
 
-    // Try to use the same token again
     await expect(authManager.verifyToken(token)).rejects.toThrow(
       "Invalid or expired token",
     );
@@ -200,7 +185,6 @@ describe("AuthManager - Token Verification", () => {
     const email = "expired@example.com";
     const user = await appDb.users.create(email);
 
-    // Create expired token (1 hour ago)
     const expiredToken = authManager.generateSecureToken();
     const expiredTime = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
@@ -226,7 +210,6 @@ describe("AuthManager - Session Management", () => {
   test("should validate active session", async () => {
     const email = "session@example.com";
 
-    // Create user and session
     const user = await appDb.users.create(email);
     const sessionId = authManager.generateSessionId();
     const expiresAt = new Date(
@@ -235,7 +218,6 @@ describe("AuthManager - Session Management", () => {
 
     await appDb.sessions.create(sessionId, user.id, expiresAt);
 
-    // Validate session
     const sessionUser = await authManager.validateSession(sessionId);
 
     expect(sessionUser).toBeTruthy();
@@ -256,7 +238,6 @@ describe("AuthManager - Session Management", () => {
     const user = await appDb.users.create(email);
     const sessionId = authManager.generateSessionId();
 
-    // Create expired session (1 hour ago)
     const expiredTime = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     await appDb.sessions.create(sessionId, user.id, expiredTime);
 
@@ -279,19 +260,15 @@ describe("AuthManager - Logout", () => {
       Date.now() + 30 * 24 * 60 * 60 * 1000,
     ).toISOString();
 
-    // Create session
     await appDb.sessions.create(sessionId, user.id, expiresAt);
 
-    // Verify session exists
     let session = await appDb.sessions.getById(sessionId);
     expect(session).toBeTruthy();
 
-    // Logout
     const result = await authManager.logout(sessionId);
     expect(result.success).toBe(true);
     expect(result.message).toBe("Logged out successfully");
 
-    // Verify session is deleted
     session = await appDb.sessions.getById(sessionId);
     expect(session).toBeNull();
   });

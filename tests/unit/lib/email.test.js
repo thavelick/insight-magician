@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, mock, test } from "bun:test";
 import { EmailService } from "../../../lib/email.js";
 
-// Mock environment variables
 process.env.APP_URL = "http://localhost:3000";
 process.env.NODE_ENV = "test";
 process.env.EMAIL_FROM_ADDRESS = "test@example.com";
@@ -16,7 +15,6 @@ let emailService;
 beforeEach(() => {
   emailService = new EmailService();
 
-  // Mock the transporter methods
   emailService.transporter.verify = mock(() => Promise.resolve(true));
   emailService.transporter.sendMail = mock(() =>
     Promise.resolve({ messageId: "test-id" }),
