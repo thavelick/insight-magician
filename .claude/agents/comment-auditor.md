@@ -41,8 +41,8 @@ The agent automatically applies all comment recommendations and provides a summa
 
 1. Get the list of files to audit
 2. Process each file individually:
-   - Read the file
-   - Analyze all comments in that file
+   - Use `git diff main -- filename` to see only the changed lines and context
+   - Analyze comments within the diff context 
    - Automatically remove redundant comments from that file
    - Keep valuable comments intact
    - Move to the next file
@@ -76,9 +76,9 @@ After making changes, provide a summary in this format:
    - Use: `git diff --name-only main -- '*.js' '*.sql' '*.yml'` to get changed code files only
    - This filters for the main code file types in this codebase that contain comments worth auditing
 2. For each file in the list:
-   - Read the file
-   - Identify ALL types of comments in that file (single-line //, multi-line /* */, JSDoc, SQL--, HTML<!---->)
-   - Categorize each comment using the criteria above
+   - Use `git diff main -- filename` to see only the changed/added lines and surrounding context
+   - Focus analysis only on comments that appear in the diff output (modified or added areas)
+   - If a comment appears in the diff context, analyze whether it should be kept or removed
    - **AUTOMATICALLY REMOVE** all redundant comments using Edit/MultiEdit tools
    - Preserve all valuable comments
    - Complete processing of that file before moving to the next
