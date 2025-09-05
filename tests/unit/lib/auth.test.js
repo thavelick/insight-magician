@@ -262,14 +262,14 @@ describe("AuthManager - Logout", () => {
 
     await appDb.sessions.create(sessionId, user.id, expiresAt);
 
-    let session = await appDb.sessions.getById(sessionId);
+    let session = await appDb.sessions.getValidById(sessionId);
     expect(session).toBeTruthy();
 
     const result = await authManager.logout(sessionId);
     expect(result.success).toBe(true);
     expect(result.message).toBe("Logged out successfully");
 
-    session = await appDb.sessions.getById(sessionId);
+    session = await appDb.sessions.getValidById(sessionId);
     expect(session).toBeNull();
   });
 

@@ -60,7 +60,7 @@ test("Sessions: should get session with user info", async () => {
   await appDb.sessions.create(sessionId, user.id, expiresAt);
 
   // Get session
-  const foundSession = await appDb.sessions.getById(sessionId);
+  const foundSession = await appDb.sessions.getValidById(sessionId);
 
   expect(foundSession).toBeTruthy();
   expect(foundSession.id).toBe(sessionId);
@@ -78,7 +78,7 @@ test("Sessions: should not return expired sessions", async () => {
   await appDb.sessions.create(sessionId, user.id, expiresAt);
 
   // Try to get expired session
-  const foundSession = await appDb.sessions.getById(sessionId);
+  const foundSession = await appDb.sessions.getValidById(sessionId);
 
   expect(foundSession).toBeNull();
 });
@@ -95,7 +95,7 @@ test("Sessions: should delete session", async () => {
   await appDb.sessions.create(sessionId, user.id, expiresAt);
 
   // Verify session exists
-  let session = await appDb.sessions.getById(sessionId);
+  let session = await appDb.sessions.getValidById(sessionId);
   expect(session).toBeTruthy();
 
   // Delete session
@@ -103,7 +103,7 @@ test("Sessions: should delete session", async () => {
   expect(result.changes).toBe(1);
 
   // Verify session is deleted
-  session = await appDb.sessions.getById(sessionId);
+  session = await appDb.sessions.getValidById(sessionId);
   expect(session).toBeNull();
 });
 
