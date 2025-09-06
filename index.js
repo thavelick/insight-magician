@@ -1,5 +1,6 @@
 import indexHtml from "./index.html";
 import { AppDatabase } from "./lib/app-database.js";
+import { logger } from "./lib/logger.js";
 import { handleChat } from "./routes/chat.js";
 import { handleQuery } from "./routes/query.js";
 import { handleSchema } from "./routes/schema.js";
@@ -56,4 +57,4 @@ Bun.serve({
 });
 
 const port = process.env.PORT || 3000;
-console.log(`🚀 Server running at http://localhost:${port}`);
+logger.info(`🚀 Server running at http://localhost:${port}`);

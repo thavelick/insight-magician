@@ -1,5 +1,6 @@
 import { AI_CONFIG } from "../lib/ai-config.js";
 import { SYSTEM_PROMPT } from "../lib/ai-system-prompt.js";
+import { logger } from "../lib/logger.js";
 import { OpenRouterClient } from "../lib/openrouter-client.js";
 import { toolExecutor } from "../lib/tool-executor.js";
 import { toolRegistry } from "../lib/tool-registry.js";
@@ -89,7 +90,7 @@ export async function handleChat(request, openRouterClientClass) {
 
     const tools = toolExecutor.getToolDefinitions();
 
-    console.log("🛠️  Available tools for AI:", {
+    logger.debug("🛠️  Available tools for AI:", {
       count: tools.length,
       tools: tools.map((t) => t.function.name),
       databasePath: databasePath || "none",
@@ -113,7 +114,7 @@ export async function handleChat(request, openRouterClientClass) {
       // Check for time-based timeout
       const elapsedTime = Date.now() - workflowStartTime;
       if (elapsedTime > MAX_WORKFLOW_TIME_MS) {
-        console.warn(
+        logger.warn(
           `⏰ Tool workflow timed out after ${Math.round(elapsedTime / 1000)}s (max: ${MAX_WORKFLOW_TIME_MS / 1000}s)`,
         );
         return createErrorResponse(
@@ -122,14 +123,14 @@ export async function handleChat(request, openRouterClientClass) {
         );
       }
       iteration++;
-      console.log(
+      logger.debug(
         `🔄 Tool calling iteration ${iteration}/${MAX_TOOL_ITERATIONS}`,
       );
 
       const result = await client.createChatCompletion(currentMessages, tools);
 
       if (!result.success) {
-        console.error("AI API error:", result.error);
+        logger.error("AI API error:", result.error);
         return createErrorResponse("AI service temporarily unavailable", 503);
       }
 
@@ -142,7 +143,7 @@ export async function handleChat(request, openRouterClientClass) {
 
       // If no tool calls, we're done
       if (!result.toolCalls || result.toolCalls.length === 0) {
-        console.log("🎯 AI completed workflow without tool calls:", {
+        logger.debug("🎯 AI completed workflow without tool calls:", {
           iteration,
           messageLength: result.message?.length || 0,
           messagePreview:
@@ -160,7 +161,7 @@ export async function handleChat(request, openRouterClientClass) {
         });
       }
 
-      console.log("🤖 AI requested tool calls:", {
+      logger.debug("🤖 AI requested tool calls:", {
         iteration,
         count: result.toolCalls.length,
         tools: result.toolCalls.map(
@@ -187,7 +188,7 @@ export async function handleChat(request, openRouterClientClass) {
 
       for (const toolResult of toolResults) {
         const toolContent = JSON.stringify(toolResult.result);
-        console.log("📤 Sending tool result to AI:", {
+        logger.debug("📤 Sending tool result to AI:", {
           iteration,
           toolCallId: toolResult.toolCallId,
           contentPreview:
@@ -206,13 +207,13 @@ export async function handleChat(request, openRouterClientClass) {
     }
 
     // If we hit the iteration limit, make one final call to get AI's response
-    console.log(
+    logger.debug(
       "⚠️  Reached maximum tool iterations, getting final response...",
     );
     const finalResult = await client.createChatCompletion(currentMessages);
 
     if (!finalResult.success) {
-      console.error("AI API error on final response:", finalResult.error);
+      logger.error("AI API error on final response:", finalResult.error);
       return createErrorResponse("AI service temporarily unavailable", 503);
     }
 
@@ -223,7 +224,7 @@ export async function handleChat(request, openRouterClientClass) {
       totalUsage.total_tokens += finalResult.usage.total_tokens || 0;
     }
 
-    console.log("🎯 AI final response after max iterations:", {
+    logger.debug("🎯 AI final response after max iterations:", {
       iterations: MAX_TOOL_ITERATIONS,
       messageLength: finalResult.message?.length || 0,
       messagePreview:
@@ -249,7 +250,7 @@ export async function handleChat(request, openRouterClientClass) {
     if (error.message.includes("OPENROUTER_API_KEY")) {
       return createErrorResponse("AI service temporarily unavailable", 503);
     }
-    console.error("Unexpected error in chat handler:", error);
+    logger.error("Unexpected error in chat handler:", error);
     throw error;
   }
 }

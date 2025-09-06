@@ -1,6 +1,7 @@
 import { AI_CONFIG } from "../../lib/ai-config.js";
 import { ChatAPI } from "../../lib/chat-api.js";
 import { ChatHistory } from "../../lib/chat-history.js";
+
 import {
   MESSAGE_ROLES,
   formatContent,

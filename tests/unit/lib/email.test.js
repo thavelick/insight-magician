@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, mock, test } from "bun:test";
 import { EmailService } from "../../../lib/email.js";
+import { logger } from "../../../lib/logger.js";
 
 process.env.APP_URL = "http://localhost:3000";
 process.env.NODE_ENV = "test";
@@ -95,16 +96,17 @@ describe("EmailService - Magic Link Sending", () => {
     const originalEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = "development";
 
-    const consoleSpy = mock(() => {});
-    console.log = consoleSpy;
+    const loggerSpy = mock(() => {});
+    const originalLoggerDebug = logger.debug;
+    logger.debug = loggerSpy;
 
     const email = "dev@example.com";
     const token = "dev-token-123";
 
     await emailService.sendMagicLink(email, token);
 
-    expect(consoleSpy).toHaveBeenCalled();
-    const logCall = consoleSpy.mock.calls.find((call) =>
+    expect(loggerSpy).toHaveBeenCalled();
+    const logCall = loggerSpy.mock.calls.find((call) =>
       call[0]?.includes("Magic Link (dev)"),
     );
     expect(logCall).toBeTruthy();
@@ -112,8 +114,9 @@ describe("EmailService - Magic Link Sending", () => {
       "http://localhost:3000/api/auth/verify?token=dev-token-123",
     );
 
-    // Restore environment
+    // Restore environment and logger
     process.env.NODE_ENV = originalEnv;
+    logger.debug = originalLoggerDebug;
   });
 });
 

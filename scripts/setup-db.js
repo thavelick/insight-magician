@@ -1,18 +1,19 @@
 #!/usr/bin/env bun
 import { AppDatabase } from "../lib/app-database.js";
+import { logger } from "../lib/logger.js";
 
 async function setupDatabase() {
-  console.log("🔧 Setting up app database...");
+  logger.debug("🔧 Setting up app database...");
 
   try {
     const appDb = new AppDatabase();
     await appDb.initialize();
     await appDb.disconnect();
 
-    console.log("✅ App database setup complete!");
-    console.log("   You can now start the server with: make dev");
+    logger.debug("✅ App database setup complete!");
+    logger.debug("   You can now start the server with: make dev");
   } catch (error) {
-    console.error("❌ Database setup failed:", error);
+    logger.error("❌ Database setup failed:", error);
     process.exit(1);
   }
 }

@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { DatabaseManager } from "../lib/database.js";
 import { validateSqlForWidget } from "../lib/sqlValidator.js";
 
+import { logger } from "../lib/logger.js";
 const UPLOADS_DIR = "./uploads";
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 1000;
@@ -101,7 +102,7 @@ export async function handleQuery(request) {
       );
     }
   } catch (error) {
-    console.error("Query execution error:", error);
+    logger.error("Query execution error:", error);
     return new Response(
       JSON.stringify({
         error: "Internal server error",
