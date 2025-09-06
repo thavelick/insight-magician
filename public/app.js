@@ -3,7 +3,6 @@ import { SchemaComponent } from "./components/schema.js";
 import { UploadComponent } from "./components/upload.js";
 import { WidgetComponent } from "./components/widget.js";
 
-import { logger } from "../lib/logger.js";
 class App {
   constructor() {
     this.currentDatabase = null;
@@ -116,7 +115,7 @@ class App {
         throw new Error(result.error);
       }
     } catch (error) {
-      logger.error("Failed to load schema:", error);
+      console.error("Failed to load schema:", error);
       this.uploadComponent.showError("Failed to load database schema");
       // Clear invalid filename from sessionStorage
       sessionStorage.removeItem("currentDatabase");
@@ -265,7 +264,7 @@ class App {
           }
         }
       } catch (error) {
-        logger.error("Failed to load widgets:", error);
+        console.error("Failed to load widgets:", error);
         sessionStorage.removeItem("widgets");
       }
     }
@@ -373,7 +372,7 @@ class App {
       // Hide upload area after adding widget if it was visible
       this.hideUploadArea();
 
-      logger.debug(`Created widget ${numericId} from tool:`, {
+      console.log(`Created widget ${numericId} from tool:`, {
         title,
         type: widgetType,
         rowCount: results?.rows?.length || 0,
@@ -385,7 +384,7 @@ class App {
         message: `Widget "${title}" created successfully`,
       };
     } catch (error) {
-      logger.error("Error creating widget from tool:", error);
+      console.error("Error creating widget from tool:", error);
       return {
         success: false,
         error: `Failed to create widget: ${error.message}`,
@@ -462,7 +461,7 @@ class App {
       // Save updated state
       this.saveWidgets();
 
-      logger.debug(`Updated widget ${id} from tool:`, {
+      console.log(`Updated widget ${id} from tool:`, {
         title: title || existingWidget.title,
         type: widgetType || existingWidget.widgetType,
         rowCount:
@@ -475,7 +474,7 @@ class App {
         message: `Widget "${title || existingWidget.title}" updated successfully`,
       };
     } catch (error) {
-      logger.error("Error updating widget from tool:", error);
+      console.error("Error updating widget from tool:", error);
       return {
         success: false,
         error: `Failed to update widget: ${error.message}`,

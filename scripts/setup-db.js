@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
-import { logger } from "../lib/logger.js";
 import { AppDatabase } from "../lib/app-database.js";
+import { logger } from "../lib/logger.js";
 
 async function setupDatabase() {
   logger.debug("🔧 Setting up app database...");
