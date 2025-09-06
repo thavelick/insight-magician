@@ -107,15 +107,10 @@ export class LoginComponent {
         // Clear loading state BEFORE replacing the form
         this._setLoading(false);
         
-        this._showMessage(
-          `Magic link sent to ${result.email}. Please check your email and click the link to sign in.`,
-          'success'
-        );
-        
         // Clear the form
         this.element.querySelector('#email').value = '';
         
-        // Show instructions for checking email
+        // Show instructions for checking email (this will include the success message)
         this._showEmailInstructions(result.email);
       } else {
         this._showMessage(result.error || 'Failed to send magic link', 'error');
@@ -132,6 +127,9 @@ export class LoginComponent {
     const instructions = document.createElement('div');
     instructions.className = 'email-instructions';
     instructions.innerHTML = `
+      <div class="login-message success" style="margin-bottom: 20px;">
+        Magic link sent to ${email}. Please check your email and click the link to sign in.
+      </div>
       <div class="email-instructions-content">
         <h3>Check your email!</h3>
         <p>We sent a magic link to <strong>${email}</strong></p>
