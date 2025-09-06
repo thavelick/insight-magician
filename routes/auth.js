@@ -93,8 +93,7 @@ export function createAuthRoutes(appDatabase) {
 
     status: async (req) => {
       try {
-        const cookies = parseCookies(req.headers.get("cookie") || "");
-        const sessionToken = cookies.session;
+        const sessionToken = req.cookies?.get?.("session");
 
         if (!sessionToken) {
           return new Response(JSON.stringify({ authenticated: false }), {
@@ -106,12 +105,19 @@ export function createAuthRoutes(appDatabase) {
         const user = await authManager.validateSession(sessionToken);
 
         if (!user) {
+          // Create an expired session cookie to clear it
+          const expiredCookie = new Bun.Cookie("session", "", {
+            path: "/",
+            httpOnly: true,
+            maxAge: 0,
+            sameSite: "strict",
+          });
+
           return new Response(JSON.stringify({ authenticated: false }), {
             status: 200,
             headers: {
               "Content-Type": "application/json",
-              "Set-Cookie":
-                "session=; Path=/; HttpOnly; Max-Age=0; SameSite=Strict",
+              "Set-Cookie": expiredCookie.toString(),
             },
           });
         }
@@ -137,12 +143,19 @@ export function createAuthRoutes(appDatabase) {
 
     logout: async (req) => {
       try {
-        const cookies = parseCookies(req.headers.get("cookie") || "");
-        const sessionToken = cookies.session;
+        const sessionToken = req.cookies?.get?.("session");
 
         if (sessionToken) {
           await authManager.logout(sessionToken);
         }
+
+        // Create an expired session cookie to clear it
+        const expiredCookie = new Bun.Cookie("session", "", {
+          path: "/",
+          httpOnly: true,
+          maxAge: 0,
+          sameSite: "strict",
+        });
 
         return new Response(
           JSON.stringify({ message: "Logged out successfully" }),
@@ -150,8 +163,7 @@ export function createAuthRoutes(appDatabase) {
             status: 200,
             headers: {
               "Content-Type": "application/json",
-              "Set-Cookie":
-                "session=; Path=/; HttpOnly; Max-Age=0; SameSite=Strict",
+              "Set-Cookie": expiredCookie.toString(),
             },
           },
         );
@@ -172,33 +184,13 @@ function isValidEmail(email) {
 }
 
 function createSessionCookie(sessionId) {
-  // Create secure HTTP-only cookie
-  const cookieParts = [
-    `session=${sessionId}`,
-    "Path=/",
-    "HttpOnly",
-    "SameSite=Strict",
-  ];
+  // Create secure HTTP-only cookie using Bun's Cookie class
+  const cookie = new Bun.Cookie("session", sessionId, {
+    path: "/",
+    httpOnly: true,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+  });
 
-  // Add Secure flag for HTTPS in production
-  if (process.env.NODE_ENV === "production") {
-    cookieParts.push("Secure");
-  }
-
-  return cookieParts.join("; ");
-}
-
-function parseCookies(cookieString) {
-  const cookies = {};
-  if (!cookieString) return cookies;
-
-  for (const cookie of cookieString.split(";")) {
-    const [name, ...rest] = cookie.split("=");
-    const value = rest.join("=").trim();
-    if (name && value) {
-      cookies[name.trim()] = decodeURIComponent(value);
-    }
-  }
-
-  return cookies;
+  return cookie.toString();
 }
