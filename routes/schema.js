@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import { DatabaseManager } from "../lib/database.js";
 
+import { logger } from "../lib/logger.js";
 const UPLOADS_DIR = "./uploads";
 
 export async function handleSchema(request) {
@@ -70,7 +71,7 @@ export async function handleSchema(request) {
       await dbManager.disconnect();
     }
   } catch (error) {
-    console.error("Schema error:", error);
+    logger.error("Schema error:", error);
     return new Response(
       JSON.stringify({ error: "Failed to read database schema" }),
       { status: 500, headers: { "Content-Type": "application/json" } },

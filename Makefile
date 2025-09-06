@@ -24,13 +24,23 @@ check: # Check formatting and linting with Biome
 	@echo "Checking formatting and linting.."
 	bun run check
 
-test-unit: # Run unit tests only
+test-unit: # Run unit tests only (LOG_LEVEL=silent, use FILE=filename.test.js for specific file)
 	@echo "Running unit tests.."
-	bun run test:unit
+ifdef FILE
+	@echo "Running specific test file: $(FILE)"
+	LOG_LEVEL=$${LOG_LEVEL:-silent} bun test tests/unit/$(FILE)
+else
+	LOG_LEVEL=$${LOG_LEVEL:-silent} bun run test:unit
+endif
 
-test-coverage: # Run unit tests with coverage
+test-coverage: # Run unit tests with coverage (LOG_LEVEL=silent, use FILE=filename.test.js for specific file)
 	@echo "Running unit tests with coverage.."
-	bun run test:coverage
+ifdef FILE
+	@echo "Running specific test file: $(FILE)"
+	LOG_LEVEL=$${LOG_LEVEL:-silent} bun test tests/unit/$(FILE) --coverage
+else
+	LOG_LEVEL=$${LOG_LEVEL:-silent} bun run test:coverage
+endif
 
 test-integration: # Run integration tests with Playwright (use FILE=filename.spec.js to run specific file)
 	@echo "Running integration tests.."

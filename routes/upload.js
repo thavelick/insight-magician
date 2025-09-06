@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { MAX_FILE_SIZE } from "../lib/constants.js";
 import { validateSqliteFile } from "../lib/database.js";
 
+import { logger } from "../lib/logger.js";
 const UPLOADS_DIR = "./uploads";
 
 export async function handleUpload(request) {
@@ -58,7 +59,7 @@ export async function handleUpload(request) {
       },
     );
   } catch (error) {
-    console.error("Upload error:", error);
+    logger.error("Upload error:", error);
     return new Response(JSON.stringify({ error: "Upload failed" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
