@@ -8,7 +8,8 @@ coverage/
 scratch/
 tests/temp/
 worktrees/
-.claude/
+.claude/*
+!.claude/agents/
 logs/
 summary.md
 
