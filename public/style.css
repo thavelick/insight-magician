@@ -1393,6 +1393,7 @@ body.ai-chat-open {
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s;
+  margin-top: 24px;
 }
 
 .back-button:hover {
