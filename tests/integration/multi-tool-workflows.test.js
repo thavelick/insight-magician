@@ -246,11 +246,6 @@ test.describe("Multi-Tool Workflow Integration", () => {
     // Check that console logged the multi-tool workflow
     const logs = [];
     page.on("console", (msg) => logs.push(msg.text()));
-
-    // The frontend should log multi-step analysis
-    await page.evaluate(() => {
-      console.log("🔗 Multi-step analysis: 2 tools used across 3 iterations");
-    });
   });
 
   test("Multi-tool workflow handles tool failures gracefully", async ({

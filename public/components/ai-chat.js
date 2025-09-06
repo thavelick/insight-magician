@@ -103,18 +103,6 @@ export class AIChatComponent {
         this.processToolResults(result.toolResults);
       }
 
-      if (
-        result.iterations > 1 ||
-        (result.toolResults && result.toolResults.length > 1)
-      ) {
-        const toolCount = result.toolResults ? result.toolResults.length : 0;
-        if (result.iterations > 1) {
-          console.log(
-            `🔗 Multi-step analysis: ${toolCount} tools used across ${result.iterations} iterations`,
-          );
-        }
-      }
-
       this.addMessage(MESSAGE_ROLES.ASSISTANT, result.message);
     } catch (error) {
       console.error("Chat API error:", error);
@@ -249,26 +237,20 @@ export class AIChatComponent {
 
       switch (result.action) {
         case "schema_fetched":
-          console.log("Schema information retrieved:", result.data);
           break;
 
         case "widgets_listed":
-          console.log("Widget information retrieved:", result.data);
           break;
 
         case "sql_query_executed":
-          console.log("SQL query executed successfully:", result.data);
           break;
 
         case "widget_created":
-          console.log("Widget created successfully:", result.widgetConfig);
           if (window.app?.createWidgetFromTool) {
             const createResult = window.app.createWidgetFromTool(
               result.widgetConfig,
             );
-            if (createResult.success) {
-              console.log(`✅ Widget created: ${createResult.message}`);
-            } else {
+            if (!createResult.success) {
               console.error("❌ Failed to create widget:", createResult.error);
             }
           } else {
@@ -277,14 +259,11 @@ export class AIChatComponent {
           break;
 
         case "widget_updated":
-          console.log("Widget updated successfully:", result.widgetConfig);
           if (window.app?.updateWidgetFromTool) {
             const updateResult = window.app.updateWidgetFromTool(
               result.widgetConfig,
             );
-            if (updateResult.success) {
-              console.log(`✅ Widget updated: ${updateResult.message}`);
-            } else {
+            if (!updateResult.success) {
               console.error("❌ Failed to update widget:", updateResult.error);
             }
           } else {
@@ -293,7 +272,6 @@ export class AIChatComponent {
           break;
 
         default:
-          console.log("Unknown tool action:", result.action, result);
       }
     }
   }

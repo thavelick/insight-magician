@@ -53,10 +53,8 @@ test.describe("Magic Link Authentication", () => {
 
     await page.goto("/");
 
+    // TODO: Implement expired token test when we have database test utilities
     // The actual implementation would create an expired token in the database
     // and then try to verify it, expecting a 400 response
-    console.log(
-      "TODO: Implement expired token test when we have database test utilities",
-    );
   });
 });
