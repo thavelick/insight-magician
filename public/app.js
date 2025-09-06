@@ -1,7 +1,10 @@
 import { AIChatComponent } from "./components/ai-chat.js";
+import { LoginComponent } from "./components/login.js";
 import { SchemaComponent } from "./components/schema.js";
 import { UploadComponent } from "./components/upload.js";
+import { UserStatusComponent } from "./components/user-status.js";
 import { WidgetComponent } from "./components/widget.js";
+import { AuthService } from "./lib/auth-service.js";
 
 class App {
   constructor() {
@@ -9,11 +12,35 @@ class App {
     this.schema = null;
     this.widgets = new Map();
     this.nextWidgetId = 1;
+    
+    // Authentication components
+    this.authService = new AuthService();
+    this.loginComponent = null;
+    this.userStatusComponent = null;
+    this.isAuthenticated = false;
+    this.currentUser = null;
 
     this.init();
   }
 
   async init() {
+    // Set up authentication event listeners first
+    this.setupAuthEventListeners();
+    
+    // Check authentication status
+    await this.checkAuthentication();
+    
+    // If not authenticated, show login screen
+    if (!this.isAuthenticated) {
+      this.showLoginScreen();
+      return;
+    }
+    
+    // If authenticated, set up the main app
+    this.setupMainApp();
+  }
+  
+  async setupMainApp() {
     this.uploadComponent = new UploadComponent(
       this.onDatabaseUploaded.bind(this),
       this.hideUploadArea.bind(this),
@@ -28,7 +55,213 @@ class App {
     this.setupAIChatButton();
     this.setupViewSchemaButton();
     this.setupToggleUploadButton();
+    
+    // Set up user status in header
+    this.setupUserStatus();
+    
+    // Show the main app content
+    this.showMainApp();
+    
     await this.checkExistingDatabase();
+  }
+
+  setupAuthEventListeners() {
+    // Listen for authentication state changes
+    window.addEventListener('auth:session-expired', () => {
+      this.handleSessionExpired();
+    });
+    
+    window.addEventListener('auth:logout-success', () => {
+      this.handleLogoutSuccess();
+    });
+  }
+
+  async checkAuthentication() {
+    try {
+      const authStatus = await this.authService.checkAuthStatus();
+      this.isAuthenticated = authStatus.isAuthenticated;
+      this.currentUser = authStatus.user;
+    } catch (error) {
+      console.error('Authentication check failed:', error);
+      this.isAuthenticated = false;
+      this.currentUser = null;
+    }
+  }
+
+  showLoginScreen() {
+    // Create and show login component
+    if (!this.loginComponent) {
+      this.loginComponent = new LoginComponent(this.authService);
+    }
+    
+    const appContainer = document.getElementById('app');
+    if (appContainer) {
+      // Clear existing content and add login component
+      appContainer.innerHTML = '';
+      appContainer.appendChild(this.loginComponent.render());
+    }
+    
+    // Check for magic link verification in URL
+    this.handleMagicLinkVerification();
+  }
+
+  async handleMagicLinkVerification() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    
+    if (token) {
+      // Show loading state
+      this.showVerificationLoading();
+      
+      try {
+        const response = await fetch(`/api/auth/verify?token=${encodeURIComponent(token)}`, {
+          method: 'GET',
+          credentials: 'include'
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          // Success! User is now logged in
+          this.isAuthenticated = true;
+          this.currentUser = data.user;
+          
+          // Clear URL parameters
+          window.history.replaceState({}, document.title, window.location.pathname);
+          
+          // Set up and show main app
+          await this.setupMainApp();
+        } else {
+          // Verification failed
+          this.showVerificationError(data.error || 'Invalid or expired magic link');
+        }
+      } catch (error) {
+        console.error('Magic link verification failed:', error);
+        this.showVerificationError('Failed to verify magic link. Please try again.');
+      }
+    }
+  }
+
+  showVerificationLoading() {
+    const appContainer = document.getElementById('app');
+    if (appContainer) {
+      appContainer.innerHTML = `
+        <div class="verification-loading">
+          <div class="verification-card">
+            <div class="spinner"></div>
+            <h2>Verifying your magic link...</h2>
+            <p>Please wait while we sign you in.</p>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  showVerificationError(error) {
+    const appContainer = document.getElementById('app');
+    if (appContainer) {
+      appContainer.innerHTML = `
+        <div class="verification-error">
+          <div class="verification-card">
+            <h2>Verification Failed</h2>
+            <p class="error-message">${error}</p>
+            <button onclick="window.location.reload()" class="retry-button">
+              Try Again
+            </button>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  showMainApp() {
+    const appContainer = document.getElementById('app');
+    if (appContainer) {
+      appContainer.innerHTML = `
+        <div class="container">
+          <header class="app-header">
+            <h1>🔍 Insight Magician</h1>
+            <div class="main-buttons">
+              <button class="ai-chat-btn" id="ai-chat">🤖 AI Chat</button>
+              <button class="view-schema-btn" id="view-schema" style="display: none;">📐 View Schema</button>
+              <button class="toggle-upload-btn" id="toggle-upload" style="display: none;">📁 Change Database</button>
+              <button class="add-widget-btn" id="add-widget">+ Add Widget</button>
+            </div>
+          </header>
+          
+          <div class="upload-area">
+            <button class="close-upload" title="Close">✕</button>
+            <p>Drop your SQLite database file here</p>
+            <p><small>Or click to select a file</small></p>
+          </div>
+          <div id="widgets-container">
+            <!-- Widgets will be added here -->
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  setupUserStatus() {
+    if (!this.currentUser) return;
+    
+    // Create user status component
+    if (!this.userStatusComponent) {
+      this.userStatusComponent = new UserStatusComponent(this.authService);
+    }
+    
+    // Find the header container and add user status
+    const header = document.querySelector('header');
+    if (header) {
+      // Look for existing user status or create container
+      let userStatusContainer = header.querySelector('.user-status-container');
+      if (!userStatusContainer) {
+        userStatusContainer = document.createElement('div');
+        userStatusContainer.className = 'user-status-container';
+        header.appendChild(userStatusContainer);
+      }
+      
+      // Clear existing content and add user status component
+      userStatusContainer.innerHTML = '';
+      userStatusContainer.appendChild(this.userStatusComponent.render(this.currentUser));
+    }
+  }
+
+  handleSessionExpired() {
+    this.isAuthenticated = false;
+    this.currentUser = null;
+    
+    // Clear any sensitive data
+    this.clearApplicationData();
+    
+    // Show login screen
+    this.showLoginScreen();
+  }
+
+  handleLogoutSuccess() {
+    this.isAuthenticated = false;
+    this.currentUser = null;
+    
+    // Clear application data
+    this.clearApplicationData();
+    
+    // Show login screen
+    this.showLoginScreen();
+  }
+
+  clearApplicationData() {
+    // Clear widgets and database state
+    this.clearWidgets();
+    this.currentDatabase = null;
+    this.schema = null;
+    
+    // Clear sessionStorage
+    sessionStorage.clear();
+  }
+
+  // Override existing fetch calls to use authenticated fetch
+  createAuthenticatedFetch() {
+    return this.authService.createAuthenticatedFetch();
   }
 
   setupAddWidgetButton() {
@@ -88,8 +321,9 @@ class App {
     this.currentDatabase = filename;
 
     try {
-      // Load schema
-      const response = await fetch(
+      // Load schema with authentication
+      const authenticatedFetch = this.createAuthenticatedFetch();
+      const response = await authenticatedFetch(
         `/api/schema?filename=${encodeURIComponent(filename)}`,
       );
       const result = await response.json();
