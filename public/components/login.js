@@ -104,6 +104,9 @@ export class LoginComponent {
       const result = await this.authService.login(email);
 
       if (result.success) {
+        // Clear loading state BEFORE replacing the form
+        this._setLoading(false);
+        
         this._showMessage(
           `Magic link sent to ${result.email}. Please check your email and click the link to sign in.`,
           'success'
@@ -116,11 +119,11 @@ export class LoginComponent {
         this._showEmailInstructions(result.email);
       } else {
         this._showMessage(result.error || 'Failed to send magic link', 'error');
+        this._setLoading(false);
       }
     } catch (error) {
       console.error('Login error:', error);
       this._showMessage('An unexpected error occurred. Please try again.', 'error');
-    } finally {
       this._setLoading(false);
     }
   }
@@ -167,9 +170,15 @@ export class LoginComponent {
   _setLoading(loading) {
     this.isLoading = loading;
     const button = this.element.querySelector('#loginButton');
+    const emailInput = this.element.querySelector('#email');
+    
+    // Safety check - button might not exist if form was replaced
+    if (!button || !emailInput) {
+      return;
+    }
+    
     const buttonText = button.querySelector('.button-text');
     const buttonLoading = button.querySelector('.button-loading');
-    const emailInput = this.element.querySelector('#email');
 
     if (loading) {
       button.disabled = true;
