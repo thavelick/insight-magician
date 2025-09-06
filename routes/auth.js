@@ -1,9 +1,7 @@
 import { AuthManager } from "../lib/auth.js";
-import { EmailService } from "../lib/email.js";
 
 export function createAuthRoutes(appDatabase) {
   const authManager = new AuthManager(appDatabase);
-  const emailService = new EmailService();
 
   return {
     // POST /api/auth/login - Send magic link
@@ -22,11 +20,8 @@ export function createAuthRoutes(appDatabase) {
           );
         }
 
-        // Generate magic link token
-        const token = await authManager.generateMagicLink(email);
-
-        // Send email
-        await emailService.sendMagicLink(email, token);
+        // Send magic link (this handles both token generation and email sending)
+        const result = await authManager.sendMagicLink(email);
 
         return new Response(
           JSON.stringify({
@@ -63,9 +58,9 @@ export function createAuthRoutes(appDatabase) {
         }
 
         // Validate token and create session
-        const session = await authManager.verifyMagicLink(token);
+        const result = await authManager.verifyToken(token);
 
-        if (!session) {
+        if (!result.success) {
           return new Response(
             JSON.stringify({ error: "Invalid or expired token" }),
             {
@@ -76,12 +71,12 @@ export function createAuthRoutes(appDatabase) {
         }
 
         // Set HTTP-only session cookie
-        const cookieHeader = createSessionCookie(session.sessionId);
+        const cookieHeader = createSessionCookie(result.sessionId);
 
         return new Response(
           JSON.stringify({
             message: "Login successful",
-            user: { email: session.user.email },
+            user: { email: result.user.email },
           }),
           {
             status: 200,
