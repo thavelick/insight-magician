@@ -46,8 +46,9 @@ export function createAuthRoutes(appDatabase) {
     },
 
     // GET /api/auth/verify?token=... - Verify magic link and create session
-    verify: async (req, url) => {
+    verify: async (req) => {
       try {
+        const url = new URL(req.url);
         const token = url.searchParams.get("token");
 
         if (!token) {
