@@ -1,6 +1,7 @@
 import * as d3 from "d3";
 import { humanizeField } from "../../lib/humanizer.js";
 
+import { logger } from "../lib/logger.js";
 export class WidgetComponent {
   constructor(
     id,
@@ -381,7 +382,7 @@ export class WidgetComponent {
         this.showError(errorMessage);
       }
     } catch (error) {
-      console.error("Query execution error:", error);
+      logger.error("Query execution error:", error);
       this.showError("Failed to execute query. Please check your connection.");
     }
   }
@@ -606,7 +607,7 @@ export class WidgetComponent {
         resultsInfo.innerHTML = `<p>Chart showing ${results.rows.length} data points</p>`;
         widgetContent.appendChild(resultsInfo);
       } catch (error) {
-        console.error("Chart rendering error:", error);
+        logger.error("Chart rendering error:", error);
         this.showGraphError(error, results);
       }
     }, 100);

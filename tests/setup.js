@@ -1,6 +1,7 @@
 import { mock } from "bun:test";
 
 // Block all network calls in unit tests to prevent accidental external API calls
+import { logger } from "../lib/logger.js";
 global.fetch = mock(() => {
   throw new Error(
     "BLOCKED: Network calls not allowed in unit tests! Use mocks instead.",
@@ -40,4 +41,4 @@ require = function (id, ...args) {
   return originalRequire.apply(this, [id, ...args]);
 };
 
-console.log("🛡️  Unit test network blocking is active");
+logger.debug("🛡️  Unit test network blocking is active");

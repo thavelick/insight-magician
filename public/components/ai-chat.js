@@ -1,6 +1,7 @@
 import { AI_CONFIG } from "../../lib/ai-config.js";
 import { ChatAPI } from "../../lib/chat-api.js";
 import { ChatHistory } from "../../lib/chat-history.js";
+import { logger } from "../../lib/logger.js";
 import {
   MESSAGE_ROLES,
   formatContent,
@@ -108,7 +109,7 @@ export class AIChatComponent {
       ) {
         const toolCount = result.toolResults ? result.toolResults.length : 0;
         if (result.iterations > 1) {
-          console.log(
+          logger.debug(
             `🔗 Multi-step analysis: ${toolCount} tools used across ${result.iterations} iterations`,
           );
         }
@@ -116,7 +117,7 @@ export class AIChatComponent {
 
       this.addMessage(MESSAGE_ROLES.ASSISTANT, result.message);
     } catch (error) {
-      console.error("Chat API error:", error);
+      logger.error("Chat API error:", error);
 
       let errorMessage =
         "Sorry, I'm having trouble connecting right now. Please try again.";
@@ -242,57 +243,57 @@ export class AIChatComponent {
       const { result } = toolResult;
 
       if (!result.success) {
-        console.warn("Tool execution failed:", result.error);
+        logger.warn("Tool execution failed:", result.error);
         continue;
       }
 
       switch (result.action) {
         case "schema_fetched":
-          console.log("Schema information retrieved:", result.data);
+          logger.debug("Schema information retrieved:", result.data);
           break;
 
         case "widgets_listed":
-          console.log("Widget information retrieved:", result.data);
+          logger.debug("Widget information retrieved:", result.data);
           break;
 
         case "sql_query_executed":
-          console.log("SQL query executed successfully:", result.data);
+          logger.debug("SQL query executed successfully:", result.data);
           break;
 
         case "widget_created":
-          console.log("Widget created successfully:", result.widgetConfig);
+          logger.debug("Widget created successfully:", result.widgetConfig);
           if (window.app?.createWidgetFromTool) {
             const createResult = window.app.createWidgetFromTool(
               result.widgetConfig,
             );
             if (createResult.success) {
-              console.log(`✅ Widget created: ${createResult.message}`);
+              logger.debug(`✅ Widget created: ${createResult.message}`);
             } else {
-              console.error("❌ Failed to create widget:", createResult.error);
+              logger.error("❌ Failed to create widget:", createResult.error);
             }
           } else {
-            console.error("❌ App instance not available for widget creation");
+            logger.error("❌ App instance not available for widget creation");
           }
           break;
 
         case "widget_updated":
-          console.log("Widget updated successfully:", result.widgetConfig);
+          logger.debug("Widget updated successfully:", result.widgetConfig);
           if (window.app?.updateWidgetFromTool) {
             const updateResult = window.app.updateWidgetFromTool(
               result.widgetConfig,
             );
             if (updateResult.success) {
-              console.log(`✅ Widget updated: ${updateResult.message}`);
+              logger.debug(`✅ Widget updated: ${updateResult.message}`);
             } else {
-              console.error("❌ Failed to update widget:", updateResult.error);
+              logger.error("❌ Failed to update widget:", updateResult.error);
             }
           } else {
-            console.error("❌ App instance not available for widget updating");
+            logger.error("❌ App instance not available for widget updating");
           }
           break;
 
         default:
-          console.log("Unknown tool action:", result.action, result);
+          logger.debug("Unknown tool action:", result.action, result);
       }
     }
   }

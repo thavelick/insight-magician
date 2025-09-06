@@ -1,5 +1,6 @@
 import { MAX_FILE_SIZE } from "../../lib/constants.js";
 
+import { logger } from "../lib/logger.js";
 export class UploadComponent {
   constructor(onUploadCallback, onCloseCallback) {
     this.onUpload = onUploadCallback;
@@ -83,7 +84,7 @@ export class UploadComponent {
         this.showError(result.error);
       }
     } catch (error) {
-      console.error("Upload failed:", error);
+      logger.error("Upload failed:", error);
       this.showError("Upload failed. Please try again.");
     }
   }
