@@ -44,9 +44,6 @@ Bun.serve({
       const filePath = `.${url.pathname}`;
       return new Response(Bun.file(filePath));
     }
-
-    // For all other requests, let the routes handle them
-    // Don't return anything here to allow routes to process
   },
   routes: {
     "/": indexHtml,
@@ -60,7 +57,6 @@ Bun.serve({
         );
       },
     },
-    // Authentication routes (public)
     "/api/auth/login": {
       POST: authRoutes.login,
     },
@@ -73,7 +69,6 @@ Bun.serve({
     "/api/auth/logout": {
       POST: authRoutes.logout,
     },
-    // Protected routes (require authentication)
     "/api/upload": {
       POST: withAuth(handleUpload),
     },
@@ -83,7 +78,6 @@ Bun.serve({
     "/api/query": {
       POST: withAuth(handleQuery),
     },
-    // Protected routes (require authentication)
     "/api/chat": {
       POST: withAuth(handleChat),
     },

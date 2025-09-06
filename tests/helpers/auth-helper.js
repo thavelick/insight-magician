@@ -34,12 +34,12 @@ export async function authenticateUserWithUI(
 
   if (!(await loginForm.isVisible())) {
     // Click sign in link if we're on main app screen
-    const signInLink = page.locator(".sign-in-link");
-    if (await signInLink.isVisible()) {
-      await signInLink.click();
+    try {
+      await page.waitForSelector(".sign-in-link", { state: "visible" });
+      await page.click(".sign-in-link");
       // Wait for login screen to appear
       await page.waitForSelector("#loginForm", { state: "visible" });
-    } else {
+    } catch (error) {
       throw new Error("Could not find login form or sign-in link");
     }
   }

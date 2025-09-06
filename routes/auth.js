@@ -5,7 +5,6 @@ export function createAuthRoutes(appDatabase) {
   const authManager = new AuthManager(appDatabase);
 
   return {
-    // POST /api/auth/login - Send magic link
     login: async (req) => {
       try {
         const body = await req.json();
@@ -21,7 +20,6 @@ export function createAuthRoutes(appDatabase) {
           );
         }
 
-        // Send magic link (this handles both token generation and email sending)
         const result = await authManager.sendMagicLink(email);
 
         const responseData = {
@@ -50,7 +48,6 @@ export function createAuthRoutes(appDatabase) {
       }
     },
 
-    // GET /api/auth/verify?token=... - Verify magic link and create session
     verify: async (req) => {
       try {
         const url = new URL(req.url);
@@ -63,22 +60,18 @@ export function createAuthRoutes(appDatabase) {
           });
         }
 
-        // Validate token and create session
         let result;
         try {
           result = await authManager.verifyToken(token);
         } catch (error) {
-          // All verifyToken errors are validation errors, return 400
           return new Response(JSON.stringify({ error: error.message }), {
             status: 400,
             headers: { "Content-Type": "application/json" },
           });
         }
 
-        // Set HTTP-only session cookie
         const cookieHeader = createSessionCookie(result.sessionId);
 
-        // Redirect to dashboard after successful authentication
         return new Response(null, {
           status: 302,
           headers: {
@@ -98,10 +91,8 @@ export function createAuthRoutes(appDatabase) {
       }
     },
 
-    // GET /api/auth/status - Check current authentication status
     status: async (req) => {
       try {
-        // Extract session token from cookies
         const cookies = parseCookies(req.headers.get("cookie") || "");
         const sessionToken = cookies.session;
 
@@ -112,7 +103,6 @@ export function createAuthRoutes(appDatabase) {
           });
         }
 
-        // Validate session
         const user = await authManager.validateSession(sessionToken);
 
         if (!user) {
@@ -145,19 +135,15 @@ export function createAuthRoutes(appDatabase) {
       }
     },
 
-    // POST /api/auth/logout - Clear session
     logout: async (req) => {
       try {
-        // Extract session token from cookies
         const cookies = parseCookies(req.headers.get("cookie") || "");
         const sessionToken = cookies.session;
 
         if (sessionToken) {
-          // Clean up session in database
           await authManager.logout(sessionToken);
         }
 
-        // Clear session cookie
         return new Response(
           JSON.stringify({ message: "Logged out successfully" }),
           {

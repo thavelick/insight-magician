@@ -85,12 +85,10 @@ export class LoginComponent {
       await this._handleLogin(email);
     });
 
-    // Real-time email validation
     emailInput.addEventListener("input", () => {
       this._clearMessage();
     });
 
-    // Clear message when user starts typing
     emailInput.addEventListener("focus", () => {
       this._clearMessage();
     });
@@ -104,13 +102,10 @@ export class LoginComponent {
       const result = await this.authService.login(email);
 
       if (result.success) {
-        // Clear loading state BEFORE replacing the form
         this._setLoading(false);
 
-        // Clear the form
         this.element.querySelector("#email").value = "";
 
-        // Show instructions for checking email (this will include the success message)
         this._showEmailInstructions(result.email, result.magicLinkUrl);
       } else {
         this._showMessage(result.error || "Failed to send magic link", "error");
@@ -164,7 +159,6 @@ export class LoginComponent {
       </div>
     `;
 
-    // Replace the form with instructions
     const loginCard = this.element.querySelector(".login-card");
     loginCard.replaceChild(
       instructions,
@@ -175,14 +169,12 @@ export class LoginComponent {
       this.element.querySelector(".login-help"),
     );
 
-    // Handle back button
     instructions.querySelector("#backButton").addEventListener("click", () => {
       this._resetForm();
     });
   }
 
   _resetForm() {
-    // Restore the original form HTML
     this.element.innerHTML = this._getHTML();
     this._attachEventListeners();
   }
@@ -192,7 +184,6 @@ export class LoginComponent {
     const button = this.element.querySelector("#loginButton");
     const emailInput = this.element.querySelector("#email");
 
-    // Safety check - button might not exist if form was replaced
     if (!button || !emailInput) {
       return;
     }

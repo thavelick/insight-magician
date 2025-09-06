@@ -119,12 +119,10 @@ export class AuthService {
         },
       });
 
-      // If we get a 401, the user's session has expired
       if (response.status === 401) {
         this.isAuthenticated = false;
         this.currentUser = null;
 
-        // Dispatch a custom event to notify the app
         window.dispatchEvent(new CustomEvent("auth:session-expired"));
 
         throw new Error("Authentication required");
@@ -145,7 +143,6 @@ export class AuthService {
     };
   }
 
-  // Listen for authentication state changes
   onAuthChange(callback) {
     const handleAuthChange = (event) => {
       callback(event.detail);
@@ -153,13 +150,11 @@ export class AuthService {
 
     window.addEventListener("auth:status-changed", handleAuthChange);
 
-    // Return cleanup function
     return () => {
       window.removeEventListener("auth:status-changed", handleAuthChange);
     };
   }
 
-  // Notify listeners of auth state changes
   _notifyAuthChange() {
     window.dispatchEvent(
       new CustomEvent("auth:status-changed", {
@@ -171,14 +166,12 @@ export class AuthService {
     );
   }
 
-  // Update auth state and notify listeners
   _updateAuthState(isAuthenticated, user = null) {
     const wasAuthenticated = this.isAuthenticated;
 
     this.isAuthenticated = isAuthenticated;
     this.currentUser = user;
 
-    // Only notify if state actually changed
     if (wasAuthenticated !== isAuthenticated) {
       this._notifyAuthChange();
     }

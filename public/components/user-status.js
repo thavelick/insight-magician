@@ -70,7 +70,6 @@ export class UserStatusComponent {
       return;
     }
 
-    // Show confirmation dialog
     const confirmed = window.confirm("Are you sure you want to sign out?");
     if (!confirmed) {
       return;
@@ -82,7 +81,6 @@ export class UserStatusComponent {
       const result = await this.authService.logout();
 
       if (result.success) {
-        // The main app will handle the redirect to login
         window.dispatchEvent(new CustomEvent("auth:logout-success"));
       } else {
         console.error("Logout failed:", result.error);
@@ -119,7 +117,6 @@ export class UserStatusComponent {
   _getInitials(email) {
     if (!email) return "?";
 
-    // Get the part before @ and take first 2 characters
     const username = email.split("@")[0];
     const initials = username.substring(0, 2).toUpperCase();
 

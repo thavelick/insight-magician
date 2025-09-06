@@ -25,7 +25,6 @@ beforeEach(() => {
 describe("EmailService - Configuration", () => {
   test("should initialize with correct SMTP configuration", () => {
     expect(emailService.transporter).toBeTruthy();
-    // Test that transporter was configured with our mock env vars
     expect(emailService.transporter.options.host).toBe("smtp.example.com");
     expect(emailService.transporter.options.port).toBe(587);
     expect(emailService.transporter.options.secure).toBe(false);
@@ -43,7 +42,6 @@ describe("EmailService - Connection Verification", () => {
   });
 
   test("should handle connection failure gracefully", async () => {
-    // Mock connection failure
     emailService.transporter.verify = mock(() =>
       Promise.reject(new Error("Connection failed")),
     );
@@ -78,7 +76,6 @@ describe("EmailService - Magic Link Sending", () => {
   });
 
   test("should handle email sending failure", async () => {
-    // Mock sending failure
     emailService.transporter.sendMail = mock(() =>
       Promise.reject(new Error("Send failed")),
     );
@@ -92,7 +89,6 @@ describe("EmailService - Magic Link Sending", () => {
   });
 
   test("should log magic link in development mode", async () => {
-    // Set to development mode
     const originalEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = "development";
 
@@ -114,7 +110,6 @@ describe("EmailService - Magic Link Sending", () => {
       "http://localhost:3000/api/auth/verify?token=dev-token-123",
     );
 
-    // Restore environment and logger
     process.env.NODE_ENV = originalEnv;
     logger.debug = originalLoggerDebug;
   });
