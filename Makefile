@@ -46,9 +46,9 @@ test-integration: # Run integration tests with Playwright (use FILE=filename.spe
 	@echo "Running integration tests.."
 ifdef FILE
 	@echo "Running specific test file: $(FILE)"
-	bun run playwright test tests/integration/$(FILE) --grep-invert "@expensive"
+	NODE_ENV=test APP_URL=http://localhost:3001 bun run playwright test tests/integration/$(FILE) --grep-invert "@expensive"
 else
-	bun run playwright test tests/integration --grep-invert "@expensive"
+	NODE_ENV=test APP_URL=http://localhost:3001 bun run playwright test tests/integration --grep-invert "@expensive"
 endif
 
 test-integration-expensive: # Run expensive integration tests that use real APIs (tagged with @expensive)

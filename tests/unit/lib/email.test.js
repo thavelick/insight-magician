@@ -60,7 +60,7 @@ describe("EmailService - Magic Link Sending", () => {
     const email = "test@example.com";
     const token = "test-token-123";
 
-    const result = await emailService.sendMagicLink(email, token);
+    const result = await emailService.sendMagicLink(email, token, true);
 
     expect(result).toBe(true);
     expect(emailService.transporter.sendMail).toHaveBeenCalledTimes(1);
@@ -86,9 +86,9 @@ describe("EmailService - Magic Link Sending", () => {
     const email = "test@example.com";
     const token = "test-token-123";
 
-    await expect(emailService.sendMagicLink(email, token)).rejects.toThrow(
-      "Send failed",
-    );
+    await expect(
+      emailService.sendMagicLink(email, token, true),
+    ).rejects.toThrow("Send failed");
   });
 
   test("should log magic link in development mode", async () => {

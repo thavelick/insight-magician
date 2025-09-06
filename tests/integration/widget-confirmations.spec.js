@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { authenticateUser } from "../helpers/auth-helper.js";
 import { cleanupUploadedFile } from "../helpers/database.js";
 import { addWidget, setupDatabaseWithUpload } from "../helpers/integration.js";
 
@@ -12,6 +13,8 @@ test.describe("Widget Confirmation Dialogs", () => {
       localStorage.clear();
     });
     await page.waitForLoadState("domcontentloaded");
+    // Authenticate user since endpoints now require auth
+    await authenticateUser(page);
     await page.waitForSelector("text=Drop your SQLite database file here");
 
     const result = await setupDatabaseWithUpload(page);

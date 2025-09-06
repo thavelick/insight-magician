@@ -1,3 +1,4 @@
+import { logger } from "../lib/logger.js";
 import { AIChatComponent } from "./components/ai-chat.js";
 import { LoginComponent } from "./components/login.js";
 import { SchemaComponent } from "./components/schema.js";
@@ -12,7 +13,7 @@ class App {
     this.schema = null;
     this.widgets = new Map();
     this.nextWidgetId = 1;
-    
+
     // Authentication components
     this.authService = new AuthService();
     this.loginComponent = null;
@@ -26,20 +27,14 @@ class App {
   async init() {
     // Set up authentication event listeners first
     this.setupAuthEventListeners();
-    
-    // Check authentication status
+
+    // Check authentication status (optional)
     await this.checkAuthentication();
-    
-    // If not authenticated, show login screen
-    if (!this.isAuthenticated) {
-      this.showLoginScreen();
-      return;
-    }
-    
-    // If authenticated, set up the main app
+
+    // Always set up the main app (auth is optional)
     this.setupMainApp();
   }
-  
+
   async setupMainApp() {
     this.uploadComponent = new UploadComponent(
       this.onDatabaseUploaded.bind(this),
@@ -55,23 +50,24 @@ class App {
     this.setupAIChatButton();
     this.setupViewSchemaButton();
     this.setupToggleUploadButton();
-    
-    // Set up user status in header
-    this.setupUserStatus();
-    
-    // Show the main app content
-    this.showMainApp();
-    
+
+    // Set up header authentication UI
+    if (this.isAuthenticated) {
+      this.setupUserStatus();
+    } else {
+      this.setupSignInLink();
+    }
+
     await this.checkExistingDatabase();
   }
 
   setupAuthEventListeners() {
     // Listen for authentication state changes
-    window.addEventListener('auth:session-expired', () => {
+    window.addEventListener("auth:session-expired", () => {
       this.handleSessionExpired();
     });
-    
-    window.addEventListener('auth:logout-success', () => {
+
+    window.addEventListener("auth:logout-success", () => {
       this.handleLogoutSuccess();
     });
   }
@@ -82,7 +78,7 @@ class App {
       this.isAuthenticated = authStatus.isAuthenticated;
       this.currentUser = authStatus.user;
     } catch (error) {
-      console.error('Authentication check failed:', error);
+      logger.error("Authentication check failed:", error);
       this.isAuthenticated = false;
       this.currentUser = null;
     }
@@ -93,57 +89,68 @@ class App {
     if (!this.loginComponent) {
       this.loginComponent = new LoginComponent(this.authService);
     }
-    
-    const appContainer = document.getElementById('app');
+
+    const appContainer = document.getElementById("app");
     if (appContainer) {
       // Clear existing content and add login component
-      appContainer.innerHTML = '';
+      appContainer.innerHTML = "";
       appContainer.appendChild(this.loginComponent.render());
     }
-    
+
     // Check for magic link verification in URL
     this.handleMagicLinkVerification();
   }
 
   async handleMagicLinkVerification() {
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    
+    const token = urlParams.get("token");
+
     if (token) {
       // Show loading state
       this.showVerificationLoading();
-      
+
       try {
-        const response = await fetch(`/api/auth/verify?token=${encodeURIComponent(token)}`, {
-          method: 'GET',
-          credentials: 'include'
-        });
-        
+        const response = await fetch(
+          `/api/auth/verify?token=${encodeURIComponent(token)}`,
+          {
+            method: "GET",
+            credentials: "include",
+          },
+        );
+
         const data = await response.json();
-        
+
         if (response.ok) {
           // Success! User is now logged in
           this.isAuthenticated = true;
           this.currentUser = data.user;
-          
+
           // Clear URL parameters
-          window.history.replaceState({}, document.title, window.location.pathname);
-          
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname,
+          );
+
           // Set up and show main app
           await this.setupMainApp();
         } else {
           // Verification failed
-          this.showVerificationError(data.error || 'Invalid or expired magic link');
+          this.showVerificationError(
+            data.error || "Invalid or expired magic link",
+          );
         }
       } catch (error) {
-        console.error('Magic link verification failed:', error);
-        this.showVerificationError('Failed to verify magic link. Please try again.');
+        logger.error("Magic link verification failed:", error);
+        this.showVerificationError(
+          "Failed to verify magic link. Please try again.",
+        );
       }
     }
   }
 
   showVerificationLoading() {
-    const appContainer = document.getElementById('app');
+    const appContainer = document.getElementById("app");
     if (appContainer) {
       appContainer.innerHTML = `
         <div class="verification-loading">
@@ -158,7 +165,7 @@ class App {
   }
 
   showVerificationError(error) {
-    const appContainer = document.getElementById('app');
+    const appContainer = document.getElementById("app");
     if (appContainer) {
       appContainer.innerHTML = `
         <div class="verification-error">
@@ -175,7 +182,7 @@ class App {
   }
 
   showMainApp() {
-    const appContainer = document.getElementById('app');
+    const appContainer = document.getElementById("app");
     if (appContainer) {
       appContainer.innerHTML = `
         <div class="container">
@@ -204,49 +211,88 @@ class App {
 
   setupUserStatus() {
     if (!this.currentUser) return;
-    
+
     // Create user status component
     if (!this.userStatusComponent) {
       this.userStatusComponent = new UserStatusComponent(this.authService);
     }
-    
+
     // Find the header container and add user status
-    const header = document.querySelector('header');
+    const header = document.querySelector("header");
     if (header) {
       // Look for existing user status or create container
-      let userStatusContainer = header.querySelector('.user-status-container');
+      let userStatusContainer = header.querySelector(".user-status-container");
       if (!userStatusContainer) {
-        userStatusContainer = document.createElement('div');
-        userStatusContainer.className = 'user-status-container';
+        userStatusContainer = document.createElement("div");
+        userStatusContainer.className = "user-status-container";
         header.appendChild(userStatusContainer);
       }
-      
+
       // Clear existing content and add user status component
-      userStatusContainer.innerHTML = '';
-      userStatusContainer.appendChild(this.userStatusComponent.render(this.currentUser));
+      userStatusContainer.innerHTML = "";
+      userStatusContainer.appendChild(
+        this.userStatusComponent.render(this.currentUser),
+      );
+    }
+  }
+
+  setupSignInLink() {
+    // Find the header container and add sign-in link
+    const header = document.querySelector("header");
+    if (header) {
+      // Look for existing user status container or create one
+      let userStatusContainer = header.querySelector(".user-status-container");
+      if (!userStatusContainer) {
+        userStatusContainer = document.createElement("div");
+        userStatusContainer.className = "user-status-container";
+        header.appendChild(userStatusContainer);
+      }
+
+      // Clear existing content and add sign-in link
+      userStatusContainer.innerHTML = `
+        <a href="#" class="sign-in-link">Sign In</a>
+      `;
+
+      // Add click handler to show login screen
+      const signInLink = userStatusContainer.querySelector(".sign-in-link");
+      signInLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.showLoginScreen();
+      });
+    }
+  }
+
+  removeUserStatus() {
+    const userStatusContainer = document.querySelector(
+      ".user-status-container",
+    );
+    if (userStatusContainer) {
+      userStatusContainer.remove();
     }
   }
 
   handleSessionExpired() {
     this.isAuthenticated = false;
     this.currentUser = null;
-    
+
     // Clear any sensitive data
     this.clearApplicationData();
-    
-    // Show login screen
-    this.showLoginScreen();
+
+    // Remove user status from header and show sign-in option
+    this.removeUserStatus();
+    this.setupSignInLink();
   }
 
   handleLogoutSuccess() {
     this.isAuthenticated = false;
     this.currentUser = null;
-    
+
     // Clear application data
     this.clearApplicationData();
-    
-    // Show login screen
-    this.showLoginScreen();
+
+    // Remove user status from header and show sign-in option
+    this.removeUserStatus();
+    this.setupSignInLink();
   }
 
   clearApplicationData() {
@@ -254,7 +300,7 @@ class App {
     this.clearWidgets();
     this.currentDatabase = null;
     this.schema = null;
-    
+
     // Clear sessionStorage
     sessionStorage.clear();
   }
@@ -349,7 +395,7 @@ class App {
         throw new Error(result.error);
       }
     } catch (error) {
-      console.error("Failed to load schema:", error);
+      logger.error("Failed to load schema:", error);
       this.uploadComponent.showError("Failed to load database schema");
       // Clear invalid filename from sessionStorage
       sessionStorage.removeItem("currentDatabase");
@@ -498,7 +544,7 @@ class App {
           }
         }
       } catch (error) {
-        console.error("Failed to load widgets:", error);
+        logger.error("Failed to load widgets:", error);
         sessionStorage.removeItem("widgets");
       }
     }
@@ -606,7 +652,7 @@ class App {
       // Hide upload area after adding widget if it was visible
       this.hideUploadArea();
 
-      console.log(`Created widget ${numericId} from tool:`, {
+      logger.debug(`Created widget ${numericId} from tool:`, {
         title,
         type: widgetType,
         rowCount: results?.rows?.length || 0,
@@ -618,7 +664,7 @@ class App {
         message: `Widget "${title}" created successfully`,
       };
     } catch (error) {
-      console.error("Error creating widget from tool:", error);
+      logger.error("Error creating widget from tool:", error);
       return {
         success: false,
         error: `Failed to create widget: ${error.message}`,
@@ -695,7 +741,7 @@ class App {
       // Save updated state
       this.saveWidgets();
 
-      console.log(`Updated widget ${id} from tool:`, {
+      logger.debug(`Updated widget ${id} from tool:`, {
         title: title || existingWidget.title,
         type: widgetType || existingWidget.widgetType,
         rowCount:
@@ -708,7 +754,7 @@ class App {
         message: `Widget "${title || existingWidget.title}" updated successfully`,
       };
     } catch (error) {
-      console.error("Error updating widget from tool:", error);
+      logger.error("Error updating widget from tool:", error);
       return {
         success: false,
         error: `Failed to update widget: ${error.message}`,

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { authenticateUser } from "../helpers/auth-helper.js";
 import { cleanupUploadedFile } from "../helpers/database.js";
 import {
   addWidget,
@@ -17,6 +18,8 @@ test.describe("Session Persistence", () => {
       localStorage.clear();
     });
     await page.waitForLoadState("domcontentloaded");
+    // Authenticate user since endpoints now require auth
+    await authenticateUser(page);
     await page.waitForSelector("text=Drop your SQLite database file here");
   });
 

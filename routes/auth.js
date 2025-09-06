@@ -1,4 +1,5 @@
 import { AuthManager } from "../lib/auth.js";
+import { logger } from "../lib/logger.js";
 
 export function createAuthRoutes(appDatabase) {
   const authManager = new AuthManager(appDatabase);
@@ -23,18 +24,22 @@ export function createAuthRoutes(appDatabase) {
         // Send magic link (this handles both token generation and email sending)
         const result = await authManager.sendMagicLink(email);
 
-        return new Response(
-          JSON.stringify({
-            message: "Magic link sent to your email address",
-            email: email,
-          }),
-          {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          },
-        );
+        const responseData = {
+          message: "Magic link sent to your email address",
+          email: email,
+        };
+
+        // Include magic link URL in development/test mode for easy testing
+        if (result.magicLinkUrl) {
+          responseData.magicLinkUrl = result.magicLinkUrl;
+        }
+
+        return new Response(JSON.stringify(responseData), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
       } catch (error) {
-        console.error("Login error:", error);
+        logger.error("Login error:", error);
         return new Response(
           JSON.stringify({ error: "Failed to send magic link" }),
           {
@@ -59,37 +64,30 @@ export function createAuthRoutes(appDatabase) {
         }
 
         // Validate token and create session
-        const result = await authManager.verifyToken(token);
-
-        if (!result.success) {
-          return new Response(
-            JSON.stringify({ error: "Invalid or expired token" }),
-            {
-              status: 400,
-              headers: { "Content-Type": "application/json" },
-            },
-          );
+        let result;
+        try {
+          result = await authManager.verifyToken(token);
+        } catch (error) {
+          // All verifyToken errors are validation errors, return 400
+          return new Response(JSON.stringify({ error: error.message }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          });
         }
 
         // Set HTTP-only session cookie
         const cookieHeader = createSessionCookie(result.sessionId);
 
-        return new Response(
-          JSON.stringify({
-            message: "Login successful",
-            user: { email: result.user.email },
-          }),
-          {
-            status: 200,
-            headers: {
-              "Content-Type": "application/json",
-              "Set-Cookie": cookieHeader,
-              Location: "/",
-            },
+        // Redirect to dashboard after successful authentication
+        return new Response(null, {
+          status: 302,
+          headers: {
+            "Set-Cookie": cookieHeader,
+            Location: "/",
           },
-        );
+        });
       } catch (error) {
-        console.error("Verify error:", error);
+        logger.error("Verify error:", error);
         return new Response(
           JSON.stringify({ error: "Token verification failed" }),
           {
@@ -139,7 +137,7 @@ export function createAuthRoutes(appDatabase) {
           },
         );
       } catch (error) {
-        console.error("Status error:", error);
+        logger.error("Status error:", error);
         return new Response(JSON.stringify({ authenticated: false }), {
           status: 500,
           headers: { "Content-Type": "application/json" },
@@ -172,7 +170,7 @@ export function createAuthRoutes(appDatabase) {
           },
         );
       } catch (error) {
-        console.error("Logout error:", error);
+        logger.error("Logout error:", error);
         return new Response(JSON.stringify({ error: "Logout failed" }), {
           status: 500,
           headers: { "Content-Type": "application/json" },

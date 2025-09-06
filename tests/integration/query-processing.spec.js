@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { authenticateUser } from "../helpers/auth-helper.js";
 import { cleanupUploadedFile } from "../helpers/database.js";
 import {
   executeQueryAPI,
@@ -13,6 +14,8 @@ test.describe("Query Processing & Pagination", () => {
       localStorage.clear();
     });
     await page.waitForLoadState("domcontentloaded");
+    // Authenticate user since endpoints now require auth
+    await authenticateUser(page);
     await page.waitForSelector("text=Drop your SQLite database file here");
   });
 

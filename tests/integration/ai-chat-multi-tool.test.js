@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { authenticateUser } from "../helpers/auth-helper.js";
 import {
   addWidget,
   runQueryInWidget,
@@ -15,6 +16,9 @@ test.describe("AI Chat Multi-Tool Integration", () => {
       localStorage.clear();
     });
     await page.waitForLoadState("domcontentloaded");
+
+    // Authenticate user since endpoints now require auth
+    await authenticateUser(page);
 
     const result = await setupDatabaseWithUpload(page);
     uploadedFilename = result.uploadedFilename;

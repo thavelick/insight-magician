@@ -16,9 +16,9 @@ export class AuthService {
 
   async _performAuthCheck() {
     try {
-      const response = await fetch('/api/auth/status', {
-        method: 'GET',
-        credentials: 'include'
+      const response = await fetch("/api/auth/status", {
+        method: "GET",
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -26,21 +26,21 @@ export class AuthService {
       }
 
       const data = await response.json();
-      
+
       this.isAuthenticated = data.authenticated;
       this.currentUser = data.user || null;
-      
+
       return {
         isAuthenticated: this.isAuthenticated,
-        user: this.currentUser
+        user: this.currentUser,
       };
     } catch (error) {
-      console.error('Auth status check failed:', error);
+      console.error("Auth status check failed:", error);
       this.isAuthenticated = false;
       this.currentUser = null;
       return {
         isAuthenticated: false,
-        user: null
+        user: null,
       };
     } finally {
       this.authCheckPromise = null;
@@ -49,13 +49,13 @@ export class AuthService {
 
   async login(email) {
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        credentials: 'include',
-        body: JSON.stringify({ email })
+        credentials: "include",
+        body: JSON.stringify({ email }),
       });
 
       const data = await response.json();
@@ -67,22 +67,23 @@ export class AuthService {
       return {
         success: true,
         message: data.message,
-        email: data.email
+        email: data.email,
+        magicLinkUrl: data.magicLinkUrl, // Available in development/test mode
       };
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error("Login failed:", error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
 
   async logout() {
     try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
       });
 
       const data = await response.json();
@@ -96,13 +97,13 @@ export class AuthService {
 
       return {
         success: true,
-        message: data.message
+        message: data.message,
       };
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -111,22 +112,22 @@ export class AuthService {
     return async (url, options = {}) => {
       const response = await fetch(url, {
         ...options,
-        credentials: 'include',
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
-          ...options.headers
-        }
+          "Content-Type": "application/json",
+          ...options.headers,
+        },
       });
 
       // If we get a 401, the user's session has expired
       if (response.status === 401) {
         this.isAuthenticated = false;
         this.currentUser = null;
-        
+
         // Dispatch a custom event to notify the app
-        window.dispatchEvent(new CustomEvent('auth:session-expired'));
-        
-        throw new Error('Authentication required');
+        window.dispatchEvent(new CustomEvent("auth:session-expired"));
+
+        throw new Error("Authentication required");
       }
 
       return response;
@@ -140,7 +141,7 @@ export class AuthService {
   getAuthStatus() {
     return {
       isAuthenticated: this.isAuthenticated,
-      user: this.currentUser
+      user: this.currentUser,
     };
   }
 
@@ -150,31 +151,33 @@ export class AuthService {
       callback(event.detail);
     };
 
-    window.addEventListener('auth:status-changed', handleAuthChange);
-    
+    window.addEventListener("auth:status-changed", handleAuthChange);
+
     // Return cleanup function
     return () => {
-      window.removeEventListener('auth:status-changed', handleAuthChange);
+      window.removeEventListener("auth:status-changed", handleAuthChange);
     };
   }
 
   // Notify listeners of auth state changes
   _notifyAuthChange() {
-    window.dispatchEvent(new CustomEvent('auth:status-changed', {
-      detail: {
-        isAuthenticated: this.isAuthenticated,
-        user: this.currentUser
-      }
-    }));
+    window.dispatchEvent(
+      new CustomEvent("auth:status-changed", {
+        detail: {
+          isAuthenticated: this.isAuthenticated,
+          user: this.currentUser,
+        },
+      }),
+    );
   }
 
   // Update auth state and notify listeners
   _updateAuthState(isAuthenticated, user = null) {
     const wasAuthenticated = this.isAuthenticated;
-    
+
     this.isAuthenticated = isAuthenticated;
     this.currentUser = user;
-    
+
     // Only notify if state actually changed
     if (wasAuthenticated !== isAuthenticated) {
       this._notifyAuthChange();

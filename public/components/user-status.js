@@ -11,11 +11,11 @@ export class UserStatusComponent {
       return this.element;
     }
 
-    this.element = document.createElement('div');
-    this.element.className = 'user-status';
+    this.element = document.createElement("div");
+    this.element.className = "user-status";
     this._renderContent(user);
     this._attachEventListeners();
-    
+
     return this.element;
   }
 
@@ -42,12 +42,12 @@ export class UserStatusComponent {
           type="button" 
           class="logout-button" 
           id="logoutButton"
-          ${this.isLoggingOut ? 'disabled' : ''}
+          ${this.isLoggingOut ? "disabled" : ""}
         >
-          <span class="logout-text" style="display: ${this.isLoggingOut ? 'none' : 'inline'}">
+          <span class="logout-text" style="display: ${this.isLoggingOut ? "none" : "inline"}">
             Sign Out
           </span>
-          <span class="logout-loading" style="display: ${this.isLoggingOut ? 'flex' : 'none'}">
+          <span class="logout-loading" style="display: ${this.isLoggingOut ? "flex" : "none"}">
             <span class="spinner"></span>
             Signing out...
           </span>
@@ -57,8 +57,8 @@ export class UserStatusComponent {
   }
 
   _attachEventListeners() {
-    this.element.addEventListener('click', async (e) => {
-      if (e.target.closest('#logoutButton')) {
+    this.element.addEventListener("click", async (e) => {
+      if (e.target.closest("#logoutButton")) {
         e.preventDefault();
         await this._handleLogout();
       }
@@ -71,7 +71,7 @@ export class UserStatusComponent {
     }
 
     // Show confirmation dialog
-    const confirmed = window.confirm('Are you sure you want to sign out?');
+    const confirmed = window.confirm("Are you sure you want to sign out?");
     if (!confirmed) {
       return;
     }
@@ -83,14 +83,14 @@ export class UserStatusComponent {
 
       if (result.success) {
         // The main app will handle the redirect to login
-        window.dispatchEvent(new CustomEvent('auth:logout-success'));
+        window.dispatchEvent(new CustomEvent("auth:logout-success"));
       } else {
-        console.error('Logout failed:', result.error);
-        alert('Failed to sign out. Please try again.');
+        console.error("Logout failed:", result.error);
+        alert("Failed to sign out. Please try again.");
       }
     } catch (error) {
-      console.error('Logout error:', error);
-      alert('An error occurred while signing out. Please try again.');
+      console.error("Logout error:", error);
+      alert("An error occurred while signing out. Please try again.");
     } finally {
       this._setLoggingOut(false);
     }
@@ -98,36 +98,36 @@ export class UserStatusComponent {
 
   _setLoggingOut(loggingOut) {
     this.isLoggingOut = loggingOut;
-    
-    const button = this.element.querySelector('#logoutButton');
-    const logoutText = this.element.querySelector('.logout-text');
-    const logoutLoading = this.element.querySelector('.logout-loading');
+
+    const button = this.element.querySelector("#logoutButton");
+    const logoutText = this.element.querySelector(".logout-text");
+    const logoutLoading = this.element.querySelector(".logout-loading");
 
     if (button) {
       button.disabled = loggingOut;
-      
+
       if (logoutText) {
-        logoutText.style.display = loggingOut ? 'none' : 'inline';
+        logoutText.style.display = loggingOut ? "none" : "inline";
       }
-      
+
       if (logoutLoading) {
-        logoutLoading.style.display = loggingOut ? 'flex' : 'none';
+        logoutLoading.style.display = loggingOut ? "flex" : "none";
       }
     }
   }
 
   _getInitials(email) {
-    if (!email) return '?';
-    
+    if (!email) return "?";
+
     // Get the part before @ and take first 2 characters
-    const username = email.split('@')[0];
+    const username = email.split("@")[0];
     const initials = username.substring(0, 2).toUpperCase();
-    
+
     return initials;
   }
 
   destroy() {
-    if (this.element && this.element.parentNode) {
+    if (this.element?.parentNode) {
       this.element.parentNode.removeChild(this.element);
     }
     this.element = null;

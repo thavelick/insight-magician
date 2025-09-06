@@ -10,12 +10,12 @@ export class LoginComponent {
       return this.element;
     }
 
-    this.element = document.createElement('div');
-    this.element.className = 'login-container';
+    this.element = document.createElement("div");
+    this.element.className = "login-container";
     this.element.innerHTML = this._getHTML();
-    
+
     this._attachEventListeners();
-    
+
     return this.element;
   }
 
@@ -59,26 +59,26 @@ export class LoginComponent {
   }
 
   _attachEventListeners() {
-    const form = this.element.querySelector('#loginForm');
-    const emailInput = this.element.querySelector('#email');
-    const submitButton = this.element.querySelector('#loginButton');
-    const messageDiv = this.element.querySelector('#loginMessage');
+    const form = this.element.querySelector("#loginForm");
+    const emailInput = this.element.querySelector("#email");
+    const submitButton = this.element.querySelector("#loginButton");
+    const messageDiv = this.element.querySelector("#loginMessage");
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      
+
       if (this.isLoading) {
         return;
       }
 
       const email = emailInput.value.trim();
       if (!email) {
-        this._showMessage('Please enter your email address', 'error');
+        this._showMessage("Please enter your email address", "error");
         return;
       }
 
       if (!this._isValidEmail(email)) {
-        this._showMessage('Please enter a valid email address', 'error');
+        this._showMessage("Please enter a valid email address", "error");
         return;
       }
 
@@ -86,12 +86,12 @@ export class LoginComponent {
     });
 
     // Real-time email validation
-    emailInput.addEventListener('input', () => {
+    emailInput.addEventListener("input", () => {
       this._clearMessage();
     });
 
     // Clear message when user starts typing
-    emailInput.addEventListener('focus', () => {
+    emailInput.addEventListener("focus", () => {
       this._clearMessage();
     });
   }
@@ -106,26 +106,29 @@ export class LoginComponent {
       if (result.success) {
         // Clear loading state BEFORE replacing the form
         this._setLoading(false);
-        
+
         // Clear the form
-        this.element.querySelector('#email').value = '';
-        
+        this.element.querySelector("#email").value = "";
+
         // Show instructions for checking email (this will include the success message)
-        this._showEmailInstructions(result.email);
+        this._showEmailInstructions(result.email, result.magicLinkUrl);
       } else {
-        this._showMessage(result.error || 'Failed to send magic link', 'error');
+        this._showMessage(result.error || "Failed to send magic link", "error");
         this._setLoading(false);
       }
     } catch (error) {
-      console.error('Login error:', error);
-      this._showMessage('An unexpected error occurred. Please try again.', 'error');
+      console.error("Login error:", error);
+      this._showMessage(
+        "An unexpected error occurred. Please try again.",
+        "error",
+      );
       this._setLoading(false);
     }
   }
 
-  _showEmailInstructions(email) {
-    const instructions = document.createElement('div');
-    instructions.className = 'email-instructions';
+  _showEmailInstructions(email, magicLinkUrl = null) {
+    const instructions = document.createElement("div");
+    instructions.className = "email-instructions";
     instructions.innerHTML = `
       <div class="login-message success" style="margin-bottom: 20px;">
         Magic link sent to ${email}. Please check your email and click the link to sign in.
@@ -134,6 +137,19 @@ export class LoginComponent {
         <h3>Check your email!</h3>
         <p>We sent a magic link to <strong>${email}</strong></p>
         <p>Click the link in your email to sign in. The link will expire in 24 hours.</p>
+        ${
+          magicLinkUrl
+            ? `
+        <div class="dev-magic-link" style="background: #f0f8ff; border: 2px solid #4a9eff; border-radius: 8px; padding: 15px; margin: 15px 0;">
+          <h4 style="margin: 0 0 10px 0; color: #1e40af;">🧪 Development Mode</h4>
+          <p style="margin: 0 0 10px 0; font-size: 14px;">For testing purposes, click the magic link directly:</p>
+          <a href="${magicLinkUrl}" id="devMagicLink" style="display: inline-block; background: #4a9eff; color: white; padding: 10px 15px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+            🔗 Sign In Now (Test Mode)
+          </a>
+        </div>
+        `
+            : ""
+        }
         <div class="email-tips">
           <h4>Don't see the email?</h4>
           <ul>
@@ -149,12 +165,18 @@ export class LoginComponent {
     `;
 
     // Replace the form with instructions
-    const loginCard = this.element.querySelector('.login-card');
-    loginCard.replaceChild(instructions, this.element.querySelector('.login-form'));
-    loginCard.replaceChild(document.createElement('div'), this.element.querySelector('.login-help'));
+    const loginCard = this.element.querySelector(".login-card");
+    loginCard.replaceChild(
+      instructions,
+      this.element.querySelector(".login-form"),
+    );
+    loginCard.replaceChild(
+      document.createElement("div"),
+      this.element.querySelector(".login-help"),
+    );
 
     // Handle back button
-    instructions.querySelector('#backButton').addEventListener('click', () => {
+    instructions.querySelector("#backButton").addEventListener("click", () => {
       this._resetForm();
     });
   }
@@ -167,42 +189,42 @@ export class LoginComponent {
 
   _setLoading(loading) {
     this.isLoading = loading;
-    const button = this.element.querySelector('#loginButton');
-    const emailInput = this.element.querySelector('#email');
-    
+    const button = this.element.querySelector("#loginButton");
+    const emailInput = this.element.querySelector("#email");
+
     // Safety check - button might not exist if form was replaced
     if (!button || !emailInput) {
       return;
     }
-    
-    const buttonText = button.querySelector('.button-text');
-    const buttonLoading = button.querySelector('.button-loading');
+
+    const buttonText = button.querySelector(".button-text");
+    const buttonLoading = button.querySelector(".button-loading");
 
     if (loading) {
       button.disabled = true;
-      buttonText.style.display = 'none';
-      buttonLoading.style.display = 'flex';
+      buttonText.style.display = "none";
+      buttonLoading.style.display = "flex";
       emailInput.disabled = true;
     } else {
       button.disabled = false;
-      buttonText.style.display = 'inline';
-      buttonLoading.style.display = 'none';
+      buttonText.style.display = "inline";
+      buttonLoading.style.display = "none";
       emailInput.disabled = false;
     }
   }
 
-  _showMessage(text, type = 'info') {
-    const messageDiv = this.element.querySelector('#loginMessage');
+  _showMessage(text, type = "info") {
+    const messageDiv = this.element.querySelector("#loginMessage");
     messageDiv.textContent = text;
     messageDiv.className = `login-message ${type}`;
-    messageDiv.style.display = 'block';
+    messageDiv.style.display = "block";
   }
 
   _clearMessage() {
-    const messageDiv = this.element.querySelector('#loginMessage');
-    messageDiv.style.display = 'none';
-    messageDiv.textContent = '';
-    messageDiv.className = 'login-message';
+    const messageDiv = this.element.querySelector("#loginMessage");
+    messageDiv.style.display = "none";
+    messageDiv.textContent = "";
+    messageDiv.className = "login-message";
   }
 
   _isValidEmail(email) {
@@ -211,7 +233,7 @@ export class LoginComponent {
   }
 
   destroy() {
-    if (this.element && this.element.parentNode) {
+    if (this.element?.parentNode) {
       this.element.parentNode.removeChild(this.element);
     }
     this.element = null;

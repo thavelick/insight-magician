@@ -1,8 +1,8 @@
 import indexHtml from "./index.html";
 import { AppDatabase } from "./lib/app-database.js";
+import { logger } from "./lib/logger.js";
 import { requireAuth } from "./lib/middleware/auth.js";
 import { createAuthRoutes } from "./routes/auth.js";
-import { logger } from "./lib/logger.js";
 import { handleChat } from "./routes/chat.js";
 import { handleQuery } from "./routes/query.js";
 import { handleSchema } from "./routes/schema.js";
@@ -45,7 +45,8 @@ Bun.serve({
       return new Response(Bun.file(filePath));
     }
 
-    return null; // Let routes handle other requests
+    // For all other requests, let the routes handle them
+    // Don't return anything here to allow routes to process
   },
   routes: {
     "/": indexHtml,
@@ -82,6 +83,7 @@ Bun.serve({
     "/api/query": {
       POST: withAuth(handleQuery),
     },
+    // Protected routes (require authentication)
     "/api/chat": {
       POST: withAuth(handleChat),
     },

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { authenticateUser } from "../helpers/auth-helper.js";
 import { cleanupUploadedFile } from "../helpers/database.js";
 import {
   addWidget,
@@ -14,6 +15,8 @@ test.describe("User-Facing Error Messages", () => {
       localStorage.clear();
     });
     await page.waitForLoadState("domcontentloaded");
+    // Authenticate user since endpoints now require auth
+    await authenticateUser(page);
   });
 
   async function simulateUploadError(page) {

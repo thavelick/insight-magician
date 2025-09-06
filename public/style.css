@@ -1560,8 +1560,12 @@ body.ai-chat-open {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Mobile Responsive */
@@ -1570,25 +1574,25 @@ body.ai-chat-open {
     padding: 24px;
     margin: 10px;
   }
-  
+
   .user-status {
     gap: 8px;
     padding: 6px;
   }
-  
+
   .user-details {
     display: none; /* Hide email on mobile to save space */
   }
-  
+
   .app-header {
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .app-header h1 {
     text-align: center;
   }
-  
+
   .user-status-container {
     margin-left: 0;
     align-self: flex-end;
