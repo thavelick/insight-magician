@@ -18,7 +18,7 @@ test.describe("File Upload & Validation", () => {
       localStorage.clear();
     });
     await page.waitForLoadState("domcontentloaded");
-    // Authenticate user since endpoints now require auth
+
     await authenticateUser(page);
     await page.waitForSelector("text=Drop your SQLite database file here");
   });

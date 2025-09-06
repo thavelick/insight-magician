@@ -135,10 +135,10 @@ export class LoginComponent {
         ${
           magicLinkUrl
             ? `
-        <div class="dev-magic-link" style="background: #f0f8ff; border: 2px solid #4a9eff; border-radius: 8px; padding: 15px; margin: 15px 0;">
-          <h4 style="margin: 0 0 10px 0; color: #1e40af;">🧪 Development Mode</h4>
-          <p style="margin: 0 0 10px 0; font-size: 14px;">For testing purposes, click the magic link directly:</p>
-          <a href="${magicLinkUrl}" id="devMagicLink" style="display: inline-block; background: #4a9eff; color: white; padding: 10px 15px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+        <div class="dev-magic-link">
+          <h4>🧪 Development Mode</h4>
+          <p>For testing purposes, click the magic link directly:</p>
+          <a href="${magicLinkUrl}" id="devMagicLink">
             🔗 Sign In Now (Test Mode)
           </a>
         </div>

@@ -15,7 +15,7 @@ test.describe("User-Facing Error Messages", () => {
       localStorage.clear();
     });
     await page.waitForLoadState("domcontentloaded");
-    // Authenticate user since endpoints now require auth
+
     await authenticateUser(page);
   });
 

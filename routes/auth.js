@@ -184,7 +184,6 @@ function isValidEmail(email) {
 }
 
 function createSessionCookie(sessionId) {
-  // Create secure HTTP-only cookie using Bun's Cookie class
   const cookie = new Bun.Cookie("session", sessionId, {
     path: "/",
     httpOnly: true,

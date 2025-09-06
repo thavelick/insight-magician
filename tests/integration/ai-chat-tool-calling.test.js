@@ -10,7 +10,7 @@ test.describe("AI Chat Tool Calling Functionality", () => {
       localStorage.clear();
     });
     await page.waitForLoadState("domcontentloaded");
-    // Authenticate user since endpoints now require auth
+
     await authenticateUser(page);
   });
 

@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { authenticateUser } from "./auth-helper.js";
 import {
   cleanupDatabase,
   cleanupUploadedFile,
@@ -161,8 +162,6 @@ export async function openSchemaSidebar(page) {
  */
 export async function setupGraphWidget(page, fixtureName = "basic") {
   await page.goto("/");
-  // Import auth helper dynamically to avoid circular dependency
-  const { authenticateUser } = await import("./auth-helper.js");
   await authenticateUser(page);
   const { uploadedFilename } = await setupDatabaseWithUpload(page, fixtureName);
   await addWidget(page);

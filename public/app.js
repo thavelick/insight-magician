@@ -14,7 +14,6 @@ class App {
     this.widgets = new Map();
     this.nextWidgetId = 1;
 
-    // Authentication components
     this.authService = new AuthService();
     this.loginComponent = null;
     this.userStatusComponent = null;
@@ -25,13 +24,10 @@ class App {
   }
 
   async init() {
-    // Set up authentication event listeners first
     this.setupAuthEventListeners();
 
-    // Check authentication status (optional)
     await this.checkAuthentication();
 
-    // Always set up the main app (auth is optional)
     this.setupMainApp();
   }
 
@@ -43,7 +39,6 @@ class App {
     this.schemaComponent = new SchemaComponent();
     this.aiChatComponent = new AIChatComponent();
 
-    // Show AI chat by default, hide schema sidebar
     this.schemaComponent.hide();
     this.aiChatComponent.show();
     this.setupAddWidgetButton();
@@ -51,7 +46,6 @@ class App {
     this.setupViewSchemaButton();
     this.setupToggleUploadButton();
 
-    // Set up header authentication UI
     if (this.isAuthenticated) {
       this.setupUserStatus();
     } else {
@@ -62,7 +56,6 @@ class App {
   }
 
   setupAuthEventListeners() {
-    // Listen for authentication state changes
     window.addEventListener("auth:session-expired", () => {
       this.handleSessionExpired();
     });
@@ -85,19 +78,16 @@ class App {
   }
 
   showLoginScreen() {
-    // Create and show login component
     if (!this.loginComponent) {
       this.loginComponent = new LoginComponent(this.authService);
     }
 
     const appContainer = document.getElementById("app");
     if (appContainer) {
-      // Clear existing content and add login component
       appContainer.innerHTML = "";
       appContainer.appendChild(this.loginComponent.render());
     }
 
-    // Check for magic link verification in URL
     this.handleMagicLinkVerification();
   }
 
@@ -106,7 +96,6 @@ class App {
     const token = urlParams.get("token");
 
     if (token) {
-      // Show loading state
       this.showVerificationLoading();
 
       try {
@@ -121,21 +110,17 @@ class App {
         const data = await response.json();
 
         if (response.ok) {
-          // Success! User is now logged in
           this.isAuthenticated = true;
           this.currentUser = data.user;
 
-          // Clear URL parameters
           window.history.replaceState(
             {},
             document.title,
             window.location.pathname,
           );
 
-          // Set up and show main app
           await this.setupMainApp();
         } else {
-          // Verification failed
           this.showVerificationError(
             data.error || "Invalid or expired magic link",
           );
@@ -202,7 +187,6 @@ class App {
             <p><small>Or click to select a file</small></p>
           </div>
           <div id="widgets-container">
-            <!-- Widgets will be added here -->
           </div>
         </div>
       `;
@@ -212,15 +196,12 @@ class App {
   setupUserStatus() {
     if (!this.currentUser) return;
 
-    // Create user status component
     if (!this.userStatusComponent) {
       this.userStatusComponent = new UserStatusComponent(this.authService);
     }
 
-    // Find the header container and add user status
     const header = document.querySelector("header");
     if (header) {
-      // Look for existing user status or create container
       let userStatusContainer = header.querySelector(".user-status-container");
       if (!userStatusContainer) {
         userStatusContainer = document.createElement("div");
@@ -228,7 +209,6 @@ class App {
         header.appendChild(userStatusContainer);
       }
 
-      // Clear existing content and add user status component
       userStatusContainer.innerHTML = "";
       userStatusContainer.appendChild(
         this.userStatusComponent.render(this.currentUser),
@@ -237,10 +217,8 @@ class App {
   }
 
   setupSignInLink() {
-    // Find the header container and add sign-in link
     const header = document.querySelector("header");
     if (header) {
-      // Look for existing user status container or create one
       let userStatusContainer = header.querySelector(".user-status-container");
       if (!userStatusContainer) {
         userStatusContainer = document.createElement("div");
@@ -248,12 +226,10 @@ class App {
         header.appendChild(userStatusContainer);
       }
 
-      // Clear existing content and add sign-in link
       userStatusContainer.innerHTML = `
         <a href="#" class="sign-in-link">Sign In</a>
       `;
 
-      // Add click handler to show login screen
       const signInLink = userStatusContainer.querySelector(".sign-in-link");
       signInLink.addEventListener("click", (e) => {
         e.preventDefault();
@@ -275,10 +251,7 @@ class App {
     this.isAuthenticated = false;
     this.currentUser = null;
 
-    // Clear any sensitive data
     this.clearApplicationData();
-
-    // Remove user status from header and show sign-in option
     this.removeUserStatus();
     this.setupSignInLink();
   }
@@ -287,25 +260,19 @@ class App {
     this.isAuthenticated = false;
     this.currentUser = null;
 
-    // Clear application data
     this.clearApplicationData();
-
-    // Remove user status from header and show sign-in option
     this.removeUserStatus();
     this.setupSignInLink();
   }
 
   clearApplicationData() {
-    // Clear widgets and database state
     this.clearWidgets();
     this.currentDatabase = null;
     this.schema = null;
 
-    // Clear sessionStorage
     sessionStorage.clear();
   }
 
-  // Override existing fetch calls to use authenticated fetch
   createAuthenticatedFetch() {
     return this.authService.createAuthenticatedFetch();
   }
@@ -367,7 +334,6 @@ class App {
     this.currentDatabase = filename;
 
     try {
-      // Load schema with authentication
       const authenticatedFetch = this.createAuthenticatedFetch();
       const response = await authenticatedFetch(
         `/api/schema?filename=${encodeURIComponent(filename)}`,
@@ -378,16 +344,12 @@ class App {
         this.schema = result.schema;
         this.schemaComponent.displaySchema(this.schema);
 
-        // Store database filename in sessionStorage
         sessionStorage.setItem("currentDatabase", filename);
 
-        // Show View Schema button
         this.showViewSchemaButton();
 
-        // Load saved widgets for this database
         this.loadWidgets();
 
-        // Update upload component to show success
         this.uploadComponent.showSuccess(
           `Database loaded: ${Object.keys(this.schema).length} tables found`,
         );
@@ -397,11 +359,8 @@ class App {
     } catch (error) {
       logger.error("Failed to load schema:", error);
       this.uploadComponent.showError("Failed to load database schema");
-      // Clear invalid filename from sessionStorage
       sessionStorage.removeItem("currentDatabase");
-      // Hide View Schema button
       this.hideViewSchemaButton();
-      // Clear widgets since database failed to load
       this.clearWidgets();
     }
   }
@@ -412,11 +371,11 @@ class App {
       widgetId,
       (id) => this.removeWidget(id),
       () => this.saveWidgets(),
-      2, // width
-      2, // height
+      2,
+      2,
       this.currentDatabase,
-      "", // title
-      "data-table", // widgetType
+      "",
+      "data-table",
     );
 
     this.widgets.set(widgetId, widget);
@@ -426,15 +385,12 @@ class App {
       container.appendChild(widget.getElement());
     }
 
-    // Hide upload area after adding first widget
     if (this.widgets.size === 1) {
       this.hideUploadArea();
     }
 
-    // Start the widget in edit mode (flipped)
     setTimeout(() => {
       widget.flip();
-      // Save widgets after flip animation
       setTimeout(() => this.saveWidgets(), 200);
     }, 100);
   }
@@ -443,7 +399,6 @@ class App {
     this.widgets.delete(id);
     this.saveWidgets();
 
-    // Show upload area again if no widgets remain
     if (this.widgets.size === 0) {
       this.showUploadArea();
     }
@@ -504,7 +459,6 @@ class App {
     }
   }
 
-  // Widget persistence methods
   saveWidgets() {
     const widgetData = Array.from(this.widgets.values()).map((widget) =>
       widget.serialize(),
@@ -538,7 +492,6 @@ class App {
             container.appendChild(widget.getElement());
           }
 
-          // Hide upload area if widgets were loaded
           if (this.widgets.size > 0) {
             this.hideUploadArea();
           }
@@ -602,10 +555,8 @@ class App {
         results,
       } = widgetConfig;
 
-      // Generate numeric ID from string ID for compatibility
       const numericId = this.nextWidgetId++;
 
-      // Create widget with the provided configuration
       const widget = new WidgetComponent(
         numericId,
         (id) => this.removeWidget(id),
@@ -617,39 +568,31 @@ class App {
         widgetType,
       );
 
-      // Set the query and results BEFORE adding to DOM
       widget.query = query;
       if (results) {
         widget.results = results;
         widget.hasResults = !!(results.rows && results.rows.length > 0);
       }
 
-      // For graph widgets, set the chart function BEFORE adding to DOM
       if (widgetType === "graph" && chartFunction) {
         widget.chartFunction = chartFunction;
       }
 
-      // Add to widgets map
       this.widgets.set(numericId, widget);
 
-      // Add to DOM
       const container = document.getElementById("widgets-container");
       if (container) {
         container.appendChild(widget.getElement());
       }
 
-      // Update form fields to reflect the properties set after widget creation
       widget.updateFormFields();
 
-      // If widget has results, display them immediately
       if (results?.rows && results.rows.length > 0) {
         widget.displayResults(results);
       }
 
-      // Save state
       this.saveWidgets();
 
-      // Hide upload area after adding widget if it was visible
       this.hideUploadArea();
 
       logger.debug(`Created widget ${numericId} from tool:`, {
@@ -689,7 +632,6 @@ class App {
         results,
       } = widgetConfig;
 
-      // Find existing widget by ID
       const existingWidget = this.widgets.get(id);
       if (!existingWidget) {
         return {
@@ -698,7 +640,6 @@ class App {
         };
       }
 
-      // Update widget properties
       if (title !== undefined) {
         existingWidget.title = title;
       }
@@ -718,27 +659,22 @@ class App {
         existingWidget.chartFunction = chartFunction;
       }
 
-      // Update results if provided
       if (results) {
         existingWidget.results = results;
         existingWidget.hasResults = !!(results.rows && results.rows.length > 0);
       }
 
-      // Update form fields to reflect the new properties
       existingWidget.updateFormFields();
 
-      // Always refresh the display if there are any results (new or existing)
       const resultsToDisplay = results || existingWidget.results;
       if (resultsToDisplay?.rows && resultsToDisplay.rows.length > 0) {
         existingWidget.displayResults(resultsToDisplay);
 
-        // Ensure widget is showing the front (results) side
         if (existingWidget.isFlipped) {
           existingWidget.flip();
         }
       }
 
-      // Save updated state
       this.saveWidgets();
 
       logger.debug(`Updated widget ${id} from tool:`, {
@@ -763,25 +699,20 @@ class App {
   }
 
   clearWidgets() {
-    // Remove all widget elements
     const container = document.getElementById("widgets-container");
     if (container) {
       container.innerHTML = "";
     }
 
-    // Clear widgets map
     this.widgets.clear();
 
-    // Reset widget ID counter
     this.nextWidgetId = 1;
 
-    // Clear from sessionStorage
     sessionStorage.removeItem("widgets");
     sessionStorage.removeItem("nextWidgetId");
   }
 }
 
-// Initialize app when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
   window.app = new App();
 });

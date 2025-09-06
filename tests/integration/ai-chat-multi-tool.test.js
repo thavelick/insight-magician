@@ -17,7 +17,6 @@ test.describe("AI Chat Multi-Tool Integration", () => {
     });
     await page.waitForLoadState("domcontentloaded");
 
-    // Authenticate user since endpoints now require auth
     await authenticateUser(page);
 
     const result = await setupDatabaseWithUpload(page);
