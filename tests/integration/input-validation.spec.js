@@ -13,7 +13,7 @@ test.describe("Input Validation Security", () => {
       localStorage.clear();
     });
     await page.waitForLoadState("domcontentloaded");
-    // Authenticate user since /api/schema now requires auth
+
     await authenticateUser(page);
   });
 

@@ -17,7 +17,7 @@ test.describe("Schema Extraction", () => {
     });
     await page.waitForLoadState("domcontentloaded");
     await page.waitForSelector("text=Drop your SQLite database file here");
-    // Authenticate user since /api/schema now requires auth
+
     await authenticateUser(page);
   });
 
