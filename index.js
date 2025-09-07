@@ -1,6 +1,8 @@
 import indexHtml from "./index.html";
 import { AppDatabase } from "./lib/app-database.js";
 import { logger } from "./lib/logger.js";
+import { requireAuth } from "./lib/middleware/auth.js";
+import { createAuthRoutes } from "./routes/auth.js";
 import { handleChat } from "./routes/chat.js";
 import { handleQuery } from "./routes/query.js";
 import { handleSchema } from "./routes/schema.js";
@@ -12,6 +14,26 @@ await appDatabase.connect();
 
 global.appDatabase = appDatabase;
 
+// Create auth routes and middleware
+const authRoutes = createAuthRoutes(appDatabase);
+const authMiddleware = requireAuth(appDatabase);
+
+// Helper to wrap route handlers with middleware
+function withAuth(handler) {
+  return async (req, ...args) => {
+    const url = new URL(req.url);
+    const middlewareResponse = await authMiddleware(req, url);
+
+    // If middleware returns a response, return it (auth failed)
+    if (middlewareResponse) {
+      return middlewareResponse;
+    }
+
+    // Otherwise continue to the actual handler
+    return handler(req, ...args);
+  };
+}
+
 Bun.serve({
   port: process.env.PORT || 3000,
   fetch(req) {
@@ -22,8 +44,6 @@ Bun.serve({
       const filePath = `.${url.pathname}`;
       return new Response(Bun.file(filePath));
     }
-
-    return null; // Let routes handle other requests
   },
   routes: {
     "/": indexHtml,
@@ -37,17 +57,29 @@ Bun.serve({
         );
       },
     },
+    "/api/auth/login": {
+      POST: authRoutes.login,
+    },
+    "/api/auth/verify": {
+      GET: authRoutes.verify,
+    },
+    "/api/auth/status": {
+      GET: authRoutes.status,
+    },
+    "/api/auth/logout": {
+      POST: authRoutes.logout,
+    },
     "/api/upload": {
-      POST: handleUpload,
+      POST: withAuth(handleUpload),
     },
     "/api/schema": {
-      GET: handleSchema,
+      GET: withAuth(handleSchema),
     },
     "/api/query": {
-      POST: handleQuery,
+      POST: withAuth(handleQuery),
     },
     "/api/chat": {
-      POST: handleChat,
+      POST: withAuth(handleChat),
     },
   },
   development: {

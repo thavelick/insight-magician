@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { authenticateUser } from "../helpers/auth-helper.js";
 import { cleanupUploadedFile } from "../helpers/database.js";
 import {
   executeQueryAPI,
@@ -13,6 +14,9 @@ test.describe("Pagination Edge Cases", () => {
       localStorage.clear();
     });
     await page.waitForLoadState("domcontentloaded");
+
+    await authenticateUser(page);
+
     await page.waitForSelector("text=Drop your SQLite database file here");
   });
 

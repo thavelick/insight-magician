@@ -22,6 +22,12 @@
       "tests/**",
       "*.js",
       "*.json"
-    ]
+    ],
+    "ignore": ["test-*.js", "scripts/**"],
+    "rules": {
+      "suspicious": {
+        "noConsoleLog": "error"
+      }
+    }
   }
 }

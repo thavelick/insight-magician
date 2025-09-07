@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { authenticateUser } from "../helpers/auth-helper.js";
 import { cleanupUploadedFile } from "../helpers/database.js";
 import { setupDatabaseWithUpload } from "../helpers/integration.js";
 
@@ -12,6 +13,8 @@ test.describe("Input Validation Security", () => {
       localStorage.clear();
     });
     await page.waitForLoadState("domcontentloaded");
+
+    await authenticateUser(page);
   });
 
   test.afterEach(async ({ page }) => {

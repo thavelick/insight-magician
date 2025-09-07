@@ -140,7 +140,6 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 
 ### Playwright Integration Tests
 
-- **Run tests sequentially**: Set `workers: 1` in playwright.config.js to avoid database locking issues
 - **Response listener timing**: Always set up `page.waitForResponse()` listeners BEFORE triggering actions that cause responses
   - ❌ Wrong: Upload file → Set up schema listener → Wait (race condition, timeouts)
   - ✅ Correct: Set up both listeners → Upload file → Wait for both responses

@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
+import { authenticateUser } from "../helpers/auth-helper.js";
 import {
   cleanupDatabase,
   cleanupUploadedFile,
@@ -17,6 +18,8 @@ test.describe("File Upload & Validation", () => {
       localStorage.clear();
     });
     await page.waitForLoadState("domcontentloaded");
+
+    await authenticateUser(page);
     await page.waitForSelector("text=Drop your SQLite database file here");
   });
 

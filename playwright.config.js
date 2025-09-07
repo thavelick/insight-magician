@@ -8,7 +8,8 @@ export default defineConfig({
     baseURL: "http://localhost:3001",
   },
   webServer: {
-    command: "PORT=3001 bun index.js",
+    command:
+      "PORT=3001 NODE_ENV=test APP_URL=http://localhost:3001 bun index.js",
     port: 3001,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,

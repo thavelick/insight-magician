@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { authenticateUser } from "../helpers/auth-helper.js";
 import { setupDatabaseWithUpload } from "../helpers/integration.js";
 
 test.describe("AI Chat Tool Calling Functionality", () => {
@@ -9,6 +10,8 @@ test.describe("AI Chat Tool Calling Functionality", () => {
       localStorage.clear();
     });
     await page.waitForLoadState("domcontentloaded");
+
+    await authenticateUser(page);
   });
 
   test("should send database path in API request when database loaded", async ({

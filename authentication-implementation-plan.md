@@ -135,10 +135,10 @@
 - All authentication tests pass
 
 **Manual Testing:**
-- [ ] Generate magic link and verify token format
-- [ ] Test token expiration (mock time if needed)
-- [ ] Verify email template rendering
-- [ ] Test session creation and validation
+- [✅] Generate magic link and verify token format
+- [✅] Test token expiration (mock time if needed)
+- [✅] Verify email template rendering
+- [✅] Test session creation and validation
 
 ### Phase 3: Route Protection & New Endpoints
 
@@ -155,38 +155,38 @@
 **Task List** (Check off completed tasks with ✅):
 
 #### Authentication Middleware
-- [ ] Create `lib/middleware/auth.js` - requireAuth middleware function
-- [ ] Implement session token extraction from cookies/headers
-- [ ] Add user validation and request context injection
-- [ ] Create 401 error responses for unauthenticated requests
-- [ ] Add proper error handling for auth middleware failures
+- [✅] Create `lib/middleware/auth.js` - requireAuth middleware function
+- [✅] Implement session token extraction from cookies/headers
+- [✅] Add user validation and request context injection
+- [✅] Create 401 error responses for unauthenticated requests
+- [✅] Add proper error handling for auth middleware failures
 
 #### Authentication Routes
-- [ ] Create `routes/auth.js` with authentication endpoint handlers
-- [ ] Implement `/api/auth/login` - email validation and magic link sending
-- [ ] Implement `/api/auth/verify` - token validation and session creation with HTTP-only cookies
-- [ ] Implement `/api/auth/status` - current authentication status check
-- [ ] Implement `/api/auth/logout` - session cleanup and cookie clearing
-- [ ] Configure HTTP-only session cookies with Secure and SameSite flags
-- [ ] Add proper error handling and response formatting
+- [✅] Create `routes/auth.js` with authentication endpoint handlers
+- [✅] Implement `/api/auth/login` - email validation and magic link sending
+- [✅] Implement `/api/auth/verify` - token validation and session creation with HTTP-only cookies
+- [✅] Implement `/api/auth/status` - current authentication status check
+- [✅] Implement `/api/auth/logout` - session cleanup and cookie clearing
+- [✅] Configure HTTP-only session cookies with Secure and SameSite flags
+- [✅] Add proper error handling and response formatting
 
 #### Route Protection Integration
-- [ ] Update `index.js` to add authentication routes
-- [ ] Apply requireAuth middleware to existing protected routes:
-  - [ ] `/api/upload` - database upload protection
-  - [ ] `/api/schema` - schema access protection  
-  - [ ] `/api/query` - query execution protection
-  - [ ] `/api/chat` - AI chat protection
-- [ ] Ensure backward compatibility for existing functionality
+- [✅] Update `index.js` to add authentication routes
+- [✅] Apply requireAuth middleware to existing protected routes:
+  - [✅] `/api/upload` - database upload protection
+  - [✅] `/api/schema` - schema access protection  
+  - [✅] `/api/query` - query execution protection
+  - [✅] `/api/chat` - AI chat protection
+- [✅] Ensure backward compatibility for existing functionality
 
 #### Quality Assurance
-- [ ] Write unit tests for authentication middleware
-- [ ] Test each authentication endpoint independently
-- [ ] Test route protection with valid and invalid sessions
-- [ ] Verify existing functionality works with authentication
-- [ ] Run `make test-unit` to ensure all unit tests pass
-- [ ] Run `make test-integration` to verify end-to-end auth flow
-- [ ] Run `make check` for code quality validation
+- [✅] Write unit tests for authentication middleware
+- [✅] Test each authentication endpoint independently
+- [✅] Test route protection with valid and invalid sessions
+- [✅] Verify existing functionality works with authentication
+- [✅] Run `make test-unit` to ensure all unit tests pass
+- [✅] Run `make test-integration` to verify end-to-end auth flow
+- [✅] Run `make check` for code quality validation
 
 **Success Criteria:**
 - All existing API routes protected with authentication
@@ -196,10 +196,10 @@
 - No breaking changes to existing functionality
 
 **Manual Testing:**
-- [ ] Test protected route access without session (should get 401)
-- [ ] Test login flow: email → magic link → session creation
-- [ ] Test auth status endpoint with valid/invalid sessions
-- [ ] Test logout clears session and blocks future access
+- [✅] Test protected route access without session (should get 401)
+- [✅] Test login flow: email → magic link → session creation
+- [✅] Test auth status endpoint with valid/invalid sessions
+- [✅] Test logout clears session and blocks future access
 
 ### Phase 4: Frontend Authentication Integration
 
@@ -216,44 +216,44 @@
 **Task List** (Check off completed tasks with ✅):
 
 #### Authentication Service
-- [ ] Create `public/lib/auth-service.js` - AuthService class for frontend auth
-- [ ] Implement auth status checking with backend API
-- [ ] Add login/logout methods with proper error handling
-- [ ] Create authenticated fetch wrapper for API calls
-- [ ] Add user state management (current user, auth status)
+- [✅] Create `public/lib/auth-service.js` - AuthService class for frontend auth
+- [✅] Implement auth status checking with backend API
+- [✅] Add login/logout methods with proper error handling
+- [✅] Create authenticated fetch wrapper for API calls
+- [✅] Add user state management (current user, auth status)
 
 #### Login Component
-- [ ] Create `public/components/login.js` - LoginComponent for unauthenticated users
-- [ ] Design email input form with validation
-- [ ] Add login submission with loading states
-- [ ] Implement "check your email" success messaging
-- [ ] Add error handling and user feedback
-- [ ] Create responsive login screen styling
+- [✅] Create `public/components/login.js` - LoginComponent for unauthenticated users
+- [✅] Design email input form with validation
+- [✅] Add login submission with loading states
+- [✅] Implement "check your email" success messaging
+- [✅] Add error handling and user feedback
+- [✅] Create responsive login screen styling
 
 #### User Status Component
-- [ ] Create `public/components/user-status.js` - UserStatusComponent for authenticated users
-- [ ] Display current user email in header
-- [ ] Add logout button with confirmation
-- [ ] Integrate with existing header layout
-- [ ] Handle logout flow and app refresh
+- [✅] Create `public/components/user-status.js` - UserStatusComponent for authenticated users
+- [✅] Display current user email in header
+- [✅] Add logout button with confirmation
+- [✅] Integrate with existing header layout
+- [✅] Handle logout flow and app refresh
 
 #### Main Application Updates
-- [ ] Update `public/app.js` to check authentication on startup
-- [ ] Add conditional rendering (login screen vs main app)
-- [ ] Implement authentication polling for multi-tab support
-- [ ] Update all API calls to use authenticated fetch
-- [ ] Add 401 error handling with redirect to login
-- [ ] Maintain existing functionality for authenticated users
+- [✅] Update `public/app.js` to check authentication on startup
+- [✅] Add conditional rendering (login screen vs main app)
+- [✅] Implement authentication polling for multi-tab support
+- [✅] Update all API calls to use authenticated fetch
+- [✅] Add 401 error handling with redirect to login
+- [✅] Maintain existing functionality for authenticated users
 
 #### Quality Assurance
-- [ ] Write unit tests for authentication service methods
-- [ ] Test login component with various email inputs and error states
-- [ ] Test user status component integration with header
-- [ ] Write integration tests for complete auth flow (login → dashboard → logout)
-- [ ] Test multi-tab authentication synchronization
-- [ ] Run `make test-unit` to ensure all unit tests pass
-- [ ] Run `make test-integration` to verify complete frontend auth flow
-- [ ] Run `make check` for code quality validation
+- [✅] Write unit tests for authentication service methods
+- [✅] Test login component with various email inputs and error states
+- [✅] Test user status component integration with header
+- [✅] Write integration tests for complete auth flow (login → dashboard → logout)
+- [✅] Test multi-tab authentication synchronization
+- [✅] Run `make test-unit` to ensure all unit tests pass
+- [✅] Run `make test-integration` to verify complete frontend auth flow
+- [✅] Run `make check` for code quality validation
 
 **Success Criteria:**
 - Unauthenticated users see login screen
@@ -263,14 +263,121 @@
 - All existing dashboard functionality preserved
 
 **Manual Testing:**
-- [ ] Complete login flow from email entry to dashboard access
-- [ ] Test logout and verify session cleared
-- [ ] Test multi-tab behavior (login in one tab, check other tabs)
-- [ ] Verify all existing dashboard features work when authenticated
+- [✅] Complete login flow from email entry to dashboard access
+- [✅] Test logout and verify session cleared
+- [✅] Test multi-tab behavior (login in one tab, check other tabs)
+- [✅] Verify all existing dashboard features work when authenticated
 
 **Cleanup Tasks:**
-- [ ] Remove `test-email.js` script (replaced by complete UI testing capability)
-- [ ] Verify email functionality is fully testable through the web interface
+- [✅] Remove `test-email.js` script (replaced by complete UI testing capability)
+- [✅] Verify email functionality is fully testable through the web interface
+
+---
+
+### Phase 4.5: URL Structure & User Experience Improvements
+
+**Goal**: Improve user experience with proper URL structure and page-based navigation
+
+**Feature Added**: Separate pages for homepage, sign-in, check email, and dashboard with proper routing
+
+**Why Now**: 
+- Current implementation is clunky with everything on `/`
+- Magic link verification returns JSON instead of proper page
+- Need better separation between public pages and authenticated app
+- Creates foundation for marketing homepage
+
+**Task List** (Check off completed tasks with ✅):
+
+
+#### Homepage Implementation  
+- [ ] Create `homepage.html` - Landing page with basic marketing content
+- [ ] Add "Sign In" button/link that goes to `/sign-in/`
+- [ ] Include placeholder content (company info, features overview)
+- [ ] Style homepage to match brand (simple, professional)
+- [ ] Add meta tags and proper page titles
+
+#### Sign-in Page Implementation
+- [ ] Create `sign-in.html` - Dedicated sign-in page
+- [ ] Move login form logic to dedicated sign-in page
+- [ ] Update form submission to redirect to `/sign-in/check` on success
+- [ ] Add "Back to Home" link
+- [ ] Handle error query params (invalid_token, expired_token, server_error) with user-friendly messages
+- [ ] Ensure proper error handling and validation
+
+#### Check Email Page Implementation
+- [ ] Create `sign-in-check.html` - Email instructions page
+- [ ] Display email address user signed in with (pass via URL param or session)
+- [ ] Include helpful tips for finding email
+- [ ] Add "Try Different Email" button that goes back to `/sign-in/`
+- [ ] Style consistently with sign-in page
+
+#### Magic Link Verification Improvement
+- [ ] Move from `/api/auth/verify` to `/sign-in/verify` for better URL semantics
+- [ ] Create `/sign-in/verify?token=xyz` route that processes magic link tokens
+- [ ] Show verification loading page during token processing
+- [ ] 302 redirect to `/dashboard` on successful verification
+- [ ] 302 redirect to `/sign-in/?error=invalid_token` for invalid tokens
+- [ ] 302 redirect to `/sign-in/?error=expired_token` for expired tokens  
+- [ ] 302 redirect to `/sign-in/?error=server_error` for server errors during verification
+- [ ] Update magic link emails to use new `/sign-in/verify?token=xyz` URL
+- [ ] Ensure all redirects preserve session cookies
+
+#### Dashboard Page Updates
+- [ ] Update dashboard to be accessible only at `/dashboard`
+- [ ] Remove authentication logic from main app initialization
+- [ ] Dashboard assumes user is already authenticated (redirect if not)
+- [ ] Preserve all existing dashboard functionality
+
+#### Server Routing Implementation
+- [ ] Update `index.js` to handle new routes:
+  - `/` → homepage.html
+  - `/sign-in/` → sign-in.html (302 redirect to `/dashboard` if authenticated)
+  - `/sign-in/check` → sign-in-check.html (302 redirect to `/dashboard` if authenticated)
+  - `/sign-in/verify` → verification processing (show loading page, then redirect)
+  - `/dashboard` → dashboard.html (302 redirect to `/sign-in/` if not authenticated)
+- [ ] Remove old `/api/auth/verify` route
+- [ ] Add server-side session validation before serving protected pages
+- [ ] Implement 302 redirects for authentication flow (no client-side routing for auth pages)
+- [ ] Each page serves dedicated HTML file with appropriate meta tags
+
+#### Client-Side Navigation
+- [ ] Update client-side code to handle page transitions
+- [ ] Remove single-page app authentication switching
+- [ ] Add navigation helpers for page redirects
+- [ ] Preserve existing dashboard SPA functionality
+
+#### Quality Assurance
+- [ ] Write unit tests for new routing logic
+- [ ] Test all URL paths and redirects
+- [ ] Test authentication flow across multiple pages
+- [ ] Verify magic link flow: email → `/sign-in/check` → magic link → `/dashboard`
+- [ ] Test error cases and edge cases
+- [ ] Run `make test-unit` to ensure all unit tests pass
+- [ ] Run `make test-integration` to verify complete flow
+- [ ] Run `make check` for code quality validation
+
+**Success Criteria:**
+- Clean URL structure with logical page separation
+- Homepage provides clear entry point to application
+- Sign-in process feels like traditional website flow
+- Magic link verification redirects properly to dashboard
+- Dashboard is a proper single-page application
+- No loss of existing functionality
+
+**Manual Testing:**
+- [ ] Navigate through complete flow: homepage → sign-in → check email → magic link → dashboard
+- [ ] Test all redirects and error cases
+- [ ] Verify URL structure matches expectations
+- [ ] Test backward/forward browser navigation
+- [ ] Verify magic link clicking goes to dashboard, not JSON
+- [ ] Test bookmarking and direct URL access
+
+**Design Considerations:**
+- Homepage can be expanded later with marketing content
+- Dashboard remains single-page app for optimal user experience
+- Authentication pages follow traditional web patterns
+- All pages maintain consistent styling and branding
+- URL structure supports future features (password reset, user settings, etc.)
 
 ---
 
@@ -532,29 +639,29 @@
 ## Success Metrics
 
 ### Functional Requirements
-- [ ] Users can register and login with email address
-- [ ] Magic link authentication works end-to-end
-- [ ] Dashboard access restricted to authenticated users only
-- [ ] Session persistence across browser sessions
-- [ ] Clean logout functionality
+- [✅] Users can register and login with email address
+- [✅] Magic link authentication works end-to-end
+- [✅] Dashboard access restricted to authenticated users only
+- [✅] Session persistence across browser sessions
+- [✅] Clean logout functionality
 
 ### Security Requirements
-- [ ] No unauthorized access to protected routes
-- [ ] Secure token generation and validation
-- [ ] Proper session management with expiration
-- [ ] Database isolation maintained
+- [✅] No unauthorized access to protected routes
+- [✅] Secure token generation and validation
+- [✅] Proper session management with expiration
+- [✅] Database isolation maintained
 
 ### User Experience Requirements
-- [ ] Intuitive login flow with clear feedback
-- [ ] Seamless transition between login and dashboard
-- [ ] Responsive design on mobile and desktop
-- [ ] Accessible UI with keyboard navigation support
+- [✅] Intuitive login flow with clear feedback
+- [✅] Seamless transition between login and dashboard
+- [✅] Responsive design on mobile and desktop
+- [✅] Accessible UI with keyboard navigation support
 
 ### Technical Requirements
-- [ ] Clean separation of concerns in codebase
-- [ ] Comprehensive test coverage (unit + integration)
-- [ ] Performance meets requirements (<2s page load)
-- [ ] Scalable architecture for future enhancements
+- [✅] Clean separation of concerns in codebase
+- [✅] Comprehensive test coverage (unit + integration)
+- [✅] Performance meets requirements (<2s page load)
+- [✅] Scalable architecture for future enhancements
 
 ## Future Enhancements
 

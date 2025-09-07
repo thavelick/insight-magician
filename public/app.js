@@ -1,7 +1,11 @@
+import { logger } from "../lib/logger.js";
 import { AIChatComponent } from "./components/ai-chat.js";
+import { LoginComponent } from "./components/login.js";
 import { SchemaComponent } from "./components/schema.js";
 import { UploadComponent } from "./components/upload.js";
+import { UserStatusComponent } from "./components/user-status.js";
 import { WidgetComponent } from "./components/widget.js";
+import { AuthService } from "./lib/auth-service.js";
 
 class App {
   constructor() {
@@ -10,10 +14,24 @@ class App {
     this.widgets = new Map();
     this.nextWidgetId = 1;
 
+    this.authService = new AuthService();
+    this.loginComponent = null;
+    this.userStatusComponent = null;
+    this.isAuthenticated = false;
+    this.currentUser = null;
+
     this.init();
   }
 
   async init() {
+    this.setupAuthEventListeners();
+
+    await this.checkAuthentication();
+
+    this.setupMainApp();
+  }
+
+  async setupMainApp() {
     this.uploadComponent = new UploadComponent(
       this.onDatabaseUploaded.bind(this),
       this.hideUploadArea.bind(this),
@@ -21,14 +39,242 @@ class App {
     this.schemaComponent = new SchemaComponent();
     this.aiChatComponent = new AIChatComponent();
 
-    // Show AI chat by default, hide schema sidebar
     this.schemaComponent.hide();
     this.aiChatComponent.show();
     this.setupAddWidgetButton();
     this.setupAIChatButton();
     this.setupViewSchemaButton();
     this.setupToggleUploadButton();
+
+    if (this.isAuthenticated) {
+      this.setupUserStatus();
+    } else {
+      this.setupSignInLink();
+    }
+
     await this.checkExistingDatabase();
+  }
+
+  setupAuthEventListeners() {
+    window.addEventListener("auth:session-expired", () => {
+      this.handleSessionExpired();
+    });
+
+    window.addEventListener("auth:logout-success", () => {
+      this.handleLogoutSuccess();
+    });
+  }
+
+  async checkAuthentication() {
+    try {
+      const authStatus = await this.authService.checkAuthStatus();
+      this.isAuthenticated = authStatus.isAuthenticated;
+      this.currentUser = authStatus.user;
+    } catch (error) {
+      logger.error("Authentication check failed:", error);
+      this.isAuthenticated = false;
+      this.currentUser = null;
+    }
+  }
+
+  showLoginScreen() {
+    if (!this.loginComponent) {
+      this.loginComponent = new LoginComponent(this.authService);
+    }
+
+    const appContainer = document.getElementById("app");
+    if (appContainer) {
+      appContainer.innerHTML = "";
+      appContainer.appendChild(this.loginComponent.render());
+    }
+
+    this.handleMagicLinkVerification();
+  }
+
+  async handleMagicLinkVerification() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
+
+    if (token) {
+      this.showVerificationLoading();
+
+      try {
+        const response = await fetch(
+          `/api/auth/verify?token=${encodeURIComponent(token)}`,
+          {
+            method: "GET",
+            credentials: "include",
+          },
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+          this.isAuthenticated = true;
+          this.currentUser = data.user;
+
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname,
+          );
+
+          await this.setupMainApp();
+        } else {
+          this.showVerificationError(
+            data.error || "Invalid or expired magic link",
+          );
+        }
+      } catch (error) {
+        logger.error("Magic link verification failed:", error);
+        this.showVerificationError(
+          "Failed to verify magic link. Please try again.",
+        );
+      }
+    }
+  }
+
+  showVerificationLoading() {
+    const appContainer = document.getElementById("app");
+    if (appContainer) {
+      appContainer.innerHTML = `
+        <div class="verification-loading">
+          <div class="verification-card">
+            <div class="spinner"></div>
+            <h2>Verifying your magic link...</h2>
+            <p>Please wait while we sign you in.</p>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  showVerificationError(error) {
+    const appContainer = document.getElementById("app");
+    if (appContainer) {
+      appContainer.innerHTML = `
+        <div class="verification-error">
+          <div class="verification-card">
+            <h2>Verification Failed</h2>
+            <p class="error-message">${error}</p>
+            <button onclick="window.location.reload()" class="retry-button">
+              Try Again
+            </button>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  showMainApp() {
+    const appContainer = document.getElementById("app");
+    if (appContainer) {
+      appContainer.innerHTML = `
+        <div class="container">
+          <header class="app-header">
+            <h1>🔍 Insight Magician</h1>
+            <div class="main-buttons">
+              <button class="ai-chat-btn" id="ai-chat">🤖 AI Chat</button>
+              <button class="view-schema-btn" id="view-schema" style="display: none;">📐 View Schema</button>
+              <button class="toggle-upload-btn" id="toggle-upload" style="display: none;">📁 Change Database</button>
+              <button class="add-widget-btn" id="add-widget">+ Add Widget</button>
+            </div>
+          </header>
+          
+          <div class="upload-area">
+            <button class="close-upload" title="Close">✕</button>
+            <p>Drop your SQLite database file here</p>
+            <p><small>Or click to select a file</small></p>
+          </div>
+          <div id="widgets-container">
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  setupUserStatus() {
+    if (!this.currentUser) return;
+
+    if (!this.userStatusComponent) {
+      this.userStatusComponent = new UserStatusComponent(this.authService);
+    }
+
+    const header = document.querySelector("header");
+    if (header) {
+      let userStatusContainer = header.querySelector(".user-status-container");
+      if (!userStatusContainer) {
+        userStatusContainer = document.createElement("div");
+        userStatusContainer.className = "user-status-container";
+        header.appendChild(userStatusContainer);
+      }
+
+      userStatusContainer.innerHTML = "";
+      userStatusContainer.appendChild(
+        this.userStatusComponent.render(this.currentUser),
+      );
+    }
+  }
+
+  setupSignInLink() {
+    const header = document.querySelector("header");
+    if (header) {
+      let userStatusContainer = header.querySelector(".user-status-container");
+      if (!userStatusContainer) {
+        userStatusContainer = document.createElement("div");
+        userStatusContainer.className = "user-status-container";
+        header.appendChild(userStatusContainer);
+      }
+
+      userStatusContainer.innerHTML = `
+        <a href="#" class="sign-in-link">Sign In</a>
+      `;
+
+      const signInLink = userStatusContainer.querySelector(".sign-in-link");
+      signInLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.showLoginScreen();
+      });
+    }
+  }
+
+  removeUserStatus() {
+    const userStatusContainer = document.querySelector(
+      ".user-status-container",
+    );
+    if (userStatusContainer) {
+      userStatusContainer.remove();
+    }
+  }
+
+  handleSessionExpired() {
+    this.isAuthenticated = false;
+    this.currentUser = null;
+
+    this.clearApplicationData();
+    this.removeUserStatus();
+    this.setupSignInLink();
+  }
+
+  handleLogoutSuccess() {
+    this.isAuthenticated = false;
+    this.currentUser = null;
+
+    this.clearApplicationData();
+    this.removeUserStatus();
+    this.setupSignInLink();
+  }
+
+  clearApplicationData() {
+    this.clearWidgets();
+    this.currentDatabase = null;
+    this.schema = null;
+
+    sessionStorage.clear();
+  }
+
+  createAuthenticatedFetch() {
+    return this.authService.createAuthenticatedFetch();
   }
 
   setupAddWidgetButton() {
@@ -88,8 +334,8 @@ class App {
     this.currentDatabase = filename;
 
     try {
-      // Load schema
-      const response = await fetch(
+      const authenticatedFetch = this.createAuthenticatedFetch();
+      const response = await authenticatedFetch(
         `/api/schema?filename=${encodeURIComponent(filename)}`,
       );
       const result = await response.json();
@@ -98,16 +344,12 @@ class App {
         this.schema = result.schema;
         this.schemaComponent.displaySchema(this.schema);
 
-        // Store database filename in sessionStorage
         sessionStorage.setItem("currentDatabase", filename);
 
-        // Show View Schema button
         this.showViewSchemaButton();
 
-        // Load saved widgets for this database
         this.loadWidgets();
 
-        // Update upload component to show success
         this.uploadComponent.showSuccess(
           `Database loaded: ${Object.keys(this.schema).length} tables found`,
         );
@@ -115,13 +357,10 @@ class App {
         throw new Error(result.error);
       }
     } catch (error) {
-      console.error("Failed to load schema:", error);
+      logger.error("Failed to load schema:", error);
       this.uploadComponent.showError("Failed to load database schema");
-      // Clear invalid filename from sessionStorage
       sessionStorage.removeItem("currentDatabase");
-      // Hide View Schema button
       this.hideViewSchemaButton();
-      // Clear widgets since database failed to load
       this.clearWidgets();
     }
   }
@@ -132,11 +371,11 @@ class App {
       widgetId,
       (id) => this.removeWidget(id),
       () => this.saveWidgets(),
-      2, // width
-      2, // height
+      2,
+      2,
       this.currentDatabase,
-      "", // title
-      "data-table", // widgetType
+      "",
+      "data-table",
     );
 
     this.widgets.set(widgetId, widget);
@@ -146,15 +385,12 @@ class App {
       container.appendChild(widget.getElement());
     }
 
-    // Hide upload area after adding first widget
     if (this.widgets.size === 1) {
       this.hideUploadArea();
     }
 
-    // Start the widget in edit mode (flipped)
     setTimeout(() => {
       widget.flip();
-      // Save widgets after flip animation
       setTimeout(() => this.saveWidgets(), 200);
     }, 100);
   }
@@ -163,7 +399,6 @@ class App {
     this.widgets.delete(id);
     this.saveWidgets();
 
-    // Show upload area again if no widgets remain
     if (this.widgets.size === 0) {
       this.showUploadArea();
     }
@@ -224,7 +459,6 @@ class App {
     }
   }
 
-  // Widget persistence methods
   saveWidgets() {
     const widgetData = Array.from(this.widgets.values()).map((widget) =>
       widget.serialize(),
@@ -258,13 +492,12 @@ class App {
             container.appendChild(widget.getElement());
           }
 
-          // Hide upload area if widgets were loaded
           if (this.widgets.size > 0) {
             this.hideUploadArea();
           }
         }
       } catch (error) {
-        console.error("Failed to load widgets:", error);
+        logger.error("Failed to load widgets:", error);
         sessionStorage.removeItem("widgets");
       }
     }
@@ -322,10 +555,8 @@ class App {
         results,
       } = widgetConfig;
 
-      // Generate numeric ID from string ID for compatibility
       const numericId = this.nextWidgetId++;
 
-      // Create widget with the provided configuration
       const widget = new WidgetComponent(
         numericId,
         (id) => this.removeWidget(id),
@@ -337,42 +568,34 @@ class App {
         widgetType,
       );
 
-      // Set the query and results BEFORE adding to DOM
       widget.query = query;
       if (results) {
         widget.results = results;
         widget.hasResults = !!(results.rows && results.rows.length > 0);
       }
 
-      // For graph widgets, set the chart function BEFORE adding to DOM
       if (widgetType === "graph" && chartFunction) {
         widget.chartFunction = chartFunction;
       }
 
-      // Add to widgets map
       this.widgets.set(numericId, widget);
 
-      // Add to DOM
       const container = document.getElementById("widgets-container");
       if (container) {
         container.appendChild(widget.getElement());
       }
 
-      // Update form fields to reflect the properties set after widget creation
       widget.updateFormFields();
 
-      // If widget has results, display them immediately
       if (results?.rows && results.rows.length > 0) {
         widget.displayResults(results);
       }
 
-      // Save state
       this.saveWidgets();
 
-      // Hide upload area after adding widget if it was visible
       this.hideUploadArea();
 
-      console.log(`Created widget ${numericId} from tool:`, {
+      logger.debug(`Created widget ${numericId} from tool:`, {
         title,
         type: widgetType,
         rowCount: results?.rows?.length || 0,
@@ -384,7 +607,7 @@ class App {
         message: `Widget "${title}" created successfully`,
       };
     } catch (error) {
-      console.error("Error creating widget from tool:", error);
+      logger.error("Error creating widget from tool:", error);
       return {
         success: false,
         error: `Failed to create widget: ${error.message}`,
@@ -409,7 +632,6 @@ class App {
         results,
       } = widgetConfig;
 
-      // Find existing widget by ID
       const existingWidget = this.widgets.get(id);
       if (!existingWidget) {
         return {
@@ -418,7 +640,6 @@ class App {
         };
       }
 
-      // Update widget properties
       if (title !== undefined) {
         existingWidget.title = title;
       }
@@ -438,30 +659,25 @@ class App {
         existingWidget.chartFunction = chartFunction;
       }
 
-      // Update results if provided
       if (results) {
         existingWidget.results = results;
         existingWidget.hasResults = !!(results.rows && results.rows.length > 0);
       }
 
-      // Update form fields to reflect the new properties
       existingWidget.updateFormFields();
 
-      // Always refresh the display if there are any results (new or existing)
       const resultsToDisplay = results || existingWidget.results;
       if (resultsToDisplay?.rows && resultsToDisplay.rows.length > 0) {
         existingWidget.displayResults(resultsToDisplay);
 
-        // Ensure widget is showing the front (results) side
         if (existingWidget.isFlipped) {
           existingWidget.flip();
         }
       }
 
-      // Save updated state
       this.saveWidgets();
 
-      console.log(`Updated widget ${id} from tool:`, {
+      logger.debug(`Updated widget ${id} from tool:`, {
         title: title || existingWidget.title,
         type: widgetType || existingWidget.widgetType,
         rowCount:
@@ -474,7 +690,7 @@ class App {
         message: `Widget "${title || existingWidget.title}" updated successfully`,
       };
     } catch (error) {
-      console.error("Error updating widget from tool:", error);
+      logger.error("Error updating widget from tool:", error);
       return {
         success: false,
         error: `Failed to update widget: ${error.message}`,
@@ -483,25 +699,20 @@ class App {
   }
 
   clearWidgets() {
-    // Remove all widget elements
     const container = document.getElementById("widgets-container");
     if (container) {
       container.innerHTML = "";
     }
 
-    // Clear widgets map
     this.widgets.clear();
 
-    // Reset widget ID counter
     this.nextWidgetId = 1;
 
-    // Clear from sessionStorage
     sessionStorage.removeItem("widgets");
     sessionStorage.removeItem("nextWidgetId");
   }
 }
 
-// Initialize app when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
   window.app = new App();
 });

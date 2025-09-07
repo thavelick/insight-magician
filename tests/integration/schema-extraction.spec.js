@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { authenticateUser } from "../helpers/auth-helper.js";
 import {
   cleanupDatabase,
   cleanupUploadedFile,
@@ -16,6 +17,8 @@ test.describe("Schema Extraction", () => {
     });
     await page.waitForLoadState("domcontentloaded");
     await page.waitForSelector("text=Drop your SQLite database file here");
+
+    await authenticateUser(page);
   });
 
   // Helper functions for schema extraction tests

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { authenticateUser } from "../helpers/auth-helper.js";
 import { cleanupDatabase, cleanupUploadedFile } from "../helpers/database.js";
 import { uploadCorruptedDatabaseAndTestSchemaFailure } from "../helpers/integration.js";
 
@@ -10,6 +11,8 @@ test.describe("Database Connection Errors", () => {
       localStorage.clear();
     });
     await page.waitForLoadState("domcontentloaded");
+
+    await authenticateUser(page);
     await page.waitForSelector("text=Drop your SQLite database file here");
   });
 
