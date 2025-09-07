@@ -1,18 +1,6 @@
 import { expect } from "@playwright/test";
 
-/**
- * Authentication helper for integration tests
- * Provides utilities to quickly authenticate users before running tests
- */
-
-/**
- * Authenticates a user by using the magic link displayed in the UI during test mode
- * This avoids database locking issues by using the UI magic link instead of database queries
- *
- * @param {Page} page - Playwright page object
- * @param {string} email - Email address to authenticate (default: test email)
- * @returns {Promise<void>}
- */
+// This avoids database locking issues by using the UI magic link instead of database queries
 export async function authenticateUserWithUI(
   page,
   email = `test-${Date.now()}@example.com`,
@@ -51,13 +39,6 @@ export async function authenticateUserWithUI(
 
 export const authenticateUser = authenticateUserWithUI;
 
-/**
- * Verifies that a user is currently authenticated by checking the page state
- *
- * @param {Page} page - Playwright page object
- * @param {string} email - Expected email address of authenticated user
- * @returns {Promise<void>}
- */
 export async function verifyUserIsAuthenticated(page, email) {
   await page.reload();
   await page.waitForSelector(".app-header");
@@ -71,18 +52,12 @@ export async function verifyUserIsAuthenticated(page, email) {
   await expect(userEmail).toContainText(email);
 }
 
-/**
- * Logs out the current user
- *
- * @param {Page} page - Playwright page object
- * @returns {Promise<void>}
- */
 export async function logoutUser(page) {
   page.on("dialog", (dialog) => dialog.accept());
 
   await page.click("#logoutButton");
-  // TODO: Replace waitForTimeout with proper condition waiting
-  await page.waitForTimeout(500);
+
+  await page.waitForSelector(".sign-in-link");
 
   await expect(page.locator(".sign-in-link")).toBeVisible();
   await expect(page.locator(".user-status")).not.toBeVisible();

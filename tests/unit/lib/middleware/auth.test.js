@@ -1,6 +1,5 @@
 import { beforeEach, expect, mock, test } from "bun:test";
 
-// Simple test without complex mocking - we'll test the parsing logic separately
 function parseCookies(cookieString) {
   const cookies = {};
   if (!cookieString) return cookies;

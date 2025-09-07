@@ -15,7 +15,6 @@ test.describe("Pagination Edge Cases", () => {
     });
     await page.waitForLoadState("domcontentloaded");
 
-    // Authenticate user before running tests
     await authenticateUser(page);
 
     await page.waitForSelector("text=Drop your SQLite database file here");
